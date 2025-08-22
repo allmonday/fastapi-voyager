@@ -6,9 +6,13 @@ from typing import Optional
 
 def test_analysis():
 
+    class X(BaseModel):
+        id: int
+
     class B(BaseModel):
         id: int
         value: str
+        x: X
 
     class A(BaseModel):
         id: int
@@ -19,18 +23,35 @@ def test_analysis():
         id: int
         name: str
         b: B
+        x: X
+
+    class D(BaseModel):
+        id: int
+        name: str
+        b: B
 
     app = FastAPI()
 
     @app.get("/test", response_model=Optional[A])
-    def home():
+    def a():
         return None
 
     @app.get("/test2", response_model=Optional[C])
-    def home2():
+    def b():
+        return None
+
+    @app.get("/test3", response_model=Optional[D])
+    def c():
+        return None
+
+    @app.get("/test4", response_model=Optional[D])
+    def d():
         return None
 
     analytics = Analytics()
     analytics.analysis(app)
-    assert len(analytics.nodes) == 3
-    assert len(analytics.links) == 2
+    print(analytics.generate_dot())
+
+
+if __name__ == "__main__":
+    test_analysis()

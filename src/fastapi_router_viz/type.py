@@ -17,11 +17,17 @@ class NodeInfo:
 
 @dataclass
 class Node:
-    id: uuid.UUID
+    id: str
     name: str
     node_info: NodeInfo
 
 
+@dataclass
+class Route:
+    id: str
+    name: str
+
+@dataclass
 class Link:
-    source: uuid.UUID
-    target: uuid.UUID
+    source: str
+    target: str
