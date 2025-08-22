@@ -1,0 +1,43 @@
+[project]
+name = "fastapi-router-viz"
+version = "0.1.0"
+description = "Visualize FastAPI application's routing tree and dependencies"
+authors = [ { name = "Tangkikodo", email = "allmonday@126.com" } ]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["fastapi", "visualization", "routing", "openapi"]
+dependencies = [
+  "fastapi>=0.115",
+  "pydantic_resolve",
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Framework :: FastAPI",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License"
+]
+
+[project.urls]
+Homepage = "https://github.com/allmonday/fastapi-router-viz"
+Source = "https://github.com/allmonday/fastapi-router-viz"
+
+[project.optional-dependencies]
+dev = ["uvicorn", "ruff", "pytest"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+# You can pin resolution or indexes here later.
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
