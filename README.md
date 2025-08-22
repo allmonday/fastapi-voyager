@@ -144,4 +144,5 @@ digraph mygraph {
 
 then you'll see the internal dependencies
 
-![alt text](image-1.png)
+<img width="1231" height="625" alt="image" src="https://github.com/user-attachments/assets/46cf82ac-5d06-4cf0-adbd-ceb422709656" />
+
