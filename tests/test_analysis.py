@@ -19,6 +19,6 @@ def test_analysis():
 
     @app.get("/test", response_model=Optional[A])
     def home():
-        return None 
+        return None
 
     assert analysis(app) == 1
