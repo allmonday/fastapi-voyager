@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-import uuid
+from typing import Literal
 
 
 @dataclass
@@ -31,3 +31,4 @@ class Route:
 class Link:
     source: str
     target: str
+    type: Literal['child', 'parent', 'entry']

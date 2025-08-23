@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Literal
 from fastapi import FastAPI, routing
 from fastapi.openapi.utils import get_fields_from_routes
 from fastapi_router_viz.type_helper import shelling_type, full_class_name
@@ -33,7 +33,8 @@ class Analytics:
                     self.routes.append(route_name)
                     self.links.append(Link(
                         source=route_name,
-                        target=full_class_name(schema)
+                        target=full_class_name(schema),
+                        type='entry'
                     ))
 
                     schemas.append(schema)
@@ -63,7 +64,7 @@ class Analytics:
             )
         return full_name
 
-    def add_to_link_set(self, source: str, target: str):
+    def add_to_link_set(self, source: str, target: str, type: Literal['child', 'parent']):
         """
         1. add link to link_set
         2. if duplicated, do nothing, else insert
@@ -73,7 +74,8 @@ class Analytics:
             self.link_set.add(pair)
             self.links.append(Link(
                 source=source,
-                target=target
+                target=target,
+                type=type
             ))
         return result
 
@@ -89,20 +91,29 @@ class Analytics:
         for base in schema.__bases__:
             if issubclass(base, BaseModel) and base is not BaseModel:
                 self.add_to_node_set(base)
-                self.add_to_link_set(full_class_name(schema), full_class_name(base))
+                self.add_to_link_set(full_class_name(schema), full_class_name(base), type='parent')
 
         for k, v in schema.model_fields.items():
             anno = shelling_type(v.annotation)
             if anno and issubclass(anno, BaseModel):
                 self.add_to_node_set(v.annotation)
 
-                if self.add_to_link_set(full_class_name(schema), full_class_name(v.annotation)):
+                if self.add_to_link_set(full_class_name(schema), full_class_name(v.annotation), type='child'):
                     self.walk_schema(anno)
 
 
     def generate_dot(self):
         """
         """
+        def _get_link_style(link: Link):
+            if link.type == 'child':
+                return 'dashed'
+            elif link.type == 'parent':
+                return 'solid'
+            elif link.type == 'entry':
+                return 'bold'
+            return 'solid'
+
         routes = [
             f'''
             "{r}" [
@@ -122,7 +133,7 @@ class Analytics:
         node_str = '\n'.join(nodes)
 
         links = [
-            f'''"{link.source}" -> "{link.target}";''' for link in self.links
+            f'''"{link.source}" -> "{link.target}" [ style = "{_get_link_style(link)}" ];''' for link in self.links
         ]
         link_str = '\n'.join(links)
 

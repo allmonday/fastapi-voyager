@@ -28,10 +28,12 @@ def test_analysis():
         b: B
         x: X
 
+    class SubD(BaseModel):
+        id: int
     class D(BaseModel):
         id: int
         name: str
-        b: B
+        sub_d: SubD
 
     app = FastAPI()
 
