@@ -6,7 +6,10 @@ from typing import Optional
 
 def test_analysis():
 
-    class X(BaseModel):
+    class Base(BaseModel):
+        id: int
+
+    class X(Base):
         id: int
 
     class B(BaseModel):

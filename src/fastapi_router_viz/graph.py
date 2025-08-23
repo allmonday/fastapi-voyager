@@ -63,6 +63,20 @@ class Analytics:
             )
         return full_name
 
+    def add_to_link_set(self, source: str, target: str):
+        """
+        1. add link to link_set
+        2. if duplicated, do nothing, else insert
+        """
+        pair = (source, target)
+        if result := pair not in self.link_set:
+            self.link_set.add(pair)
+            self.links.append(Link(
+                source=source,
+                target=target
+            ))
+        return result
+
     def walk_schema(self, schema: type[BaseModel]):
         """
         1. cls is the source, add schema
@@ -70,18 +84,20 @@ class Analytics:
         3. recursively run walk_schema
         """
         self.add_to_node_set(schema)
+
+        # if schema has inherit
+        for base in schema.__bases__:
+            if issubclass(base, BaseModel) and base is not BaseModel:
+                self.add_to_node_set(base)
+                self.add_to_link_set(full_class_name(schema), full_class_name(base))
+
         for k, v in schema.model_fields.items():
             anno = shelling_type(v.annotation)
             if anno and issubclass(anno, BaseModel):
                 self.add_to_node_set(v.annotation)
 
-                if (full_class_name(schema), full_class_name(v.annotation)) not in self.link_set:
-                    self.links.append(Link(
-                        source=full_class_name(schema),
-                        target=full_class_name(v.annotation)
-                    ))
+                if self.add_to_link_set(full_class_name(schema), full_class_name(v.annotation)):
                     self.walk_schema(anno)
-                    self.link_set.add((full_class_name(schema), full_class_name(v.annotation)))
 
 
     def generate_dot(self):
