@@ -22,6 +22,9 @@ classifiers = [
   "License :: OSI Approved :: MIT License"
 ]
 
+[project.scripts]
+router-viz = "fastapi_router_viz.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/allmonday/fastapi-router-viz"
 Source = "https://github.com/allmonday/fastapi-router-viz"

@@ -1,8 +1,52 @@
 # fastapi-router-viz
 
-show routes and schemas relationships
+Visualize FastAPI application's routing tree and dependencies
 
 > This repo is still in early stage.
+
+## Installation
+
+```bash
+pip install fastapi-router-viz
+# or
+uv add fastapi-router-viz
+```
+
+## Command Line Usage
+
+Once installed, you can use the `router-viz` command to generate visualization graphs from your FastAPI applications:
+
+```bash
+# Basic usage - assumes your FastAPI app is named 'app' in app.py
+router-viz app.py
+
+# Specify custom app variable name
+router-viz main.py --app my_app
+
+# Custom output file
+router-viz app.py -o my_visualization.dot
+
+# Show help
+router-viz --help
+
+# Show version
+router-viz --version
+```
+
+The tool will generate a DOT file that you can render using Graphviz:
+
+```bash
+# Install graphviz
+brew install graphviz  # macOS
+apt-get install graphviz  # Ubuntu/Debian
+
+# Render the graph
+dot -Tpng router_viz.dot -o router_viz.png
+
+# Or view online at: https://dreampuf.github.io/GraphvizOnline/
+```
+
+## Programmatic Usage
 
 ```python
 from fastapi_router_viz.graph import Analytics
@@ -145,4 +189,3 @@ digraph mygraph {
 then you'll see the internal dependencies
 
 <img width="1231" height="625" alt="image" src="https://github.com/user-attachments/assets/46cf82ac-5d06-4cf0-adbd-ceb422709656" />
-
