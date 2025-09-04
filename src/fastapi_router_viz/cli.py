@@ -3,7 +3,6 @@ import argparse
 import sys
 import importlib.util
 import os
-from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI

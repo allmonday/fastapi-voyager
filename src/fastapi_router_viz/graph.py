@@ -1,9 +1,9 @@
 from typing import Literal
 from fastapi import FastAPI, routing
-from fastapi.openapi.utils import get_fields_from_routes
 from fastapi_router_viz.type_helper import shelling_type, full_class_name
 from pydantic import BaseModel
 from fastapi_router_viz.type import Route, NodeInfo, Node, Link
+from pydantic_resolve.constant import ENSURE_SUBSET_REFERENCE
 # read route and schemas, generate graph
 
 
@@ -20,23 +20,22 @@ class Analytics:
         1. get routes which return pydantic schema
         2. iterate routes, construct the nodes and links
         """
-        _fields = get_fields_from_routes(app.routes)
-
         schemas: list[type[BaseModel]] = []
 
-        for field in _fields:
-            if field.mode == 'serialization':
-                schema = shelling_type(field.field_info.annotation)
+        for route in app.routes:
+            if isinstance(route, routing.APIRoute) and route.response_model:
+                route_name = f'{route.endpoint.__name__}_{route.path}_{",".join(route.methods)}'.replace('/','_').lower()
+                
+                response_model = route.response_model
+                schema = shelling_type(response_model)
+                
                 if schema and issubclass(schema, BaseModel):
-
-                    route_name = f'router: {field.name.replace('Response_','')}'
                     self.routes.append(route_name)
                     self.links.append(Link(
                         source=route_name,
                         target=full_class_name(schema),
                         type='entry'
                     ))
-
                     schemas.append(schema)
 
         for s in schemas:
@@ -64,7 +63,7 @@ class Analytics:
             )
         return full_name
 
-    def add_to_link_set(self, source: str, target: str, type: Literal['child', 'parent']):
+    def add_to_link_set(self, source: str, target: str, type: Literal['child', 'parent', 'subset']):
         """
         1. add link to link_set
         2. if duplicated, do nothing, else insert
@@ -87,11 +86,16 @@ class Analytics:
         """
         self.add_to_node_set(schema)
 
-        # if schema has inherit
-        for base in schema.__bases__:
-            if issubclass(base, BaseModel) and base is not BaseModel:
-                self.add_to_node_set(base)
-                self.add_to_link_set(full_class_name(schema), full_class_name(base), type='parent')
+        if subset_reference := getattr(schema, ENSURE_SUBSET_REFERENCE, None):
+            if issubclass(subset_reference, BaseModel) and subset_reference is not BaseModel:
+                self.add_to_node_set(subset_reference)
+                self.add_to_link_set(full_class_name(schema), full_class_name(subset_reference), type='subset')
+
+        # 处理所有基类的继承关系
+        for base_class in schema.__bases__:
+            if issubclass(base_class, BaseModel) and base_class is not BaseModel:
+                self.add_to_node_set(base_class)
+                self.add_to_link_set(full_class_name(schema), full_class_name(base_class), type='parent')
 
         for k, v in schema.model_fields.items():
             anno = shelling_type(v.annotation)
@@ -105,14 +109,17 @@ class Analytics:
     def generate_dot(self):
         """
         """
-        def _get_link_style(link: Link):
+        def _get_link_attributes(link: Link):
+            """获取链接的样式和标签属性"""
             if link.type == 'child':
-                return 'dashed'
+                return 'style = "dashed", label = "has"'
             elif link.type == 'parent':
-                return 'solid'
+                return 'style = "solid", label = "inherits"'
             elif link.type == 'entry':
-                return 'bold'
-            return 'solid'
+                return 'style = "bold", label = "returns"'
+            elif link.type == 'subset':
+                return 'style = "dotted", label = "subset_of"'
+            return 'style = "solid"'
 
         routes = [
             f'''
@@ -133,7 +140,7 @@ class Analytics:
         node_str = '\n'.join(nodes)
 
         links = [
-            f'''"{link.source}" -> "{link.target}" [ style = "{_get_link_style(link)}" ];''' for link in self.links
+            f'''"{link.source}" -> "{link.target}" [ {_get_link_attributes(link)} ];''' for link in self.links
         ]
         link_str = '\n'.join(links)
 

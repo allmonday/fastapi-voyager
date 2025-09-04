@@ -31,4 +31,4 @@ class Route:
 class Link:
     source: str
     target: str
-    type: Literal['child', 'parent', 'entry']
+    type: Literal['child', 'parent', 'entry', 'subset']

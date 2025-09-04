@@ -2,6 +2,7 @@ from fastapi_router_viz.graph import Analytics
 from pydantic import BaseModel
 from fastapi import FastAPI
 from typing import Optional
+from pydantic_resolve import ensure_subset
 
 # 定义数据模型
 class Base(BaseModel):
@@ -26,6 +27,11 @@ class C(BaseModel):
     b: B
     x: X
 
+class OriginD(BaseModel):
+    id: int
+    name: str
+
+@ensure_subset(OriginD)
 class SubD(BaseModel):
     id: int
     
