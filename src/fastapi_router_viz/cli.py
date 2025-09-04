@@ -2,6 +2,7 @@
 import argparse
 import sys
 import importlib.util
+import importlib
 import os
 from typing import Optional
 
@@ -10,8 +11,8 @@ from fastapi_router_viz.graph import Analytics
 from fastapi_router_viz.version import __version__
 
 
-def load_fastapi_app(module_path: str, app_name: str = "app") -> Optional[FastAPI]:
-    """Load FastAPI app from a Python module."""
+def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optional[FastAPI]:
+    """Load FastAPI app from a Python module file."""
     try:
         # Convert relative path to absolute path
         if not os.path.isabs(module_path):
@@ -44,6 +45,32 @@ def load_fastapi_app(module_path: str, app_name: str = "app") -> Optional[FastAP
         return None
 
 
+def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Optional[FastAPI]:
+    """Load FastAPI app from a Python module name."""
+    try:
+        # Import the module by name
+        module = importlib.import_module(module_name)
+        
+        # Get the FastAPI app instance
+        if hasattr(module, app_name):
+            app = getattr(module, app_name)
+            if isinstance(app, FastAPI):
+                return app
+            else:
+                print(f"Error: '{app_name}' is not a FastAPI instance")
+                return None
+        else:
+            print(f"Error: No attribute '{app_name}' found in module '{module_name}'")
+            return None
+            
+    except ImportError as e:
+        print(f"Error: Could not import module '{module_name}': {e}")
+        return None
+    except Exception as e:
+        print(f"Error loading FastAPI app from module '{module_name}': {e}")
+        return None
+
+
 def generate_visualization(app: FastAPI, output_file: str = "router_viz.dot"):
     """Generate DOT file for FastAPI router visualization."""
     analytics = Analytics()
@@ -68,14 +95,24 @@ def main():
         epilog="""
 Examples:
   router-viz app.py                    # Load 'app' from app.py
+  router-viz -m demo                   # Load 'app' from demo module
   router-viz main.py --app main_app    # Load 'main_app' from main.py
+  router-viz -m mypackage.main --app my_app  # Load 'my_app' from mypackage.main
   router-viz app.py -o my_graph.dot    # Output to my_graph.dot
         """
     )
     
-    parser.add_argument(
+    # Create mutually exclusive group for module loading options
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         "module",
+        nargs="?",
         help="Python file containing the FastAPI application"
+    )
+    group.add_argument(
+        "-m", "--module",
+        dest="module_name",
+        help="Python module name containing the FastAPI application (like python -m)"
     )
     
     parser.add_argument(
@@ -98,13 +135,17 @@ Examples:
     
     args = parser.parse_args()
     
-    # Check if the module file exists
-    if not os.path.exists(args.module):
-        print(f"Error: File '{args.module}' not found")
-        sys.exit(1)
+    # Load FastAPI app based on the input method
+    if args.module_name:
+        # Load from module name
+        app = load_fastapi_app_from_module(args.module_name, args.app)
+    else:
+        # Load from file path
+        if not os.path.exists(args.module):
+            print(f"Error: File '{args.module}' not found")
+            sys.exit(1)
+        app = load_fastapi_app_from_file(args.module, args.app)
     
-    # Load FastAPI app
-    app = load_fastapi_app(args.module, args.app)
     if app is None:
         sys.exit(1)
     
