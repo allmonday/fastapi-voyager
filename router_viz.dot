@@ -9,7 +9,26 @@
             node [
                 fontsize = "16"
             ];
+
             
+            "a" [
+                label = "a"
+                shape = "record"
+            ];
+
+            "c" [
+                label = "c"
+                shape = "record"
+            ];
+
+            "__default__" [
+                label = "__default__"
+                shape = "record"
+            ];
+
+            subgraph cluster_A {
+                style = "rounded";
+                
             "get_a__test_get" [
                 label = "get_a__test_get"
                 shape = "record"
@@ -37,6 +56,8 @@
                 fillcolor = "lightgreen"
                 style = "filled"
             ];
+            };
+
             
             "app_module.A" [
                 label = "A"
@@ -77,9 +98,13 @@
                 label = "OriginD"
                 shape = "record"
             ];
-            "get_a__test_get" -> "app_module.A" [ style = "bold", label = "returns" ];
+            "a" -> "get_a__test_get" [ style = "bold", label = "returns" ];
+"get_a__test_get" -> "app_module.A" [ style = "bold", label = "returns" ];
+"c" -> "get_c__test2_get" [ style = "bold", label = "returns" ];
 "get_c__test2_get" -> "app_module.C" [ style = "bold", label = "returns" ];
+"__default__" -> "get_d1__test3_get" [ style = "bold", label = "returns" ];
 "get_d1__test3_get" -> "app_module.D" [ style = "bold", label = "returns" ];
+"__default__" -> "get_d2__test4_get" [ style = "bold", label = "returns" ];
 "get_d2__test4_get" -> "app_module.D" [ style = "bold", label = "returns" ];
 "app_module.A" -> "app_module.B" [ style = "dashed", label = "has" ];
 "app_module.B" -> "app_module.X" [ style = "dashed", label = "has" ];

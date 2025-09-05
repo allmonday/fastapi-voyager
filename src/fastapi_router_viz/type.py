@@ -16,16 +16,18 @@ class NodeInfo:
 
 
 @dataclass
+class Route:
+    id: str
+    name: str
+    tag: str = ''
+
+
+@dataclass
 class Node:
     id: str
     name: str
     node_info: NodeInfo
 
-
-@dataclass
-class Route:
-    id: str
-    name: str
 
 @dataclass
 class Link:

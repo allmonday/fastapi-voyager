@@ -9,11 +9,16 @@ from pydantic_resolve.constant import ENSURE_SUBSET_REFERENCE
 
 class Analytics:
     def __init__(self):
-        self.routes: list[str] = []
+        self.routes: list[Route] = []
+
         self.nodes: list[Node] = []
         self.node_set: dict[str, Node] = {}
+
         self.link_set: set[tuple[str, str]] = set()
         self.links: list[Link] = []
+
+        self.tag_set: set[str] = set()
+        self.tags: list[str] = []
 
     def analysis(self, app: FastAPI):
         """
@@ -25,13 +30,31 @@ class Analytics:
         for route in app.routes:
             if isinstance(route, routing.APIRoute) and route.response_model:
                 route_name = f'{route.endpoint.__name__}_{route.path}_{",".join(route.methods)}'.replace('/','_').lower()
+                # determine route tag (first tag or fallback)
+                tags = getattr(route, 'tags', None)
+                route_tag = tags[0] if tags else '__default__'
+
+                if route_tag not in self.tag_set:
+                    self.tag_set.add(route_tag)
+                    self.tags.append(route_tag)
+
+                self.links.append(Link(
+                    source=route_tag,
+                    target=route_name,
+                    type='entry'
+                ))
                 
                 response_model = route.response_model
                 core_schemas = get_core_types(response_model)
 
                 for schema in core_schemas:
                     if schema and issubclass(schema, BaseModel):
-                        self.routes.append(route_name)
+                        # Record route once per schema appearance (duplicates acceptable for now?)
+                        self.routes.append(Route(
+                            id=route_name,
+                            name=route_name,
+                            tag=route_tag
+                        ))
                         self.links.append(Link(
                             source=route_name,
                             target=full_class_name(schema),
@@ -123,10 +146,18 @@ class Analytics:
                 return 'style = "dotted", label = "subset_of"'
             return 'style = "solid"'
 
+        tags = [
+            f'''
+            "{t}" [
+                label = "{t}"
+                shape = "record"
+            ];''' for t in self.tags]
+        tag_str = '\n'.join(tags)
+
         routes = [
             f'''
-            "{r}" [
-                label = "{r}"
+            "{r.id}" [
+                label = "{r.name}"
                 shape = "record"
                 fillcolor = "lightgreen"
                 style = "filled"
@@ -157,7 +188,14 @@ class Analytics:
             node [
                 fontsize = "16"
             ];
-            {route_str}
+
+            {tag_str}
+
+            subgraph cluster_A {{
+                style = "rounded";
+                {route_str}
+            }};
+
             {node_str}
             {link_str}
             }}

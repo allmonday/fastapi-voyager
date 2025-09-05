@@ -43,12 +43,12 @@ class D(BaseModel):
 # 创建FastAPI应用实例
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 
-@app.get("/test", response_model=Optional[A])
+@app.get("/test", tags=['a'], response_model=Optional[A])
 def get_a():
     """Get A model data"""
     return None
 
-@app.get("/test2", response_model=Optional[C])
+@app.get("/test2", tags=['c'], response_model=Optional[C])
 def get_c():
     """Get C model data"""
     return None
