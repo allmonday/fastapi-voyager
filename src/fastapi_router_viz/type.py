@@ -27,6 +27,7 @@ class Node:
     id: str
     name: str
     node_info: NodeInfo
+    is_model: bool = False
 
 
 @dataclass

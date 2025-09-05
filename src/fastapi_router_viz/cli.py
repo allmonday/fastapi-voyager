@@ -84,9 +84,13 @@ def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Opt
         return None
 
 
-def generate_visualization(app: FastAPI, output_file: str = "router_viz.dot", tags: list[str] | None = None):
+def generate_visualization(
+        app: FastAPI,
+        output_file: str = "router_viz.dot", tags: list[str] | None = None,
+        model_prefixs: list[str] | None = None):
+
     """Generate DOT file for FastAPI router visualization."""
-    analytics = Analytics()
+    analytics = Analytics(model_prefixs=model_prefixs)
     analytics.analysis(app, include_tags=tags)
     
     dot_content = analytics.generate_dot()
@@ -150,6 +154,11 @@ Examples:
         nargs="+",
         help="Only include routes whose first tag is in the provided list"
     )
+    parser.add_argument(
+        "--model_prefixs",
+        nargs="+",
+        help="Filter schemas belongs to model entities"
+    )
     
     args = parser.parse_args()
     
@@ -170,7 +179,7 @@ Examples:
     # Generate visualization
     print(args.tags)
     try:
-        generate_visualization(app, args.output, tags=args.tags)
+        generate_visualization(app, args.output, tags=args.tags, model_prefixs=args.model_prefixs)
     except Exception as e:
         print(f"Error generating visualization: {e}")
         sys.exit(1)

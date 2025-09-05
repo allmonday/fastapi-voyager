@@ -8,7 +8,10 @@ from pydantic_resolve.constant import ENSURE_SUBSET_REFERENCE
 
 
 class Analytics:
-    def __init__(self):
+    def __init__(
+            self, 
+            model_prefixs: list[str] | None = None):
+
         self.routes: list[Route] = []
 
         self.nodes: list[Node] = []
@@ -20,7 +23,12 @@ class Analytics:
         self.tag_set: set[str] = set()
         self.tags: list[str] = []
 
-    def analysis(self, app: FastAPI, include_tags: list[str] | None = None):
+        self.model_prefixs = model_prefixs
+
+    def analysis(
+            self, app: FastAPI,
+            include_tags: list[str] | None = None,
+            ):
         """
         1. get routes which return pydantic schema
         2. iterate routes, construct the nodes and links
@@ -79,10 +87,13 @@ class Analytics:
         2. return the full_path
         """
         full_name = full_class_name(schema)
+        is_model = any(full_name.startswith(prefix) for prefix in self.model_prefixs) if self.model_prefixs else False
+
         if full_name not in self.node_set:
             self.node_set[full_name] = Node(
                 id=full_name, 
                 name=schema.__name__,
+                is_model=is_model,
                 node_info=NodeInfo(
                     is_entry=False,
                     router_name="xxx",
@@ -145,9 +156,9 @@ class Analytics:
             elif link.type == 'parent':
                 return 'style = "solid", label = "inherits"'
             elif link.type == 'entry':
-                return 'style = "bold", label = "returns"'
+                return 'style = "bold", label = ""'
             elif link.type == 'subset':
-                return 'style = "dotted", label = "subset_of"'
+                return 'style = "dotted", label = "subset"'
             return 'style = "solid"'
 
         tags = [
@@ -168,12 +179,21 @@ class Analytics:
             ];''' for r in self.routes]
         route_str = '\n'.join(routes)
 
+        model_nodes = [
+            f'''
+            "{node.id}" [
+                label = "{node.name}"
+                shape = "record"
+                fillcolor = "lightblue"
+            ];''' for node in self.nodes if node.is_model]
+        model_node_str = '\n'.join(model_nodes)
+
         nodes = [
             f'''
             "{node.id}" [
                 label = "{node.name}"
                 shape = "record"
-            ];''' for node in self.nodes]
+            ];''' for node in self.nodes if node.is_model is False]
         node_str = '\n'.join(nodes)
 
         links = [
@@ -197,10 +217,20 @@ class Analytics:
 
             subgraph cluster_A {{
                 style = "rounded";
-                {route_str}
+                    {route_str}
             }};
 
-            {node_str}
+            subgraph cluster_B {{
+                label = "schema"
+                    {node_str}
+            }}
+
+
+            subgraph cluster_C {{
+                label = "model"
+                    {model_node_str}
+            }}
+
             {link_str}
             }}
         '''
