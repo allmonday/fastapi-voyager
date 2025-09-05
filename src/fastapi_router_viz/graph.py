@@ -1,6 +1,6 @@
 from typing import Literal
 from fastapi import FastAPI, routing
-from fastapi_router_viz.type_helper import shelling_type, full_class_name
+from fastapi_router_viz.type_helper import get_core_types, full_class_name
 from pydantic import BaseModel
 from fastapi_router_viz.type import Route, NodeInfo, Node, Link
 from pydantic_resolve.constant import ENSURE_SUBSET_REFERENCE
@@ -27,16 +27,17 @@ class Analytics:
                 route_name = f'{route.endpoint.__name__}_{route.path}_{",".join(route.methods)}'.replace('/','_').lower()
                 
                 response_model = route.response_model
-                schema = shelling_type(response_model)
-                
-                if schema and issubclass(schema, BaseModel):
-                    self.routes.append(route_name)
-                    self.links.append(Link(
-                        source=route_name,
-                        target=full_class_name(schema),
-                        type='entry'
-                    ))
-                    schemas.append(schema)
+                core_schemas = get_core_types(response_model)
+
+                for schema in core_schemas:
+                    if schema and issubclass(schema, BaseModel):
+                        self.routes.append(route_name)
+                        self.links.append(Link(
+                            source=route_name,
+                            target=full_class_name(schema),
+                            type='entry'
+                        ))
+                        schemas.append(schema)
 
         for s in schemas:
             self.walk_schema(s)
@@ -98,12 +99,13 @@ class Analytics:
                 self.add_to_link_set(full_class_name(schema), full_class_name(base_class), type='parent')
 
         for k, v in schema.model_fields.items():
-            anno = shelling_type(v.annotation)
-            if anno and issubclass(anno, BaseModel):
-                self.add_to_node_set(v.annotation)
+            annos = get_core_types(v.annotation)
+            for anno in annos:
+                if anno and issubclass(anno, BaseModel):
+                    self.add_to_node_set(anno)
 
-                if self.add_to_link_set(full_class_name(schema), full_class_name(v.annotation), type='child'):
-                    self.walk_schema(anno)
+                    if self.add_to_link_set(full_class_name(schema), full_class_name(anno), type='child'):
+                        self.walk_schema(anno)
 
 
     def generate_dot(self):

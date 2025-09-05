@@ -38,7 +38,7 @@ class SubD(BaseModel):
 class D(BaseModel):
     id: int
     name: str
-    sub_d: SubD
+    sub_d: Optional[SubD]
 
 # 创建FastAPI应用实例
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
