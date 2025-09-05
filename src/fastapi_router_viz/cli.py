@@ -84,10 +84,10 @@ def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Opt
         return None
 
 
-def generate_visualization(app: FastAPI, output_file: str = "router_viz.dot"):
+def generate_visualization(app: FastAPI, output_file: str = "router_viz.dot", tags: list[str] | None = None):
     """Generate DOT file for FastAPI router visualization."""
     analytics = Analytics()
-    analytics.analysis(app)
+    analytics.analysis(app, include_tags=tags)
     
     dot_content = analytics.generate_dot()
     
@@ -145,6 +145,11 @@ Examples:
         action="version",
         version=f"fastapi-router-viz {__version__}"
     )
+    parser.add_argument(
+        "--tags",
+        nargs="+",
+        help="Only include routes whose first tag is in the provided list"
+    )
     
     args = parser.parse_args()
     
@@ -163,8 +168,9 @@ Examples:
         sys.exit(1)
     
     # Generate visualization
+    print(args.tags)
     try:
-        generate_visualization(app, args.output)
+        generate_visualization(app, args.output, tags=args.tags)
     except Exception as e:
         print(f"Error generating visualization: {e}")
         sys.exit(1)

@@ -20,7 +20,7 @@ class Analytics:
         self.tag_set: set[str] = set()
         self.tags: list[str] = []
 
-    def analysis(self, app: FastAPI):
+    def analysis(self, app: FastAPI, include_tags: list[str] | None = None):
         """
         1. get routes which return pydantic schema
         2. iterate routes, construct the nodes and links
@@ -33,6 +33,10 @@ class Analytics:
                 # determine route tag (first tag or fallback)
                 tags = getattr(route, 'tags', None)
                 route_tag = tags[0] if tags else '__default__'
+
+                # apply filter if provided
+                if include_tags and route_tag not in include_tags:
+                    continue
 
                 if route_tag not in self.tag_set:
                     self.tag_set.add(route_tag)
