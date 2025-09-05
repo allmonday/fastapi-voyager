@@ -50,17 +50,17 @@ class Analytics:
                     self.tag_set.add(route_tag)
                     self.tags.append(route_tag)
 
-                self.links.append(Link(
-                    source=route_tag,
-                    target=route_name,
-                    type='entry'
-                ))
                 
                 response_model = route.response_model
                 core_schemas = get_core_types(response_model)
 
                 for schema in core_schemas:
                     if schema and issubclass(schema, BaseModel):
+                        self.links.append(Link(
+                            source=route_tag,
+                            target=route_name,
+                            type='entry'
+                        ))
                         # Record route once per schema appearance (duplicates acceptable for now?)
                         self.routes.append(Route(
                             id=route_name,
@@ -185,6 +185,7 @@ class Analytics:
                 label = "{node.name}"
                 shape = "record"
                 fillcolor = "lightblue"
+                style = "filled"
             ];''' for node in self.nodes if node.is_model]
         model_node_str = '\n'.join(model_nodes)
 
@@ -217,6 +218,8 @@ class Analytics:
 
             subgraph cluster_A {{
                 style = "rounded";
+                color = "lightgreen";
+                penwidth = 3;
                     {route_str}
             }};
 
@@ -228,6 +231,8 @@ class Analytics:
 
             subgraph cluster_C {{
                 label = "model"
+                color = "lightblue";
+                penwidth = 3;
                     {model_node_str}
             }}
 

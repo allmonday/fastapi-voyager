@@ -63,6 +63,11 @@ def get_d2():
     """Get D model data (endpoint 2)"""
     return None
 
+@app.get("/test5", response_model=bool)
+def get_test5():
+    """Get D model data (endpoint 2)"""
+    return None
+
 
 def test_analysis():
     """Test function to demonstrate the analytics"""
