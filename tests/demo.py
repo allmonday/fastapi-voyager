@@ -3,18 +3,21 @@ from pydantic import BaseModel
 from fastapi import FastAPI
 from typing import Optional
 from pydantic_resolve import ensure_subset
-from tests.service import Sprint, Story, Task, Member
+from tests.service import Story, Task
+import tests.service as serv
 
 # 创建FastAPI应用实例
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 
-@app.get("/sprints", tags=['restapi'], response_model=list[Sprint])
+@app.get("/sprints", tags=['restapi'], response_model=list[serv.Sprint])
 def get_sprint():
     return []
 
+class Member(serv.Member):
+    pass
 
 class PageTask(Task):
-    owner: Optional[Member]
+    owner: Optional[serv.Member]
 
 @ensure_subset(Story)
 class PageStory(BaseModel):
@@ -25,12 +28,12 @@ class PageStory(BaseModel):
     tasks: list[PageTask] = []
     owner: Optional[Member] = None
 
-class PageSprint(Sprint):
+class Sprint(serv.Sprint):
     stories: list[PageStory]
-    owner: Optional[Member]
+    owner: Optional[serv.Member]
 
 class PageOverall(BaseModel):
-    sprints: list[PageSprint]
+    sprints: list[Sprint]
 
 
 @app.get("/page_overall", tags=['page'], response_model=PageOverall)

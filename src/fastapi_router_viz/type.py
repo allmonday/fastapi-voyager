@@ -7,20 +7,21 @@ class FieldInfo:
     name: str
     type_name: str
 
-
 @dataclass
 class NodeInfo:
     is_entry: bool
     router_name: str
     fields: list[FieldInfo]
 
+@dataclass
+class Tag:
+    id: str
+    name: str
 
 @dataclass
 class Route:
     id: str
     name: str
-    tag: str = ''
-
 
 @dataclass
 class Node:
@@ -28,7 +29,6 @@ class Node:
     name: str
     node_info: NodeInfo
     is_model: bool = False
-
 
 @dataclass
 class Link:
