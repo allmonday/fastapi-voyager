@@ -10,7 +10,8 @@ from pydantic_resolve.constant import ENSURE_SUBSET_REFERENCE
 class Analytics:
     def __init__(
             self, 
-            model_prefixs: list[str] | None = None):
+            model_prefixs: list[str] | None = None,
+            schemas: list[str] | None = None):
 
         self.routes: list[Route] = []
 
@@ -24,6 +25,7 @@ class Analytics:
         self.tags: list[str] = []
 
         self.model_prefixs = model_prefixs
+        self.schemas = schemas
 
     def analysis(
             self, app: FastAPI,
@@ -49,7 +51,6 @@ class Analytics:
                 if route_tag not in self.tag_set:
                     self.tag_set.add(route_tag)
                     self.tags.append(route_tag)
-
                 
                 response_model = route.response_model
                 core_schemas = get_core_types(response_model)
@@ -61,7 +62,6 @@ class Analytics:
                             target=route_name,
                             type='entry'
                         ))
-                        # Record route once per schema appearance (duplicates acceptable for now?)
                         self.routes.append(Route(
                             id=route_name,
                             name=route_name,

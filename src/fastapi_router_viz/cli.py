@@ -87,10 +87,11 @@ def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Opt
 def generate_visualization(
         app: FastAPI,
         output_file: str = "router_viz.dot", tags: list[str] | None = None,
-        model_prefixs: list[str] | None = None):
+        model_prefixs: list[str] | None = None,
+        schemas: list[str] | None = None):
 
     """Generate DOT file for FastAPI router visualization."""
-    analytics = Analytics(model_prefixs=model_prefixs)
+    analytics = Analytics(model_prefixs=model_prefixs, schemas=schemas)
     analytics.analysis(app, include_tags=tags)
     
     dot_content = analytics.generate_dot()
@@ -159,6 +160,11 @@ Examples:
         nargs="+",
         help="Filter schemas belongs to model entities"
     )
+    parser.add_argument(
+        "--schemas",
+        nargs="+",
+        help="Filter schemas by names"
+    )
     
     args = parser.parse_args()
     
@@ -179,7 +185,12 @@ Examples:
     # Generate visualization
     print(args.tags)
     try:
-        generate_visualization(app, args.output, tags=args.tags, model_prefixs=args.model_prefixs)
+        generate_visualization(
+            app, 
+            args.output, 
+            tags=args.tags, 
+            model_prefixs=args.model_prefixs,
+            schemas=args.schemas)
     except Exception as e:
         print(f"Error generating visualization: {e}")
         sys.exit(1)

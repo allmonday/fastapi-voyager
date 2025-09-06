@@ -10,27 +10,40 @@ app = FastAPI(title="Demo API", description="A demo FastAPI application for rout
 
 @app.get("/sprints", tags=['restapi'], response_model=list[Sprint])
 def get_sprint():
-    """Get A model data"""
-    return None
+    return []
 
 
 class PageTask(Task):
     owner: Optional[Member]
 
-class PageStory(Story):
-    tasks: list[PageTask]
-    owner: Optional[Member]
+@ensure_subset(Story)
+class PageStory(BaseModel):
+    id: int
+    sprint_id: int
+    title: str
+
+    tasks: list[PageTask] = []
+    owner: Optional[Member] = None
 
 class PageSprint(Sprint):
     stories: list[PageStory]
     owner: Optional[Member]
 
-class PageInfo(BaseModel):
+class PageOverall(BaseModel):
     sprints: list[PageSprint]
 
-@app.get("/page_info", tags=['page'], response_model=PageInfo)
+
+@app.get("/page_overall", tags=['page'], response_model=PageOverall)
 def get_page_info():
     return {"sprints": []}
+
+
+class PageStories(BaseModel):
+    stories: list[PageStory] 
+
+@app.get("/page_stories/", tags=['page'], response_model=PageStories)
+def get_page_info_2():
+    return {}
 
 def test_analysis():
     """Test function to demonstrate the analytics"""

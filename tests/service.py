@@ -1,7 +1,5 @@
 from fastapi_router_viz.graph import Analytics
 from pydantic import BaseModel
-from fastapi import FastAPI
-from typing import Optional
 from pydantic_resolve import ensure_subset
 
 class Sprint(BaseModel):
@@ -12,6 +10,7 @@ class Story(BaseModel):
     id: int
     sprint_id: int
     title: str
+    description: str
 
 class Task(BaseModel):
     id: int
