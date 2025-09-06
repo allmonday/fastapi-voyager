@@ -3,71 +3,34 @@ from pydantic import BaseModel
 from fastapi import FastAPI
 from typing import Optional
 from pydantic_resolve import ensure_subset
-
-# 定义数据模型
-class Base(BaseModel):
-    id: int
-
-class X(Base):
-    id: int
-
-class B(BaseModel):
-    id: int
-    value: str
-    x: X
-
-class A(BaseModel):
-    id: int
-    name: str
-    b: B
-
-class C(BaseModel):
-    id: int
-    name: str
-    b: B
-    x: X
-
-class OriginD(BaseModel):
-    id: int
-    name: str
-
-@ensure_subset(OriginD)
-class SubD(BaseModel):
-    id: int
-    
-class D(BaseModel):
-    id: int
-    name: str
-    sub_d: Optional[SubD]
+from tests.service import Sprint, Story, Task, Member
 
 # 创建FastAPI应用实例
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 
-@app.get("/test", tags=['a'], response_model=Optional[A])
-def get_a():
+@app.get("/sprints", tags=['restapi'], response_model=list[Sprint])
+def get_sprint():
     """Get A model data"""
     return None
 
-@app.get("/test2", tags=['c'], response_model=Optional[C])
-def get_c():
-    """Get C model data"""
-    return None
 
-@app.get("/test3", response_model=Optional[D])
-def get_d1():
-    """Get D model data (endpoint 1)"""
-    return None
+class PageTask(Task):
+    owner: Optional[Member]
 
-@app.get("/test4", response_model=Optional[D])
-def get_d2():
-    """Get D model data (endpoint 2)"""
-    return None
+class PageStory(Story):
+    tasks: list[PageTask]
+    owner: Optional[Member]
 
-@app.get("/test5", response_model=bool)
-def get_test5():
-    """Get D model data (endpoint 2)"""
-    return None
+class PageSprint(Sprint):
+    stories: list[PageStory]
+    owner: Optional[Member]
 
+class PageInfo(BaseModel):
+    sprints: list[PageSprint]
+
+@app.get("/page_info", tags=['page'], response_model=PageInfo)
+def get_page_info():
+    return {"sprints": []}
 
 def test_analysis():
     """Test function to demonstrate the analytics"""

@@ -152,7 +152,7 @@ class Analytics:
         def _get_link_attributes(link: Link):
             """获取链接的样式和标签属性"""
             if link.type == 'child':
-                return 'style = "dashed", label = "has"'
+                return 'style = "dashed", label = ""'
             elif link.type == 'parent':
                 return 'style = "solid", label = "inherits"'
             elif link.type == 'entry':
