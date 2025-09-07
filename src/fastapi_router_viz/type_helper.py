@@ -68,3 +68,56 @@ def get_core_types(tp):
 
     # single concrete type
     return (tp,)
+
+
+def get_type_name(anno):
+    import typing
+
+    def name_of(tp):
+        origin = typing.get_origin(tp)
+        args = typing.get_args(tp)
+
+        # Annotated[T, ...] -> T
+        if origin is typing.Annotated:
+            return name_of(args[0]) if args else 'Annotated'
+
+        # Union / Optional
+        if origin is typing.Union:
+            non_none = [a for a in args if a is not type(None)]
+            if len(non_none) == 1 and len(args) == 2:
+                return f"Optional[{name_of(non_none[0])}]"
+            return f"Union[{', '.join(name_of(a) for a in args)}]"
+
+        # Parametrized generics
+        if origin is not None:
+            origin_name_map = {
+                list: 'List',
+                dict: 'Dict',
+                set: 'Set',
+                tuple: 'Tuple',
+                frozenset: 'FrozenSet',
+            }
+            origin_name = origin_name_map.get(origin)
+            if origin_name is None:
+                origin_name = getattr(origin, '__name__', None) or str(origin).replace('typing.', '')
+            if args:
+                return f"{origin_name}[{', '.join(name_of(a) for a in args)}]"
+            return origin_name
+
+        # Non-generic leaf types
+        if tp is typing.Any:
+            return 'Any'
+        if tp is None or tp is type(None):
+            return 'None'
+        if isinstance(tp, type):
+            return tp.__name__
+
+        # ForwardRef
+        fwd = getattr(tp, '__forward_arg__', None) or getattr(tp, 'arg', None)
+        if fwd:
+            return str(fwd)
+
+        # Fallback clean string
+        return str(tp).replace('typing.', '').replace('<class ', '').replace('>', '').replace("'", '')
+
+    return name_of(anno)

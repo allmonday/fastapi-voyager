@@ -8,12 +8,6 @@ class FieldInfo:
     type_name: str
 
 @dataclass
-class NodeInfo:
-    is_entry: bool
-    router_name: str
-    fields: list[FieldInfo]
-
-@dataclass
 class Tag:
     id: str
     name: str
@@ -24,11 +18,11 @@ class Route:
     name: str
 
 @dataclass
-class Node:
+class SchemaNode:
     id: str
     name: str
-    node_info: NodeInfo
-    is_model: bool = False
+    fields: list[FieldInfo]
+    is_model: bool = False  # mapping to entities such as orm model
 
 @dataclass
 class Link:

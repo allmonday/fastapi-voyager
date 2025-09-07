@@ -1,11 +1,11 @@
 from typing import Literal
 from fastapi import FastAPI, routing
-from fastapi_router_viz.type_helper import get_core_types, full_class_name
+from fastapi_router_viz.type_helper import get_core_types, full_class_name, get_type_name
 from pydantic import BaseModel
-from fastapi_router_viz.type import Route, NodeInfo, Node, Link, Tag
-from pydantic_resolve.constant import ENSURE_SUBSET_REFERENCE
-# read route and schemas, generate graph
+from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, FieldInfo
 
+# support pydantic-resolve's ensure_subset
+ENSURE_SUBSET_REFERENCE = '__pydantic_resolve_ensure_subset_reference__'
 
 class Analytics:
     def __init__(
@@ -15,8 +15,8 @@ class Analytics:
 
         self.routes: list[Route] = []
 
-        self.nodes: list[Node] = []
-        self.node_set: dict[str, Node] = {}
+        self.nodes: list[SchemaNode] = []
+        self.node_set: dict[str, SchemaNode] = {}
 
         self.link_set: set[tuple[str, str]] = set()
         self.links: list[Link] = []
@@ -94,15 +94,11 @@ class Analytics:
         is_model = any(full_name.startswith(prefix) for prefix in self.model_prefixs) if self.model_prefixs else False
 
         if full_name not in self.node_set:
-            self.node_set[full_name] = Node(
+            self.node_set[full_name] = SchemaNode(
                 id=full_name, 
                 name=schema.__name__,
                 is_model=is_model,
-                node_info=NodeInfo(
-                    is_entry=False,
-                    router_name="xxx",
-                    fields=[]
-                )
+                fields=self.get_pydantic_fields(schema)
             )
         return full_name
 
@@ -206,6 +202,26 @@ class Analytics:
         _routes = [r for r in self.routes if r.id in included_ids]
 
         return _tags, _routes, _nodes, _links
+    
+    def get_pydantic_fields(self, schema: type[BaseModel]) -> list[FieldInfo]:
+        # Convert typing annotations to concise, readable names without breaking Graphviz record labels
+        # Handles Optional, Union, Annotated, generics (List/Dict/Set/Tuple), ForwardRef, builtins, Any, None
+        fields = []
+        for k, v in schema.model_fields.items():
+            anno = v.annotation
+            fields.append(FieldInfo(
+                name=k,
+                type_name=get_type_name(anno)
+            ))
+        return fields
+
+    def generate_node_label(self, node: SchemaNode):
+        name = node.name
+        fields = []
+        for idx, field in enumerate(node.fields):
+            fields.append(f'<f{idx}> {field.name}: {field.type_name}')
+        field_str = ' | '.join(fields)
+        return f'{name} | {field_str}' if field_str else name
 
     def generate_dot(self):
         def _get_link_attributes(link: Link):
@@ -221,6 +237,7 @@ class Analytics:
             return 'style = "solid"'
 
         _tags, _routes, _nodes, _links = self.filter_nodes_and_schemas_based_on_schemas()
+
 
         tags = [
             f'''
@@ -253,7 +270,7 @@ class Analytics:
         nodes = [
             f'''
             "{node.id}" [
-                label = "{node.name}"
+                label = "{self.generate_node_label(node)}"
                 shape = "record"
             ];''' for node in _nodes if node.is_model is False]
         node_str = '\n'.join(nodes)
