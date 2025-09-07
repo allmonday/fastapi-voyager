@@ -28,4 +28,5 @@ class SchemaNode:
 class Link:
     source: str
     target: str
+    # is_internal: bool = False
     type: Literal['child', 'parent', 'entry', 'subset']

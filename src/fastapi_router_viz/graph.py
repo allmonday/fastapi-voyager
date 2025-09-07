@@ -73,13 +73,13 @@ class Analytics:
                         ))
                         self.links.append(Link(
                             source=route_id,
-                            target=full_class_name(schema),
+                            target=self.generate_node_head(full_class_name(schema)),
                             type='entry'
                         ))
                         schemas.append(schema)
 
         for s in schemas:
-            self.walk_schema(s)
+            self.analysis_schemas(s)
         
         self.nodes = list(self.node_set.values())
 
@@ -117,7 +117,10 @@ class Analytics:
             ))
         return result
 
-    def walk_schema(self, schema: type[BaseModel]):
+    def generate_node_head(self, link_name: str):
+        return f'{link_name}::__pk__'
+
+    def analysis_schemas(self, schema: type[BaseModel]):
         """
         1. cls is the source, add schema
         2. pydantic fields are targets, if annotation is subclass of BaseMode, add fields and add links
@@ -128,22 +131,25 @@ class Analytics:
         if subset_reference := getattr(schema, ENSURE_SUBSET_REFERENCE, None):
             if issubclass(subset_reference, BaseModel) and subset_reference is not BaseModel:
                 self.add_to_node_set(subset_reference)
-                self.add_to_link_set(full_class_name(schema), full_class_name(subset_reference), type='subset')
+                self.add_to_link_set(
+                    self.generate_node_head(full_class_name(schema)),
+                    self.generate_node_head(full_class_name(subset_reference)), type='subset')
 
         # 处理所有基类的继承关系
         for base_class in schema.__bases__:
             if issubclass(base_class, BaseModel) and base_class is not BaseModel:
                 self.add_to_node_set(base_class)
-                self.add_to_link_set(full_class_name(schema), full_class_name(base_class), type='parent')
+                self.add_to_link_set(self.generate_node_head(full_class_name(schema)),
+                                     self.generate_node_head(full_class_name(base_class)), type='parent')
 
         for k, v in schema.model_fields.items():
             annos = get_core_types(v.annotation)
             for anno in annos:
                 if anno and issubclass(anno, BaseModel):
                     self.add_to_node_set(anno)
-
-                    if self.add_to_link_set(full_class_name(schema), full_class_name(anno), type='child'):
-                        self.walk_schema(anno)
+                    if self.add_to_link_set(f'{full_class_name(schema)}::{k}',
+                                            self.generate_node_head(full_class_name(anno)), type='internal'):
+                        self.analysis_schemas(anno)
 
     def filter_nodes_and_schemas_based_on_schemas(self):
         """
@@ -218,10 +224,10 @@ class Analytics:
     def generate_node_label(self, node: SchemaNode):
         name = node.name
         fields = []
-        for idx, field in enumerate(node.fields):
-            fields.append(f'<f{idx}> {field.name}: {field.type_name}')
+        for field in node.fields:
+            fields.append(f'<{field.name}> {field.name}: {field.type_name}')
         field_str = ' | '.join(fields)
-        return f'{name} | {field_str}' if field_str else name
+        return f'<__pk__> {name} | {field_str}' if field_str else name
 
     def generate_dot(self):
         def _get_link_attributes(link: Link):
@@ -260,7 +266,7 @@ class Analytics:
         model_nodes = [
             f'''
             "{node.id}" [
-                label = "{node.name}"
+                label = "{self.generate_node_label(node)}"
                 shape = "record"
                 fillcolor = "lightblue"
                 style = "filled"
@@ -275,8 +281,14 @@ class Analytics:
             ];''' for node in _nodes if node.is_model is False]
         node_str = '\n'.join(nodes)
 
+        def handle_entry(source: str):
+            if '::' in source:
+                a, b = source.split('::', 1)
+                return f'"{a}":{b}'
+            return f'"{source}"'
+
         links = [
-            f'''"{link.source}" -> "{link.target}" [ {_get_link_attributes(link)} ];''' for link in _links
+            f'''{handle_entry(link.source)} -> {handle_entry(link.target)} [ {_get_link_attributes(link)} ];''' for link in _links
         ]
         link_str = '\n'.join(links)
 
