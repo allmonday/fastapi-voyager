@@ -6,12 +6,14 @@ from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, FieldInfo
 
 # support pydantic-resolve's ensure_subset
 ENSURE_SUBSET_REFERENCE = '__pydantic_resolve_ensure_subset_reference__'
+PK = "PK"
 
 class Analytics:
     def __init__(
             self, 
             model_prefixs: list[str] | None = None,
-            schema: str | None = None):
+            schema: str | None = None, 
+            show_fields: bool = False):
 
         self.routes: list[Route] = []
 
@@ -26,6 +28,7 @@ class Analytics:
 
         self.model_prefixs = model_prefixs
         self.schema = schema
+        self.show_fields = show_fields
 
     def analysis(
             self, app: FastAPI,
@@ -39,7 +42,7 @@ class Analytics:
 
         for route in app.routes:
             if isinstance(route, routing.APIRoute) and route.response_model:
-                route_id = f'{route.endpoint.__name__}_{route.path}_{",".join(route.methods)}'.replace('/','_').lower()
+                route_id = f'{route.endpoint.__name__}_{route.path}'
                 route_name = route.endpoint.__name__
 
                 tags = getattr(route, 'tags', None)
@@ -49,11 +52,11 @@ class Analytics:
                 if include_tags and route_tag not in include_tags:
                     continue
 
-                tag_id=f'tag:${route_tag}'
+                tag_id=f'tag__{route_tag}'
                 if route_tag not in self.tag_set:
                     self.tag_set.add(route_tag)
                     self.tags.append(Tag(
-                        id=f'tag:${route_tag}',
+                        id=f'tag__{route_tag}',
                         name=route_tag
                     ))
                 
@@ -118,7 +121,7 @@ class Analytics:
         return result
 
     def generate_node_head(self, link_name: str):
-        return f'{link_name}::__pk__'
+        return f'{link_name}::{PK}'
 
     def analysis_schemas(self, schema: type[BaseModel]):
         """
@@ -210,8 +213,6 @@ class Analytics:
         return _tags, _routes, _nodes, _links
     
     def get_pydantic_fields(self, schema: type[BaseModel]) -> list[FieldInfo]:
-        # Convert typing annotations to concise, readable names without breaking Graphviz record labels
-        # Handles Optional, Union, Annotated, generics (List/Dict/Set/Tuple), ForwardRef, builtins, Any, None
         fields = []
         for k, v in schema.model_fields.items():
             anno = v.annotation
@@ -227,19 +228,18 @@ class Analytics:
         for field in node.fields:
             fields.append(f'<{field.name}> {field.name}: {field.type_name}')
         field_str = ' | '.join(fields)
-        return f'<__pk__> {name} | {field_str}' if field_str else name
+        return f'<{PK}> {name} | {field_str}' if field_str else name
 
     def generate_dot(self):
         def _get_link_attributes(link: Link):
-            """获取链接的样式和标签属性"""
             if link.type == 'child':
                 return 'style = "dashed", label = ""'
             elif link.type == 'parent':
-                return 'style = "solid", label = "inherits"'
+                return 'style = "solid", label = "inherits", align="left"'
             elif link.type == 'entry':
                 return 'style = "bold", label = ""'
             elif link.type == 'subset':
-                return 'style = "dotted", label = "subset"'
+                return 'style = "dotted", label = "subset", align="left"'
             return 'style = "solid"'
 
         _tags, _routes, _nodes, _links = self.filter_nodes_and_schemas_based_on_schemas()

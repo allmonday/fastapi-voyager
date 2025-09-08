@@ -1,6 +1,6 @@
 [project]
 name = "fastapi-router-viz"
-version = "0.1.8"
+dynamic = ["version"]
 description = "Visualize FastAPI application's routing tree and dependencies"
 authors = [ { name = "Tangkikodo", email = "allmonday@126.com" } ]
 license = { text = "MIT" }
@@ -34,6 +34,9 @@ dev = ["uvicorn", "ruff", "pytest"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/fastapi_router_viz/version.py"
 
 [tool.uv]
 # You can pin resolution or indexes here later.

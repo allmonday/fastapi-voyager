@@ -88,10 +88,11 @@ def generate_visualization(
         app: FastAPI,
         output_file: str = "router_viz.dot", tags: list[str] | None = None,
         model_prefixs: list[str] | None = None,
-        schema: str | None = None):
+        schema: str | None = None,
+        show_fields: bool = False):
 
     """Generate DOT file for FastAPI router visualization."""
-    analytics = Analytics(model_prefixs=model_prefixs, schema=schema)
+    analytics = Analytics(model_prefixs=model_prefixs, schema=schema, show_fields=show_fields)
     analytics.analysis(app, include_tags=tags)
     
     dot_content = analytics.generate_dot()
@@ -165,6 +166,13 @@ Examples:
         default=None,
         help="Filter schemas by name"
     )
+    parser.add_argument(
+        "--show_fields",
+        action="store_true",
+        help="Include field details in the visualization"
+    )
+
+    
     
     args = parser.parse_args()
     
@@ -190,7 +198,9 @@ Examples:
             args.output, 
             tags=args.tags, 
             model_prefixs=args.model_prefixs,
-            schema=args.schema)
+            schema=args.schema,
+            show_fields=args.show_fields  # Pass the new argument
+        )
     except Exception as e:
         print(f"Error generating visualization: {e}")
         sys.exit(1)
