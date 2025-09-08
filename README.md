@@ -81,3 +81,8 @@ dot -Tpng router_viz.dot -o router_viz.png
 or you can open router_viz.dot with vscode extension `graphviz interactive preview`
 
 <img width="1062" height="283" alt="image" src="https://github.com/user-attachments/assets/d8134277-fa84-444a-b6cd-1287e477a83e" />
+
+`--show_fields` to display details
+
+<img width="1329" height="592" alt="image" src="https://github.com/user-attachments/assets/d5dceee8-995b-4dab-a016-46fa98e74d77" />
+
