@@ -92,9 +92,14 @@ def generate_visualization(
         show_fields: bool = False):
 
     """Generate DOT file for FastAPI router visualization."""
-    analytics = Analytics(model_prefixs=model_prefixs, schema=schema, show_fields=show_fields)
-    analytics.analysis(app, include_tags=tags)
-    
+    analytics = Analytics(
+        include_tags=tags,
+        model_prefixs=model_prefixs,
+        schema=schema,
+        show_fields=show_fields)
+
+    analytics.analysis(app)
+
     dot_content = analytics.generate_dot()
     
     # Write to file

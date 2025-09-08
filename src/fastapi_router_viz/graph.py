@@ -13,7 +13,9 @@ class Analytics:
             self, 
             model_prefixs: list[str] | None = None,
             schema: str | None = None, 
-            show_fields: bool = False):
+            show_fields: bool = False,
+            include_tags: list[str] | None = None,
+        ):
 
         self.routes: list[Route] = []
 
@@ -26,60 +28,71 @@ class Analytics:
         self.tag_set: set[str] = set()
         self.tags: list[Tag] = []
 
+        self.include_tags = include_tags
         self.model_prefixs = model_prefixs
         self.schema = schema
         self.show_fields = show_fields
+    
+    def _get_available_route(self, app: FastAPI):
+        for route in app.routes:
+            if isinstance(route, routing.APIRoute) and route.response_model:
+                yield route
+    
 
     def analysis(
             self, app: FastAPI,
-            include_tags: list[str] | None = None,
             ):
         """
         1. get routes which return pydantic schema
-        2. iterate routes, construct the nodes and links
+            1.1 collect tags and routes, add links tag-> route
+            1.2 collect response_model and links route -> response_model
+
+        2. iterate schemas, construct the schema/model nodes and their links
         """
         schemas: list[type[BaseModel]] = []
 
-        for route in app.routes:
-            if isinstance(route, routing.APIRoute) and route.response_model:
-                route_id = f'{route.endpoint.__name__}_{route.path}'
-                route_name = route.endpoint.__name__
+        for route in self._get_available_route(app):
+            # check tags
+            tags = getattr(route, 'tags', None)
+            route_tag = tags[0] if tags else '__default__'
+            if self.include_tags and route_tag not in self.include_tags:
+                continue
 
-                tags = getattr(route, 'tags', None)
-                route_tag = tags[0] if tags else '__default__'
+            # add tag if not exists
+            tag_id=f'tag__{route_tag}'
+            if route_tag not in self.tag_set:  # prevent duplication
+                self.tag_set.add(route_tag)
+                self.tags.append(Tag(
+                    id=f'tag__{route_tag}',
+                    name=route_tag))
 
-                # apply filter if provided
-                if include_tags and route_tag not in include_tags:
-                    continue
+            # add route and create links
+            route_id = f'{route.endpoint.__name__}_{route.path.replace("/", "_")}'
+            route_name = route.endpoint.__name__
+            self.routes.append(Route(
+                id=route_id,
+                name=route_name))
+            self.links.append(Link(
+                source=tag_id,
+                source_origin=tag_id,
+                target=route_id,
+                target_origin=route_id,
+                type='entry'
+            ))
 
-                tag_id=f'tag__{route_tag}'
-                if route_tag not in self.tag_set:
-                    self.tag_set.add(route_tag)
-                    self.tags.append(Tag(
-                        id=f'tag__{route_tag}',
-                        name=route_tag
+            # add response_models and create links from route -> response_model
+            for schema in get_core_types(route.response_model):
+                if schema and issubclass(schema, BaseModel):
+                    target_name = full_class_name(schema)
+                    self.links.append(Link(
+                        source=route_id,
+                        source_origin=route_id,
+                        target=self.generate_node_head(target_name),
+                        target_origin=target_name,
+                        type='entry'
                     ))
-                
-                response_model = route.response_model
-                core_schemas = get_core_types(response_model)
 
-                for schema in core_schemas:
-                    if schema and issubclass(schema, BaseModel):
-                        self.links.append(Link(
-                            source=tag_id,
-                            target=route_id,
-                            type='entry'
-                        ))
-                        self.routes.append(Route(
-                            id=route_id,
-                            name=route_name,
-                        ))
-                        self.links.append(Link(
-                            source=route_id,
-                            target=self.generate_node_head(full_class_name(schema)),
-                            type='entry'
-                        ))
-                        schemas.append(schema)
+                    schemas.append(schema)
 
         for s in schemas:
             self.analysis_schemas(s)
@@ -105,7 +118,13 @@ class Analytics:
             )
         return full_name
 
-    def add_to_link_set(self, source: str, target: str, type: Literal['child', 'parent', 'subset']):
+    def add_to_link_set(
+            self, 
+            source: str, 
+            source_origin: str,
+            target: str, 
+            target_origin: str,
+            type: Literal['child', 'parent', 'subset']):
         """
         1. add link to link_set
         2. if duplicated, do nothing, else insert
@@ -115,7 +134,9 @@ class Analytics:
             self.link_set.add(pair)
             self.links.append(Link(
                 source=source,
+                source_origin=source_origin,
                 target=target,
+                target_origin=target_origin,
                 type=type
             ))
         return result
@@ -129,29 +150,47 @@ class Analytics:
         2. pydantic fields are targets, if annotation is subclass of BaseMode, add fields and add links
         3. recursively run walk_schema
         """
+        def _is_inheritance_of_BaseModel(cls):
+            return issubclass(cls, BaseModel) and cls is not BaseModel
+        
         self.add_to_node_set(schema)
 
+        # handle schema inside ensure_subset(schema)
         if subset_reference := getattr(schema, ENSURE_SUBSET_REFERENCE, None):
-            if issubclass(subset_reference, BaseModel) and subset_reference is not BaseModel:
+            if _is_inheritance_of_BaseModel(subset_reference):
+
                 self.add_to_node_set(subset_reference)
                 self.add_to_link_set(
-                    self.generate_node_head(full_class_name(schema)),
-                    self.generate_node_head(full_class_name(subset_reference)), type='subset')
+                    source=self.generate_node_head(full_class_name(schema)),
+                    source_origin=full_class_name(schema),
+                    target= self.generate_node_head(full_class_name(subset_reference)), 
+                    target_origin=full_class_name(subset_reference),
+                    type='subset')
 
-        # 处理所有基类的继承关系
+        # handle bases
         for base_class in schema.__bases__:
-            if issubclass(base_class, BaseModel) and base_class is not BaseModel:
+            if _is_inheritance_of_BaseModel(base_class):
                 self.add_to_node_set(base_class)
-                self.add_to_link_set(self.generate_node_head(full_class_name(schema)),
-                                     self.generate_node_head(full_class_name(base_class)), type='parent')
+                self.add_to_link_set(
+                    source=self.generate_node_head(full_class_name(schema)),
+                    source_origin=full_class_name(schema),
+                    target=self.generate_node_head(full_class_name(base_class)),
+                    target_origin=full_class_name(base_class),
+                    type='parent')
 
+        # handle fields
         for k, v in schema.model_fields.items():
             annos = get_core_types(v.annotation)
             for anno in annos:
                 if anno and issubclass(anno, BaseModel):
                     self.add_to_node_set(anno)
-                    if self.add_to_link_set(f'{full_class_name(schema)}::{k}',
-                                            self.generate_node_head(full_class_name(anno)), type='internal'):
+                    source_name = f'{full_class_name(schema)}::{k}' if self.show_fields else self.generate_node_head(full_class_name(schema))
+                    if self.add_to_link_set(
+                        source=source_name,
+                        source_origin=full_class_name(schema),
+                        target=self.generate_node_head(full_class_name(anno)),
+                        target_origin=full_class_name(anno),
+                        type='internal'):
                         self.analysis_schemas(anno)
 
     def filter_nodes_and_schemas_based_on_schemas(self):
@@ -174,9 +213,10 @@ class Analytics:
         # 2. 根据 links 生成两个邻接 Map
         fwd: dict[str, set[str]] = {}
         rev: dict[str, set[str]] = {}
+        
         for lk in self.links:
-            fwd.setdefault(lk.source, set()).add(lk.target)
-            rev.setdefault(lk.target, set()).add(lk.source)
+            fwd.setdefault(lk.source_origin, set()).add(lk.target_origin)
+            rev.setdefault(lk.target_origin, set()).add(lk.source_origin)
 
         # 往上游：使用 rev 反向邻接，直到不再新增
         upstream: set[str] = set()
@@ -206,7 +246,7 @@ class Analytics:
 
         # 3. 基于收集到的 ID 过滤各类元素
         _nodes = [n for n in self.nodes if n.id in included_ids]
-        _links = [l for l in self.links if l.source in included_ids and l.target in included_ids]
+        _links = [l for l in self.links if l.source_origin in included_ids and l.target_origin in included_ids]
         _tags = [t for t in self.tags if t.id in included_ids]
         _routes = [r for r in self.routes if r.id in included_ids]
 
@@ -224,11 +264,14 @@ class Analytics:
 
     def generate_node_label(self, node: SchemaNode):
         name = node.name
-        fields = []
-        for field in node.fields:
-            fields.append(f'<{field.name}> {field.name}: {field.type_name}')
-        field_str = ' | '.join(fields)
-        return f'<{PK}> {name} | {field_str}' if field_str else name
+        if self.show_fields:
+            fields = []
+            for field in node.fields:
+                fields.append(f'<{field.name}> {field.name}: {field.type_name}')
+            field_str = ' | '.join(fields)
+            return f'<{PK}> {name} | {field_str}' if field_str else name
+        else:
+            return f'<PK> {name}'
 
     def generate_dot(self):
         def _get_link_attributes(link: Link):
