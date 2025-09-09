@@ -1,7 +1,7 @@
 from fastapi_router_viz.graph import Analytics
 from pydantic import BaseModel
 from fastapi import FastAPI
-from typing import Optional
+from typing import Optional, Union
 from pydantic_resolve import ensure_subset
 from tests.service import Story, Task
 import tests.service as serv
@@ -13,6 +13,12 @@ app = FastAPI(title="Demo API", description="A demo FastAPI application for rout
 def get_sprint():
     return []
 
+class A(BaseModel):
+    id: int
+
+class B(BaseModel):
+    id: int
+    name: str
 class Member(serv.Member):
     pass
 
@@ -32,8 +38,13 @@ class Sprint(serv.Sprint):
     stories: list[PageStory]
     owner: Optional[serv.Member]
 
+AB = A | B
+
 class PageOverall(BaseModel):
     sprints: list[Sprint]
+    item: Union[A, B]
+    ab: AB
+
 
 
 @app.get("/page_overall", tags=['page'], response_model=PageOverall)
