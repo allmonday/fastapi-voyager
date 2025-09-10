@@ -27,8 +27,7 @@ class SchemaNode:
 @dataclass
 class Link:
     source: str
-    source_origin: str
+    source_origin: str  # internal relationship
     target: str
     target_origin: str
-    # is_internal: bool = False
     type: Literal['child', 'parent', 'entry', 'subset']

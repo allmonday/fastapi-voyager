@@ -1,6 +1,5 @@
-from typing import get_origin, get_args, Union
+from typing import get_origin, get_args, Union, Annotated, Any
 from types import UnionType
-
 
 
 def _is_optional(annotation):
@@ -71,18 +70,16 @@ def get_core_types(tp):
 
 
 def get_type_name(anno):
-    import typing
-
     def name_of(tp):
-        origin = typing.get_origin(tp)
-        args = typing.get_args(tp)
+        origin = get_origin(tp)
+        args = get_args(tp)
 
         # Annotated[T, ...] -> T
-        if origin is typing.Annotated:
+        if origin is Annotated:
             return name_of(args[0]) if args else 'Annotated'
 
         # Union / Optional
-        if origin is typing.Union:
+        if origin is Union:
             non_none = [a for a in args if a is not type(None)]
             if len(non_none) == 1 and len(args) == 2:
                 return f"Optional[{name_of(non_none[0])}]"
@@ -105,7 +102,7 @@ def get_type_name(anno):
             return origin_name
 
         # Non-generic leaf types
-        if tp is typing.Any:
+        if tp is Any:
             return 'Any'
         if tp is None or tp is type(None):
             return 'None'

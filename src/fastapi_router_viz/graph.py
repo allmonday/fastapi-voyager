@@ -210,7 +210,6 @@ class Analytics:
         if not seed_node_ids:
             return self.tags, self.routes, self.nodes, self.links
 
-        # 2. 根据 links 生成两个邻接 Map
         fwd: dict[str, set[str]] = {}
         rev: dict[str, set[str]] = {}
         
@@ -218,25 +217,23 @@ class Analytics:
             fwd.setdefault(lk.source_origin, set()).add(lk.target_origin)
             rev.setdefault(lk.target_origin, set()).add(lk.source_origin)
 
-        # 往上游：使用 rev 反向邻接，直到不再新增
         upstream: set[str] = set()
         frontier = set(seed_node_ids)
         while frontier:
             new_layer: set[str] = set()
             for nid in frontier:
-                for src in rev.get(nid, ()):  # 所有指向 nid 的源
+                for src in rev.get(nid, ()):
                     if src not in upstream and src not in seed_node_ids:
                         new_layer.add(src)
             upstream.update(new_layer)
             frontier = new_layer
 
-        # 往下游：使用 fwd 正向邻接，直到不再新增
         downstream: set[str] = set()
         frontier = set(seed_node_ids)
         while frontier:
             new_layer: set[str] = set()
             for nid in frontier:
-                for tgt in fwd.get(nid, ()):  # nid 指向的所有目标
+                for tgt in fwd.get(nid, ()):
                     if tgt not in downstream and tgt not in seed_node_ids:
                         new_layer.add(tgt)
             downstream.update(new_layer)
@@ -244,7 +241,6 @@ class Analytics:
 
         included_ids: set[str] = set(seed_node_ids) | upstream | downstream
 
-        # 3. 基于收集到的 ID 过滤各类元素
         _nodes = [n for n in self.nodes if n.id in included_ids]
         _links = [l for l in self.links if l.source_origin in included_ids and l.target_origin in included_ids]
         _tags = [t for t in self.tags if t.id in included_ids]
