@@ -68,3 +68,16 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 <img width="1329" height="592" alt="image" src="https://github.com/user-attachments/assets/d5dceee8-995b-4dab-a016-46fa98e74d77" />
 
+
+## Next
+
+- [ ] support programmatic usage
+- [ ] support dataclass
+- [ ] user can generate nodes/edges manually and connect to generated ones
+- [ ] add configuration for highlight (optional)
+- [ ] group schemas by module hierarchy
+- [ ] make a explorer dashboard, provide list of routes, schemas, to make it easy to switch and search
+- [ ] integration with pydantic-resolve
+    - [ ] show difference between resolve, post fields
+    - [ ] strikethrough for excluded fields
+    - [ ] display loader as edges
