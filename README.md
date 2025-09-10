@@ -4,6 +4,10 @@ Visualize FastAPI application's routes and inner dependencies inside response_mo
 
 > This repo is still in early stage.
 
+
+[![Video Title](https://img.youtube.com/vi/9ywdMt1wPOY/0.jpg)](https://www.youtube.com/watch?v=9ywdMt1wPOY)
+
+
 ## Installation
 
 ```bash
