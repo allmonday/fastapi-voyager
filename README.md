@@ -18,46 +18,24 @@ uv add fastapi-router-viz
 
 ## Command Line Usage
 
-```python
-class PageTask(Task):
-    owner: Optional[Member]
-
-@ensure_subset(Story)
-class PageStory(BaseModel):
-    id: int
-    sprint_id: int
-    title: str
-
-    tasks: list[PageTask] = []
-    owner: Optional[Member] = None
-
-class PageSprint(Sprint):
-    stories: list[PageStory]
-    owner: Optional[Member]
-
-class PageOverall(BaseModel):
-    sprints: list[PageSprint]
-
-
-@app.get("/page_overall", tags=['page'], response_model=PageOverall)
-def get_page_info():
-    return {"sprints": []}
-
-
-class PageStories(BaseModel):
-    stories: list[PageStory]
-
-@app.get("/page_stories/", tags=['page'], response_model=PageStories)
-def get_page_info_2():
-    return {}
-```
-
 ```bash
 # Basic usage - assumes your FastAPI app is named 'app' in app.py
 router-viz tests/demo.py
 
 # Specify custom app variable name
 router-viz tests/demo.py --app app
+
+# group & highlight your schems as lightblue which located in service modules
+router-viz tests/demo.py --app app --service_prefixes tests.service
+
+# filter tag name
+router-viz tests/demo.py --app app --tags page
+
+# filter schema name, display related nodes
+router-viz tests/demo.py --app app --schema Task
+
+# show fields
+router-viz tests/demo.py --app app --show_fields
 
 # Custom output file
 router-viz tests/demo.py -o my_visualization.dot

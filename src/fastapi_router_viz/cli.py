@@ -162,7 +162,7 @@ Examples:
         help="Only include routes whose first tag is in the provided list"
     )
     parser.add_argument(
-        "--model_prefixs",
+        "--service_prefixes",
         nargs="+",
         help="Filter schemas belongs to model entities"
     )
