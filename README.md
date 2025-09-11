@@ -1,3 +1,7 @@
+[![pypi](https://img.shields.io/pypi/v/fastapi-router-viz.svg)](https://pypi.python.org/pypi/fastapi-router-viz)
+![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-router-viz)
+
+
 # fastapi-router-viz
 
 Visualize FastAPI application's routes and inner dependencies inside response_models.
