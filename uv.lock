@@ -3,18 +3,6 @@ revision = 3
 requires-python = ">=3.10"
 
 [[package]]
-name = "aiodataloader"
-version = "0.4.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/bc/3b/405fe771e782054509f976db2a29c69bb6250be8bde16ac1fa93755070c6/aiodataloader-0.4.2.tar.gz", hash = "sha256:c92f6f2fb7ee13939ffd68274895aca44ccc0294a1275179bfb8af2b29b788e1", size = 13458, upload-time = "2025-02-17T14:51:43.336Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/20/8700336be44dcccab78741f2513b1b1474ba4070134e8c2b5a50865f07bd/aiodataloader-0.4.2-py3-none-any.whl", hash = "sha256:3c9780867631326a2ae931c322fac5e2a2ad5a48bf7646e5250834630536ef57", size = 10994, upload-time = "2025-02-17T14:51:41.589Z" },
-]
-
-[[package]]
 name = "annotated-types"
 version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -87,11 +75,9 @@ wheels = [
 
 [[package]]
 name = "fastapi-router-viz"
-version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
-    { name = "pydantic-resolve" },
 ]
 
 [package.optional-dependencies]
@@ -103,8 +89,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastapi", specifier = ">=0.115" },
-    { name = "pydantic-resolve", specifier = ">=1.13.2" },
+    { name = "fastapi", specifier = ">=0.110" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
@@ -256,18 +241,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b8/e9/1f7efbe20d0b2b10f6718944b5d8ece9152390904f29a78e68d4e7961159/pydantic_core-2.33.2-pp311-pypy311_pp73-musllinux_1_1_armv7l.whl", hash = "sha256:de4b83bb311557e439b9e186f733f6c645b9417c84e2eb8203f3f820a4b988bf", size = 2239013, upload-time = "2025-04-23T18:33:26.621Z" },
     { url = "https://files.pythonhosted.org/packages/3c/b2/5309c905a93811524a49b4e031e9851a6b00ff0fb668794472ea7746b448/pydantic_core-2.33.2-pp311-pypy311_pp73-musllinux_1_1_x86_64.whl", hash = "sha256:82f68293f055f51b51ea42fafc74b6aad03e70e191799430b90c13d643059ebb", size = 2238715, upload-time = "2025-04-23T18:33:28.656Z" },
     { url = "https://files.pythonhosted.org/packages/32/56/8a7ca5d2cd2cda1d245d34b1c9a942920a718082ae8e54e5f3e5a58b7add/pydantic_core-2.33.2-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:329467cecfb529c925cf2bbd4d60d2c509bc2fb52a20c1045bf09bb70971a9c1", size = 2066757, upload-time = "2025-04-23T18:33:30.645Z" },
-]
-
-[[package]]
-name = "pydantic-resolve"
-version = "1.13.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "aiodataloader" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e5/8d/755cbd972c2113360b03f452a486694b17b04333d1a6af8d3083bb2631d9/pydantic_resolve-1.13.2.tar.gz", hash = "sha256:48d3ba00c766fa8bd7c86ff0e77a6fb149f9819a124bff8783835628ce35106a", size = 24512, upload-time = "2025-09-04T12:14:52.413Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/11/96461b82307ace63faeefb3651401aba7cb8515448ff2ac7ce19fa54ae8b/pydantic_resolve-1.13.2-py3-none-any.whl", hash = "sha256:305ee2ab1d96ea1ae55678ffb2c554cc5d6029e38a6f7104d93f74a2b94c9c00", size = 26504, upload-time = "2025-09-04T12:14:49.939Z" },
 ]
 
 [[package]]

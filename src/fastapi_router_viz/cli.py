@@ -87,14 +87,14 @@ def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Opt
 def generate_visualization(
         app: FastAPI,
         output_file: str = "router_viz.dot", tags: list[str] | None = None,
-        model_prefixs: list[str] | None = None,
+        service_prefixes: list[str] | None = None,
         schema: str | None = None,
         show_fields: bool = False):
 
     """Generate DOT file for FastAPI router visualization."""
     analytics = Analytics(
         include_tags=tags,
-        model_prefixs=model_prefixs,
+        service_prefixes=service_prefixes,
         schema=schema,
         show_fields=show_fields)
 
@@ -202,7 +202,7 @@ Examples:
             app, 
             args.output, 
             tags=args.tags, 
-            model_prefixs=args.model_prefixs,
+            service_prefixes=args.service_prefixes,
             schema=args.schema,
             show_fields=args.show_fields  # Pass the new argument
         )

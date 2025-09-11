@@ -11,7 +11,7 @@ PK = "PK"
 class Analytics:
     def __init__(
             self, 
-            model_prefixs: list[str] | None = None,
+            service_prefixes: list[str] | None = None,
             schema: str | None = None, 
             show_fields: bool = False,
             include_tags: list[str] | None = None,
@@ -29,7 +29,7 @@ class Analytics:
         self.tags: list[Tag] = []
 
         self.include_tags = include_tags
-        self.model_prefixs = model_prefixs
+        self.service_prefixes = service_prefixes
         self.schema = schema
         self.show_fields = show_fields
     
@@ -107,7 +107,7 @@ class Analytics:
         2. return the full_path
         """
         full_name = full_class_name(schema)
-        is_model = any(full_name.startswith(prefix) for prefix in self.model_prefixs) if self.model_prefixs else False
+        is_model = any(full_name.startswith(prefix) for prefix in self.service_prefixes) if self.service_prefixes else False
 
         if full_name not in self.node_set:
             self.node_set[full_name] = SchemaNode(
@@ -184,7 +184,8 @@ class Analytics:
             for anno in annos:
                 if anno and issubclass(anno, BaseModel):
                     self.add_to_node_set(anno)
-                    source_name = f'{full_class_name(schema)}::{k}' if self.show_fields else self.generate_node_head(full_class_name(schema))
+                    # add f prefix to fix highlight issue in vsc graphviz interactive previewer
+                    source_name = f'{full_class_name(schema)}::f{k}' if self.show_fields else self.generate_node_head(full_class_name(schema))
                     if self.add_to_link_set(
                         source=source_name,
                         source_origin=full_class_name(schema),
@@ -263,7 +264,7 @@ class Analytics:
         if self.show_fields:
             fields = []
             for field in node.fields:
-                fields.append(f'<{field.name}> {field.name}: {field.type_name}')
+                fields.append(f'<f{field.name}> {field.name}: {field.type_name}')
             field_str = ' | '.join(fields)
             return f'<{PK}> {name} | {field_str}' if field_str else name
         else:
