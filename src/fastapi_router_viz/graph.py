@@ -3,6 +3,7 @@ from fastapi import FastAPI, routing
 from fastapi_router_viz.type_helper import get_core_types, full_class_name, get_type_name
 from pydantic import BaseModel
 from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, FieldInfo
+from fastapi_router_viz.module import build_module_tree
 
 # support pydantic-resolve's ensure_subset
 ENSURE_SUBSET_REFERENCE = '__pydantic_resolve_ensure_subset_reference__'
@@ -11,10 +12,10 @@ PK = "PK"
 class Analytics:
     def __init__(
             self, 
-            service_prefixes: list[str] | None = None,
             schema: str | None = None, 
             show_fields: bool = False,
             include_tags: list[str] | None = None,
+            module_color: dict[str, str] | None = None,
         ):
 
         self.routes: list[Route] = []
@@ -29,9 +30,9 @@ class Analytics:
         self.tags: list[Tag] = []
 
         self.include_tags = include_tags
-        self.service_prefixes = service_prefixes
         self.schema = schema
         self.show_fields = show_fields
+        self.module_color = module_color or {}
     
     def _get_available_route(self, app: FastAPI):
         for route in app.routes:
@@ -107,14 +108,11 @@ class Analytics:
         2. return the full_path
         """
         full_name = full_class_name(schema)
-        is_model = any(full_name.startswith(prefix) for prefix in self.service_prefixes) if self.service_prefixes else False
-
         if full_name not in self.node_set:
             self.node_set[full_name] = SchemaNode(
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
-                is_model=is_model,
                 fields=self.get_pydantic_fields(schema)
             )
         return full_name
@@ -284,7 +282,7 @@ class Analytics:
             return 'style = "solid"'
 
         _tags, _routes, _nodes, _links = self.filter_nodes_and_schemas_based_on_schemas()
-
+        _modules = build_module_tree(_nodes)
 
         tags = [
             f'''
@@ -304,23 +302,31 @@ class Analytics:
             ];''' for r in _routes]
         route_str = '\n'.join(routes)
 
-        model_nodes = [
-            f'''
-            "{node.id}" [
-                label = "{self.generate_node_label(node)}"
-                shape = "record"
-                fillcolor = "lightblue"
-                style = "filled"
-            ];''' for node in _nodes if node.is_model]
-        model_node_str = '\n'.join(model_nodes)
+        def render_module(mod):
+            color = self.module_color.get(mod.fullname)
+            # render schema nodes inside this module
+            inner_nodes = [
+                f'''
+                "{node.id}" [
+                    label = "{self.generate_node_label(node)}"
+                    shape = "record"
+                    {(f'color = "{color}"' if color else '')}
+                ];''' for node in mod.schema_nodes
+            ]
+            inner_nodes_str = '\n'.join(inner_nodes)
 
-        nodes = [
-            f'''
-            "{node.id}" [
-                label = "{self.generate_node_label(node)}"
-                shape = "record"
-            ];''' for node in _nodes if node.is_model is False]
-        node_str = '\n'.join(nodes)
+            # render child modules recursively
+            child_str = '\n'.join(render_module(m) for m in mod.modules)
+
+            return f'''
+            subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
+                label = "{mod.fullname}"
+                {(f'color = "{color}"' if color else '')}
+                {inner_nodes_str}
+                {child_str}
+            }}'''
+
+        modules_str = '\n'.join(render_module(m) for m in _modules)
 
         def handle_entry(source: str):
             if '::' in source:
@@ -347,24 +353,16 @@ class Analytics:
 
             {tag_str}
 
-            subgraph cluster_A {{
+            subgraph cluster_router {{
                 style = "rounded";
                 color = "lightgreen";
                 penwidth = 3;
                     {route_str}
             }}
 
-            subgraph cluster_B {{
+            subgraph cluster_schema {{
                 label = "schema"
-                    {node_str}
-            }}
-
-
-            subgraph cluster_C {{
-                label = "model"
-                color = "lightblue";
-                penwidth = 3;
-                    {model_node_str}
+                    {modules_str}
             }}
 
             {link_str}

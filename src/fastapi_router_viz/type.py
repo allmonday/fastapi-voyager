@@ -23,11 +23,11 @@ class SchemaNode:
     module: str
     name: str
     fields: list[FieldInfo]
-    is_model: bool = False  # mapping to entities such as orm model
 
 @dataclass
 class ModuleNode:
     name: str
+    fullname: str
     schema_nodes: list[SchemaNode]
     modules: list['ModuleNode']
 

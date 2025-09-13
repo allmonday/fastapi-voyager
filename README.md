@@ -29,9 +29,6 @@ router-viz tests/demo.py
 # Specify custom app variable name
 router-viz tests/demo.py --app app
 
-# group & highlight your schems as lightblue which located in service modules
-router-viz tests/demo.py --app app --service_prefixes tests.service
-
 # filter tag name
 router-viz tests/demo.py --app app --tags page
 
@@ -40,6 +37,9 @@ router-viz tests/demo.py --app app --schema Task
 
 # show fields
 router-viz tests/demo.py --app app --show_fields
+
+# highlight module
+router-viz tests/demo.py --app app --module_color=tests.demo:red
 
 # Custom output file
 router-viz tests/demo.py -o my_visualization.dot
@@ -75,7 +75,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 ## Next
 
-- [ ] group schemas by module hierarchy
+- [x] group schemas by module hierarchy
+- [x] module-based coloring via Analytics(module_color={...})
 - [ ] support programmatic usage
 - [ ] support dataclass
 - [ ] user can generate nodes/edges manually and connect to generated ones

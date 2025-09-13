@@ -3,7 +3,7 @@ from fastapi_router_viz.type import SchemaNode
 
 
 def _sn(id: str, module: str, name: str) -> SchemaNode:
-    return SchemaNode(id=id, module=module, name=name, fields=[], is_model=False)
+    return SchemaNode(id=id, module=module, name=name, fields=[])
 
 
 def _find_child(module_node, name: str):

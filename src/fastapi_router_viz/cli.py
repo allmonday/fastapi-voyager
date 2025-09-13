@@ -85,18 +85,20 @@ def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Opt
 
 
 def generate_visualization(
-        app: FastAPI,
-        output_file: str = "router_viz.dot", tags: list[str] | None = None,
-        service_prefixes: list[str] | None = None,
-        schema: str | None = None,
-        show_fields: bool = False):
+    app: FastAPI,
+    output_file: str = "router_viz.dot", tags: list[str] | None = None,
+    schema: str | None = None,
+    show_fields: bool = False,
+    module_color: dict[str, str] | None = None,
+):
 
     """Generate DOT file for FastAPI router visualization."""
     analytics = Analytics(
         include_tags=tags,
-        service_prefixes=service_prefixes,
         schema=schema,
-        show_fields=show_fields)
+        show_fields=show_fields,
+        module_color=module_color,
+    )
 
     analytics.analysis(app)
 
@@ -162,10 +164,12 @@ Examples:
         help="Only include routes whose first tag is in the provided list"
     )
     parser.add_argument(
-        "--service_prefixes",
+        "--module_color",
         nargs="+",
-        help="Filter schemas belongs to model entities"
+        metavar="KEY:VALUE",
+        help="Module color mapping as key:value (module name to Graphviz color)"
     )
+    # removed service_prefixes option
     parser.add_argument(
         "--schema",
         default=None,
@@ -195,6 +199,20 @@ Examples:
     if app is None:
         sys.exit(1)
     
+    # helper: parse KEY:VALUE pairs into dict
+    def parse_kv_pairs(pairs: list[str] | None) -> dict[str, str] | None:
+        if not pairs:
+            return None
+        result: dict[str, str] = {}
+        for item in pairs:
+            if ":" in item:
+                k, v = item.split(":", 1)
+                k = k.strip()
+                v = v.strip()
+                if k:
+                    result[k] = v
+        return result or None
+
     # Generate visualization
     print(args.tags)
     try:
@@ -202,9 +220,9 @@ Examples:
             app, 
             args.output, 
             tags=args.tags, 
-            service_prefixes=args.service_prefixes,
             schema=args.schema,
-            show_fields=args.show_fields  # Pass the new argument
+            show_fields=args.show_fields,
+            module_color=parse_kv_pairs(args.module_color),
         )
     except Exception as e:
         print(f"Error generating visualization: {e}")
