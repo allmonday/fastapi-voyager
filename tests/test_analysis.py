@@ -33,4 +33,4 @@ def test_analysis():
     analytics = Analytics()
     analytics.analysis(app)
     assert len(analytics.nodes) == 3
-    assert len(analytics.links) == 2
+    assert len(analytics.links) == 6

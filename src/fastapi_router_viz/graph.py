@@ -112,6 +112,7 @@ class Analytics:
         if full_name not in self.node_set:
             self.node_set[full_name] = SchemaNode(
                 id=full_name, 
+                module=schema.__module__,
                 name=schema.__name__,
                 is_model=is_model,
                 fields=self.get_pydantic_fields(schema)
@@ -351,7 +352,7 @@ class Analytics:
                 color = "lightgreen";
                 penwidth = 3;
                     {route_str}
-            }};
+            }}
 
             subgraph cluster_B {{
                 label = "schema"

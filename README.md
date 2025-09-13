@@ -75,11 +75,11 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 ## Next
 
+- [ ] group schemas by module hierarchy
 - [ ] support programmatic usage
 - [ ] support dataclass
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] add configuration for highlight (optional)
-- [ ] group schemas by module hierarchy
 - [ ] make a explorer dashboard, provide list of routes, schemas, to make it easy to switch and search
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
