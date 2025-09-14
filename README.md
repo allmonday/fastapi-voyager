@@ -80,7 +80,10 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 - [x] group schemas by module hierarchy
 - [x] module-based coloring via Analytics(module_color={...})
-- [ ] support programmatic usage
+- [x] view in web browser
+    - [x] config params
+- [x] support programmatic usage
+- [ ] better schema /router node appearance
 - [ ] support dataclass
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] add configuration for highlight (optional)

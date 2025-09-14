@@ -38,11 +38,9 @@ class Analytics:
         for route in app.routes:
             if isinstance(route, routing.APIRoute) and route.response_model:
                 yield route
-    
 
-    def analysis(
-            self, app: FastAPI,
-            ):
+
+    def analysis(self, app: FastAPI):
         """
         1. get routes which return pydantic schema
             1.1 collect tags and routes, add links tag-> route
@@ -311,6 +309,8 @@ class Analytics:
                     label = "{self.generate_node_label(node)}"
                     shape = "record"
                     {(f'color = "{color}"' if color else '')}
+                    {(f'fillcolor = "tomato"' if node.name == self.schema else '')}
+                    {(f'style = "filled"' if node.name == self.schema else '')}
                 ];''' for node in mod.schema_nodes
             ]
             inner_nodes_str = '\n'.join(inner_nodes)

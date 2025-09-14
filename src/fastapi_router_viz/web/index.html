@@ -1,27 +1,45 @@
 <html>
   <head>
-    <!-- <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css"
-    /> -->
     <link rel="stylesheet" href="/static/graphviz.svg.css" />
   </head>
 
   <style>
-    #instructions {
-      color: #fcfcfc;
-      position: absolute;
-      z-index: 100;
-      bottom: 0px;
-      left: 0px;
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      background: #111;
+    }
+    #controls {
+      flex: 0 0 auto;
+    }
+    #graph {
+      flex: 1 1 auto;
+      overflow: auto;
     }
   </style>
   <body>
-    <h4 id="instructions">
-      Click node to highlight; Shift-scroll to zoom; Esc to unhighlight
-    </h4>
+    <div id="controls" style="padding: 8px; position: sticky; top: 0; background: #222; z-index: 200; color: #eee; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <label for="tags" style="min-width: 60px;">Tags</label>
+      <select id="tags" style="min-width: 200px;"></select>
 
-    <div id="graph" style="width: 100%; height: 100%; overflow: scroll"></div>
+      <label for="schema" style="min-width: 60px;">Schema</label>
+      <select id="schema" style="min-width: 320px;"></select>
+
+      <label style="display: inline-flex; align-items: center; gap: 6px;">
+        <input type="checkbox" id="show_fields" />
+        Show fields
+      </label>
+
+  <button id="generate" style="padding: 6px 12px;">Generate</button>
+  <button id="reset" style="padding: 6px 12px;">Reset</button>
+    </div>
+
+  <div id="graph" style="width: 100%;"></div>
 
     <script
       type="text/javascript"
@@ -38,6 +56,7 @@
         let graphviz = d3.select("#graph").graphviz();
         let gv;
         var currentSelection = [];
+        let optionData = { tags: [], schemas: [] };
 
         function highlight() {
           let highlightedNodes = $();
@@ -147,12 +166,82 @@
             .renderDot(dotSrc)
             .on("end", function () {
               $("#graph").data("graphviz.svg").setup();
+              // Make SVG fill its container (which fills the viewport)
+              const $svg = $("#graph svg");
+              $svg.attr("width", "100%");
+              $svg.attr("height", "100%");
+              $svg.attr("preserveAspectRatio", "xMidYMid meet");
             });
         }
-        const res = fetch("/dot").then(async (res) => {
-          const dot = await res.text();
-          render(dot);
+
+        function populateControls(data) {
+          // Populate tags (single-select)
+          optionData.tags = Array.isArray(data.tags) ? data.tags : [];
+          const $tags = $("#tags");
+          $tags.empty();
+          $tags.append($("<option>").val("").text("-- All tags --"));
+          for (const t of optionData.tags) {
+            const opt = $("<option>").val(t).text(t);
+            $tags.append(opt);
+          }
+
+          // Populate schemas (single-select)
+          optionData.schemas = Array.isArray(data.schemas) ? data.schemas : [];
+          const $schema = $("#schema");
+          $schema.empty();
+          $schema.append($("<option>").val("").text("-- All schemas --"));
+          for (const s of optionData.schemas) {
+            const label = `${s.name} (${s.fullname})`;
+            const opt = $("<option>").val(s.name).text(label);
+            $schema.append(opt);
+          }
+        }
+
+        async function loadInitial() {
+          const res = await fetch("/dot");
+          const data = await res.json();
+          populateControls(data);
+          render(data.dot);
+        }
+
+        $("#generate").on("click", async function () {
+          const selectedTags = $("#tags").val();
+          const selectedSchema = $("#schema").val() || "";
+
+          const payload = {
+            tags: selectedTags ? [selectedTags]: null,
+            schema_name: selectedSchema ? selectedSchema : null,
+            show_fields: $("#show_fields").is(":checked"),
+          };
+
+          try {
+            const res = await fetch("/dot", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            const dotText = await res.text();
+            render(dotText);
+          } catch (err) {
+            console.error("Failed to generate filtered DOT:", err);
+          }
         });
+
+        $("#reset").on("click", async function () {
+          // reset selects to default "-- All --"
+          $("#tags").val("");
+          $("#schema").val("");
+          $("#show_fields").prop("checked", false);
+          // reload options and default graph
+          try {
+            await loadInitial();
+          } catch (err) {
+            console.error("Failed to reset:", err);
+          }
+        });
+
+        // Initial load
+        loadInitial();
       });
     </script>
   </body>

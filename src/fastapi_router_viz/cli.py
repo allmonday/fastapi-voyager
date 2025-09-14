@@ -91,7 +91,6 @@ def generate_visualization(
     schema: str | None = None,
     show_fields: bool = False,
     module_color: dict[str, str] | None = None,
-    write_file: bool = True,
 ):
 
     """Generate DOT file for FastAPI router visualization."""
@@ -107,13 +106,11 @@ def generate_visualization(
     dot_content = analytics.generate_dot()
     
     # Optionally write to file
-    if write_file:
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(dot_content)
-        print(f"DOT file generated: {output_file}")
-        print("To render the graph, use: dot -Tpng router_viz.dot -o router_viz.png")
-        print("Or view online: https://dreampuf.github.io/GraphvizOnline/")
-    return dot_content
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(dot_content)
+    print(f"DOT file generated: {output_file}")
+    print("To render the graph, use: dot -Tpng router_viz.dot -o router_viz.png")
+    print("Or view online: https://dreampuf.github.io/GraphvizOnline/")
 
 
 def main():
@@ -221,28 +218,28 @@ Examples:
                     result[k] = v
         return result or None
 
-    # Generate visualization
-    print(args.tags)
     try:
-        dot_content = generate_visualization(
-            app, 
-            args.output, 
-            tags=args.tags, 
-            schema=args.schema,
-            show_fields=args.show_fields,
-            module_color=parse_kv_pairs(args.module_color),
-            write_file=not args.server,
-        )
+        module_color = parse_kv_pairs(args.module_color)
         if args.server:
-            # pipe to server (store dot in memory only)
-            viz_server.configure_dot_source(dot_text=dot_content)
+            # Build a preview server which computes DOT via Analytics using closure state
             try:
                 import uvicorn
             except ImportError:
                 print("Error: uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
                 sys.exit(1)
+            app_server = viz_server.create_app_with_fastapi(app, module_color=module_color)
             print("Starting preview server at http://127.0.0.1:8000 ... (Ctrl+C to stop)")
-            uvicorn.run(viz_server.app, host="127.0.0.1", port=8000)
+            uvicorn.run(app_server, host="127.0.0.1", port=8000)
+        else:
+            # Generate and write dot file locally
+            generate_visualization(
+                app, 
+                args.output, 
+                tags=args.tags, 
+                schema=args.schema,
+                show_fields=args.show_fields,
+                module_color=module_color,
+            )
     except Exception as e:
         print(f"Error generating visualization: {e}")
         sys.exit(1)
