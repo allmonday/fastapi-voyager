@@ -340,7 +340,8 @@ class Analytics:
         link_str = '\n'.join(links)
 
         template = f'''
-        digraph mygraph {{
+        digraph world {{
+            pad="0.5"
             fontname="Helvetica,Arial,sans-serif"
             node [fontname="Helvetica,Arial,sans-serif"]
             edge [fontname="Helvetica,Arial,sans-serif"]

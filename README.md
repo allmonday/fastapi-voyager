@@ -44,6 +44,9 @@ router-viz tests/demo.py --app app --module_color=tests.demo:red
 # Custom output file
 router-viz tests/demo.py -o my_visualization.dot
 
+# server mode
+router-viz tests/demo.py --app app --server --show_fields --module_color=tests.demo:red 
+
 # Show help
 router-viz --help
 
@@ -86,3 +89,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [ ] show difference between resolve, post fields
     - [ ] strikethrough for excluded fields
     - [ ] display loader as edges
+
+
+## Credits
+
+- https://github.com/tintinweb/vscode-interactive-graphviz, for web visualization.

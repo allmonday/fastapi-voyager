@@ -1,0 +1,159 @@
+<html>
+  <head>
+    <!-- <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css"
+    /> -->
+    <link rel="stylesheet" href="/static/graphviz.svg.css" />
+  </head>
+
+  <style>
+    #instructions {
+      color: #fcfcfc;
+      position: absolute;
+      z-index: 100;
+      bottom: 0px;
+      left: 0px;
+    }
+  </style>
+  <body>
+    <h4 id="instructions">
+      Click node to highlight; Shift-scroll to zoom; Esc to unhighlight
+    </h4>
+
+    <div id="graph" style="width: 100%; height: 100%; overflow: scroll"></div>
+
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/jquery-2.1.3.min.js"
+    ></script>
+    <script src="//d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@2.20.0/dist/graphviz.umd.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.6.0/build/d3-graphviz.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
+    <script src="/static/graphviz.svg.js"></script>
+    <script type="module">
+      $(document).ready(function () {
+        let graphviz = d3.select("#graph").graphviz();
+        let gv;
+        var currentSelection = [];
+
+        function highlight() {
+          let highlightedNodes = $();
+          for (const selection of currentSelection) {
+            const nodes = getAffectedNodes(selection.set, "bidirectional");
+            highlightedNodes = highlightedNodes.add(nodes);
+          }
+
+          gv.highlight(highlightedNodes, true);
+          //gv.bringToFront(highlightedNodes);
+        }
+        function getAffectedNodes($set, $mode = "bidirectional") {
+          let $result = $().add($set);
+          if ($mode === "bidirectional" || $mode === "downstream") {
+            $set.each((i, el) => {
+              if (el.className.baseVal === "edge") {
+                const edge = $(el).data("name");
+                const nodes = gv.nodesByName();
+                const downStreamNode = edge.split("->")[1];
+                if (downStreamNode) {
+                  $result.push(nodes[downStreamNode]);
+                  $result = $result.add(
+                    gv.linkedFrom(nodes[downStreamNode], true)
+                  );
+                }
+              } else {
+                $result = $result.add(gv.linkedFrom(el, true));
+              }
+            });
+          }
+          if ($mode === "bidirectional" || $mode === "upstream") {
+            $set.each((i, el) => {
+              if (el.className.baseVal === "edge") {
+                const edge = $(el).data("name");
+                const nodes = gv.nodesByName();
+                const upStreamNode = edge.split("->")[0];
+                if (upStreamNode) {
+                  $result.push(nodes[upStreamNode]);
+                  $result = $result.add(gv.linkedTo(nodes[upStreamNode], true));
+                }
+              } else {
+                $result = $result.add(gv.linkedTo(el, true));
+              }
+            });
+          }
+          return $result;
+        }
+
+        $("#graph").graphviz({
+          shrink: null,
+          zoom: false,
+          ready: function () {
+            gv = this;
+
+            gv.nodes().click(function (event) {
+              console.log(event);
+              const set = $();
+              set.push(this);
+
+              var obj = {
+                set: set,
+                direction: "bidirectional",
+              };
+              // If CMD or CTRL is pressed, then add this to the selection
+              if (event.ctrlKey || event.metaKey || event.shiftKey) {
+                currentSelection.push(obj);
+              } else {
+                currentSelection = [obj];
+              }
+
+              highlight();
+            });
+            gv.clusters().click(function (event) {
+              const set = $();
+              set.push(this);
+
+              var obj = {
+                set: set,
+                direction: "single",
+              };
+              // If CMD or CTRL is pressed, then add this to the selection
+              if (event.ctrlKey || event.metaKey || event.shiftKey) {
+                currentSelection.push(obj);
+              } else {
+                currentSelection = [obj];
+              }
+              highlight();
+            });
+
+            $(document).keydown(function (evt) {
+              // press escape to cancel highlight
+              if (evt.keyCode == 27) {
+                gv.highlight();
+              }
+            });
+          },
+        });
+
+        function render(dotSrc) {
+          graphviz
+            .engine("dot")
+            .fade(true)
+            .tweenPaths(true) // default
+            .tweenShapes(true) // default
+            .zoomScaleExtent([0, Infinity])
+            .zoom(true)
+            .renderDot(dotSrc)
+            .on("end", function () {
+              $("#graph").data("graphviz.svg").setup();
+            });
+        }
+        const res = fetch("/dot").then(async (res) => {
+          const dot = await res.text();
+          render(dot);
+        });
+      });
+    </script>
+  </body>
+</html>

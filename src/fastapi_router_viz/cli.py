@@ -9,6 +9,7 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi_router_viz.graph import Analytics
 from fastapi_router_viz.version import __version__
+from fastapi_router_viz import server as viz_server
 
 
 def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optional[FastAPI]:
@@ -90,6 +91,7 @@ def generate_visualization(
     schema: str | None = None,
     show_fields: bool = False,
     module_color: dict[str, str] | None = None,
+    write_file: bool = True,
 ):
 
     """Generate DOT file for FastAPI router visualization."""
@@ -104,13 +106,14 @@ def generate_visualization(
 
     dot_content = analytics.generate_dot()
     
-    # Write to file
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(dot_content)
-    
-    print(f"DOT file generated: {output_file}")
-    print("To render the graph, use: dot -Tpng router_viz.dot -o router_viz.png")
-    print("Or view online: https://dreampuf.github.io/GraphvizOnline/")
+    # Optionally write to file
+    if write_file:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(dot_content)
+        print(f"DOT file generated: {output_file}")
+        print("To render the graph, use: dot -Tpng router_viz.dot -o router_viz.png")
+        print("Or view online: https://dreampuf.github.io/GraphvizOnline/")
+    return dot_content
 
 
 def main():
@@ -151,6 +154,11 @@ Examples:
         "--output", "-o",
         default="router_viz.dot",
         help="Output DOT file name (default: router_viz.dot)"
+    )
+    parser.add_argument(
+        "--server",
+        action="store_true",
+        help="Start a local server to preview the generated DOT graph"
     )
     
     parser.add_argument(
@@ -216,14 +224,25 @@ Examples:
     # Generate visualization
     print(args.tags)
     try:
-        generate_visualization(
+        dot_content = generate_visualization(
             app, 
             args.output, 
             tags=args.tags, 
             schema=args.schema,
             show_fields=args.show_fields,
             module_color=parse_kv_pairs(args.module_color),
+            write_file=not args.server,
         )
+        if args.server:
+            # pipe to server (store dot in memory only)
+            viz_server.configure_dot_source(dot_text=dot_content)
+            try:
+                import uvicorn
+            except ImportError:
+                print("Error: uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
+                sys.exit(1)
+            print("Starting preview server at http://127.0.0.1:8000 ... (Ctrl+C to stop)")
+            uvicorn.run(viz_server.app, host="127.0.0.1", port=8000)
     except Exception as e:
         print(f"Error generating visualization: {e}")
         sys.exit(1)
