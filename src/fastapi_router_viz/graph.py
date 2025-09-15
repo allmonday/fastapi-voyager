@@ -272,11 +272,11 @@ class Analytics:
             if link.type == 'child':
                 return 'style = "dashed", label = ""'
             elif link.type == 'parent':
-                return 'style = "solid", label = "inherits", align="left"'
+                return 'style = "solid", label = "inherits", color = "purple"'
             elif link.type == 'entry':
-                return 'style = "bold", label = ""'
+                return 'style = "solid", label = ""'
             elif link.type == 'subset':
-                return 'style = "dotted", label = "subset", align="left"'
+                return 'style = "solid", label = "subset", color = "orange"'
             return 'style = "solid"'
 
         _tags, _routes, _nodes, _links = self.filter_nodes_and_schemas_based_on_schemas()
@@ -295,8 +295,6 @@ class Analytics:
             "{r.id}" [
                 label = "{r.name}"
                 shape = "record"
-                fillcolor = "lightgreen"
-                style = "filled"
             ];''' for r in _routes]
         route_str = '\n'.join(routes)
 
@@ -344,7 +342,10 @@ class Analytics:
             pad="0.5"
             fontname="Helvetica,Arial,sans-serif"
             node [fontname="Helvetica,Arial,sans-serif"]
-            edge [fontname="Helvetica,Arial,sans-serif"]
+            edge [
+                fontname="Helvetica,Arial,sans-serif"
+                color="gray"
+            ]
             graph [
                 rankdir = "LR"
             ];
@@ -352,17 +353,24 @@ class Analytics:
                 fontsize = "16"
             ];
 
-            {tag_str}
+            subgraph cluster_tags {{ 
+                label = "Tags"
+                style = "rounded";
+                fontsize = "20"
+                {tag_str}
+            }}
 
             subgraph cluster_router {{
+                label = "Route apis"
                 style = "rounded";
-                color = "lightgreen";
-                penwidth = 3;
-                    {route_str}
+                fontsize = "20"
+                {route_str}
             }}
 
             subgraph cluster_schema {{
-                label = "schema"
+                label = "Schema"
+                fontsize = "20"
+                style = "rounded";
                     {modules_str}
             }}
 
