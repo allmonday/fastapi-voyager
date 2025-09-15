@@ -23,23 +23,37 @@
     }
   </style>
   <body>
-    <div id="controls" style="padding: 8px; position: sticky; top: 0; background: #222; z-index: 200; color: #eee; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-      <label for="tags" style="min-width: 60px;">Tags</label>
-      <select id="tags" style="min-width: 200px;"></select>
+    <div
+      id="controls"
+      style="
+        padding: 8px;
+        position: sticky;
+        top: 0;
+        background: #222;
+        z-index: 200;
+        color: #eee;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      "
+    >
+      <label for="tags" style="min-width: 60px">Tags</label>
+      <select id="tags" style="min-width: 200px"></select>
 
-      <label for="schema" style="min-width: 60px;">Schema</label>
-      <select id="schema" style="min-width: 320px;"></select>
+      <label for="schema" style="min-width: 60px">Schema</label>
+      <select id="schema" style="min-width: 320px"></select>
 
-      <label style="display: inline-flex; align-items: center; gap: 6px;">
+      <label style="display: inline-flex; align-items: center; gap: 6px">
         <input type="checkbox" id="show_fields" />
         Show fields
       </label>
 
-  <button id="generate" style="padding: 6px 12px;">Generate</button>
-  <button id="reset" style="padding: 6px 12px;">Reset</button>
+      <button id="generate" style="padding: 6px 12px">Generate</button>
+      <button id="reset" style="padding: 6px 12px">Reset</button>
     </div>
 
-  <div id="graph" style="width: 100%;"></div>
+    <div id="graph" style="width: 100%"></div>
 
     <script
       type="text/javascript"
@@ -112,7 +126,6 @@
             gv = this;
 
             gv.nodes().click(function (event) {
-              console.log(event);
               const set = $();
               set.push(this);
 
@@ -201,7 +214,7 @@
           const res = await fetch("/dot");
           const data = await res.json();
           populateControls(data);
-          render(data.dot);
+          // render(data.dot);
         }
 
         $("#generate").on("click", async function () {
@@ -209,7 +222,7 @@
           const selectedSchema = $("#schema").val() || "";
 
           const payload = {
-            tags: selectedTags ? [selectedTags]: null,
+            tags: selectedTags ? [selectedTags] : null,
             schema_name: selectedSchema ? selectedSchema : null,
             show_fields: $("#show_fields").is(":checked"),
           };
