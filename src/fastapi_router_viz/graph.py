@@ -318,7 +318,7 @@ class Analytics:
 
             return f'''
             subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
-                label = "{mod.fullname}"
+                label = "{mod.name}"
                 {(f'color = "{color}"' if color else '')}
                 {inner_nodes_str}
                 {child_str}

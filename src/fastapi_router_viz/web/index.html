@@ -1,6 +1,7 @@
 <html>
   <head>
     <link rel="stylesheet" href="/static/graphviz.svg.css" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
   </head>
 
   <style>
@@ -12,7 +13,6 @@
     body {
       display: flex;
       flex-direction: column;
-      background: #111;
     }
     #controls {
       flex: 0 0 auto;
@@ -29,9 +29,9 @@
         padding: 8px;
         position: sticky;
         top: 0;
-        background: #222;
-        z-index: 200;
-        color: #eee;
+        background: #eee;
+        z-index: 1;
+        color: #211d1d;
         display: flex;
         gap: 12px;
         align-items: center;
@@ -39,10 +39,10 @@
       "
     >
       <label for="tags" style="min-width: 60px">Tags</label>
-      <select id="tags" style="min-width: 200px"></select>
+  <input id="tags" type="text" style="min-width: 200px" placeholder="-- All tags --" />
 
       <label for="schema" style="min-width: 60px">Schema</label>
-      <select id="schema" style="min-width: 320px"></select>
+  <input id="schema" type="text" style="min-width: 320px" placeholder="-- All schemas --" />
 
       <label style="display: inline-flex; align-items: center; gap: 6px">
         <input type="checkbox" id="show_fields" />
@@ -59,203 +59,13 @@
       type="text/javascript"
       src="https://code.jquery.com/jquery-2.1.3.min.js"
     ></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="//d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/@hpcc-js/wasm@2.20.0/dist/graphviz.umd.js"></script>
     <script src="https://unpkg.com/d3-graphviz@5.6.0/build/d3-graphviz.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
     <script src="/static/graphviz.svg.js"></script>
-    <script type="module">
-      $(document).ready(function () {
-        let graphviz = d3.select("#graph").graphviz();
-        let gv;
-        var currentSelection = [];
-        let optionData = { tags: [], schemas: [] };
-
-        function highlight() {
-          let highlightedNodes = $();
-          for (const selection of currentSelection) {
-            const nodes = getAffectedNodes(selection.set, "bidirectional");
-            highlightedNodes = highlightedNodes.add(nodes);
-          }
-
-          gv.highlight(highlightedNodes, true);
-          //gv.bringToFront(highlightedNodes);
-        }
-        function getAffectedNodes($set, $mode = "bidirectional") {
-          let $result = $().add($set);
-          if ($mode === "bidirectional" || $mode === "downstream") {
-            $set.each((i, el) => {
-              if (el.className.baseVal === "edge") {
-                const edge = $(el).data("name");
-                const nodes = gv.nodesByName();
-                const downStreamNode = edge.split("->")[1];
-                if (downStreamNode) {
-                  $result.push(nodes[downStreamNode]);
-                  $result = $result.add(
-                    gv.linkedFrom(nodes[downStreamNode], true)
-                  );
-                }
-              } else {
-                $result = $result.add(gv.linkedFrom(el, true));
-              }
-            });
-          }
-          if ($mode === "bidirectional" || $mode === "upstream") {
-            $set.each((i, el) => {
-              if (el.className.baseVal === "edge") {
-                const edge = $(el).data("name");
-                const nodes = gv.nodesByName();
-                const upStreamNode = edge.split("->")[0];
-                if (upStreamNode) {
-                  $result.push(nodes[upStreamNode]);
-                  $result = $result.add(gv.linkedTo(nodes[upStreamNode], true));
-                }
-              } else {
-                $result = $result.add(gv.linkedTo(el, true));
-              }
-            });
-          }
-          return $result;
-        }
-
-        $("#graph").graphviz({
-          shrink: null,
-          zoom: false,
-          ready: function () {
-            gv = this;
-
-            gv.nodes().click(function (event) {
-              const set = $();
-              set.push(this);
-
-              var obj = {
-                set: set,
-                direction: "bidirectional",
-              };
-              // If CMD or CTRL is pressed, then add this to the selection
-              if (event.ctrlKey || event.metaKey || event.shiftKey) {
-                currentSelection.push(obj);
-              } else {
-                currentSelection = [obj];
-              }
-
-              highlight();
-            });
-            gv.clusters().click(function (event) {
-              const set = $();
-              set.push(this);
-
-              var obj = {
-                set: set,
-                direction: "single",
-              };
-              // If CMD or CTRL is pressed, then add this to the selection
-              if (event.ctrlKey || event.metaKey || event.shiftKey) {
-                currentSelection.push(obj);
-              } else {
-                currentSelection = [obj];
-              }
-              highlight();
-            });
-
-            $(document).keydown(function (evt) {
-              // press escape to cancel highlight
-              if (evt.keyCode == 27) {
-                gv.highlight();
-              }
-            });
-          },
-        });
-
-        function render(dotSrc) {
-          graphviz
-            .engine("dot")
-            .fade(true)
-            .tweenPaths(true) // default
-            .tweenShapes(true) // default
-            .zoomScaleExtent([0, Infinity])
-            .zoom(true)
-            .renderDot(dotSrc)
-            .on("end", function () {
-              $("#graph").data("graphviz.svg").setup();
-              // Make SVG fill its container (which fills the viewport)
-              const $svg = $("#graph svg");
-              $svg.attr("width", "100%");
-              $svg.attr("height", "100%");
-              $svg.attr("preserveAspectRatio", "xMidYMid meet");
-            });
-        }
-
-        function populateControls(data) {
-          // Populate tags (single-select)
-          optionData.tags = Array.isArray(data.tags) ? data.tags : [];
-          const $tags = $("#tags");
-          $tags.empty();
-          $tags.append($("<option>").val("").text("-- All tags --"));
-          for (const t of optionData.tags) {
-            const opt = $("<option>").val(t).text(t);
-            $tags.append(opt);
-          }
-
-          // Populate schemas (single-select)
-          optionData.schemas = Array.isArray(data.schemas) ? data.schemas : [];
-          const $schema = $("#schema");
-          $schema.empty();
-          $schema.append($("<option>").val("").text("-- All schemas --"));
-          for (const s of optionData.schemas) {
-            const label = `${s.name} (${s.fullname})`;
-            const opt = $("<option>").val(s.name).text(label);
-            $schema.append(opt);
-          }
-        }
-
-        async function loadInitial() {
-          const res = await fetch("/dot");
-          const data = await res.json();
-          populateControls(data);
-          // render(data.dot);
-        }
-
-        $("#generate").on("click", async function () {
-          const selectedTags = $("#tags").val();
-          const selectedSchema = $("#schema").val() || "";
-
-          const payload = {
-            tags: selectedTags ? [selectedTags] : null,
-            schema_name: selectedSchema ? selectedSchema : null,
-            show_fields: $("#show_fields").is(":checked"),
-          };
-
-          try {
-            const res = await fetch("/dot", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-            const dotText = await res.text();
-            render(dotText);
-          } catch (err) {
-            console.error("Failed to generate filtered DOT:", err);
-          }
-        });
-
-        $("#reset").on("click", async function () {
-          // reset selects to default "-- All --"
-          $("#tags").val("");
-          $("#schema").val("");
-          $("#show_fields").prop("checked", false);
-          // reload options and default graph
-          try {
-            await loadInitial();
-          } catch (err) {
-            console.error("Failed to reset:", err);
-          }
-        });
-
-        // Initial load
-        loadInitial();
-      });
-    </script>
+    <script type="module" src="/static/main.js"></script>
   </body>
 </html>
