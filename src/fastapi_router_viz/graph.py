@@ -141,20 +141,21 @@ class Analytics:
     def generate_node_head(self, link_name: str):
         return f'{link_name}::{PK}'
 
+    def _is_inheritance_of_BaseModel(self, cls):
+        return issubclass(cls, BaseModel) and cls is not BaseModel
+
     def analysis_schemas(self, schema: type[BaseModel]):
         """
         1. cls is the source, add schema
         2. pydantic fields are targets, if annotation is subclass of BaseMode, add fields and add links
         3. recursively run walk_schema
         """
-        def _is_inheritance_of_BaseModel(cls):
-            return issubclass(cls, BaseModel) and cls is not BaseModel
         
         self.add_to_node_set(schema)
 
         # handle schema inside ensure_subset(schema)
         if subset_reference := getattr(schema, ENSURE_SUBSET_REFERENCE, None):
-            if _is_inheritance_of_BaseModel(subset_reference):
+            if self._is_inheritance_of_BaseModel(subset_reference):
 
                 self.add_to_node_set(subset_reference)
                 self.add_to_link_set(
@@ -166,7 +167,7 @@ class Analytics:
 
         # handle bases
         for base_class in schema.__bases__:
-            if _is_inheritance_of_BaseModel(base_class):
+            if self._is_inheritance_of_BaseModel(base_class):
                 self.add_to_node_set(base_class)
                 self.add_to_link_set(
                     source=self.generate_node_head(full_class_name(schema)),
@@ -179,10 +180,10 @@ class Analytics:
         for k, v in schema.model_fields.items():
             annos = get_core_types(v.annotation)
             for anno in annos:
-                if anno and issubclass(anno, BaseModel):
+                if anno and self._is_inheritance_of_BaseModel(anno):
                     self.add_to_node_set(anno)
                     # add f prefix to fix highlight issue in vsc graphviz interactive previewer
-                    source_name = f'{full_class_name(schema)}::f{k}' if self.show_fields else self.generate_node_head(full_class_name(schema))
+                    source_name = f'{full_class_name(schema)}::f{k}'
                     if self.add_to_link_set(
                         source=source_name,
                         source_origin=full_class_name(schema),
@@ -246,11 +247,16 @@ class Analytics:
 
         return _tags, _routes, _nodes, _links
     
+    def _is_object(self, cls):
+        _types = get_core_types(cls)
+        return any(self._is_inheritance_of_BaseModel(t) for t in _types if t)
+    
     def get_pydantic_fields(self, schema: type[BaseModel]) -> list[FieldInfo]:
         fields = []
         for k, v in schema.model_fields.items():
             anno = v.annotation
             fields.append(FieldInfo(
+                is_object=self._is_object(anno),
                 name=k,
                 type_name=get_type_name(anno)
             ))
@@ -258,14 +264,15 @@ class Analytics:
 
     def generate_node_label(self, node: SchemaNode):
         name = node.name
-        if self.show_fields:
-            fields = []
-            for field in node.fields:
-                fields.append(f'<f{field.name}> {field.name}: {field.type_name}')
-            field_str = ' | '.join(fields)
-            return f'<{PK}> {name} | {field_str}' if field_str else name
-        else:
-            return f'<PK> {name}'
+        fields = []
+
+        _fields = node.fields if self.show_fields else [f for f in node.fields if f.is_object is True]
+
+        for field in _fields:
+            fields.append(f'<f{field.name}> {field.name}: {field.type_name}')
+
+        field_str = ' | '.join(fields)
+        return f'<{PK}> {name} | {field_str}' if field_str else name
 
     def generate_dot(self):
         def _get_link_attributes(link: Link):
@@ -276,7 +283,7 @@ class Analytics:
             elif link.type == 'entry':
                 return 'style = "solid", label = ""'
             elif link.type == 'subset':
-                return 'style = "solid", dir="back", labeldistance=1, minlen=3, taillabel = "<< subset >>", color = "orange"'
+                return 'style = "solid", dir="back", minlen=3, taillabel = "<< subset >>", color = "orange"'
 
             return 'style = "solid", arrowtail="odiamond", dir="back", minlen=3'
 

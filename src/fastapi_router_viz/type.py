@@ -6,6 +6,7 @@ from typing import Literal
 class FieldInfo:
     name: str
     type_name: str
+    is_object: bool = False
 
 @dataclass
 class Tag:
