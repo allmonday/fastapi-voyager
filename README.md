@@ -8,8 +8,11 @@ Visualize FastAPI application's routes and inner dependencies inside response_mo
 
 > This repo is still in early stage.
 
+```shell
+router-viz -m tests.demo --app app --server
+```
 
-[![Video Title](https://img.youtube.com/vi/9ywdMt1wPOY/0.jpg)](https://www.youtube.com/watch?v=9ywdMt1wPOY)
+<img width="1528" height="603" alt="image" src="https://github.com/user-attachments/assets/e977cba0-1bfb-4fce-8c77-e5fbfb779fb7" />
 
 
 ## Installation
@@ -36,7 +39,7 @@ router-viz tests/demo.py --app app --tags page
 router-viz tests/demo.py --app app --schema Task
 
 # show fields
-router-viz tests/demo.py --app app --show_fields
+router-viz tests/demo.py --app app --show_fields all
 
 # highlight module
 router-viz tests/demo.py --app app --module_color=tests.demo:red
@@ -69,12 +72,6 @@ dot -Tpng router_viz.dot -o router_viz.png
 
 or you can open router_viz.dot with vscode extension `graphviz interactive preview`
 
-<img width="1062" height="283" alt="image" src="https://github.com/user-attachments/assets/d8134277-fa84-444a-b6cd-1287e477a83e" />
-
-`--show_fields` to display details
-
-<img width="1329" height="592" alt="image" src="https://github.com/user-attachments/assets/d5dceee8-995b-4dab-a016-46fa98e74d77" />
-
 
 ## Next
 
@@ -82,12 +79,12 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [x] module-based coloring via Analytics(module_color={...})
 - [x] view in web browser
     - [x] config params
+    - [x] make a explorer dashboard, provide list of routes, schemas, to make it easy to switch and search
 - [x] support programmatic usage
 - [ ] better schema /router node appearance
 - [ ] support dataclass
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] add configuration for highlight (optional)
-- [ ] make a explorer dashboard, provide list of routes, schemas, to make it easy to switch and search
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
     - [ ] strikethrough for excluded fields
