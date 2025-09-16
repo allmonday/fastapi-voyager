@@ -275,10 +275,13 @@ class Analytics:
 
         for field in _fields:
             type_name = field.type_name[:25] + '..' if len(field.type_name) > 25 else field.type_name
-            fields_parts.append(f'<f{field.name}> {field.name}: {type_name}')
+            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>{field.name}: {type_name}</font></td></tr>""" 
+            fields_parts.append(field_str)
+        
+        header = f"""<tr><td port="r1" cellpadding="1.5" bgcolor="#009485" align="center" colspan="1"> <font color="white">{PK} {name}</font> </td> </tr>"""
+        field_content = ''.join(fields_parts) if fields_parts else ''
 
-        field_str = ' | '.join(fields_parts)
-        return f'<{PK}> {name} | {field_str}' if field_str else name
+        return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content} </table>>"""
 
     def generate_dot(self):
         def _get_link_attributes(link: Link):
@@ -318,8 +321,8 @@ class Analytics:
             inner_nodes = [
                 f'''
                 "{node.id}" [
-                    label = "{self.generate_node_label(node)}"
-                    shape = "record"
+                    label = {self.generate_node_label(node)}
+                    shape = "plain"
                     {(f'color = "{color}"' if color else '')}
                     {(f'fillcolor = "tomato"' if node.name == self.schema else '')}
                     {(f'style = "filled"' if node.name == self.schema else '')}

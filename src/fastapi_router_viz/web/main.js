@@ -212,7 +212,6 @@ $(document).ready(function () {
       schema_name: selectedSchemaName ? selectedSchemaName : null,
       show_fields: $("#show_fields").val(),
     };
-    console.log(payload);
 
     try {
       const res = await fetch("/dot", {
