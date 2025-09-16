@@ -204,7 +204,8 @@ class Analytics:
         if self.schema is None:
             return self.tags, self.routes, self.nodes, self.links
 
-        seed_node_ids: set[str] = {n.id for n in self.nodes if n.name == self.schema}
+        # Prefer matching by fullname (node.id). If no match, fall back to simple name.
+        seed_node_ids: set[str] = {n.id for n in self.nodes if n.id == self.schema}
 
         if not seed_node_ids:
             return self.tags, self.routes, self.nodes, self.links
@@ -278,7 +279,8 @@ class Analytics:
             field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>{field.name}: {type_name}</font></td></tr>""" 
             fields_parts.append(field_str)
         
-        header = f"""<tr><td port="r1" cellpadding="1.5" bgcolor="#009485" align="center" colspan="1"> <font color="white">{PK} {name}</font> </td> </tr>"""
+        header_color = 'tomato' if node.id == self.schema else '#009485'
+        header = f"""<tr><td port="r1" cellpadding="1.5" bgcolor="{header_color}" align="center" colspan="1"> <font color="white">{PK} {name}</font> </td> </tr>"""
         field_content = ''.join(fields_parts) if fields_parts else ''
 
         return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content} </table>>"""
@@ -323,9 +325,6 @@ class Analytics:
                 "{node.id}" [
                     label = {self.generate_node_label(node)}
                     shape = "plain"
-                    {(f'color = "{color}"' if color else '')}
-                    {(f'fillcolor = "tomato"' if node.name == self.schema else '')}
-                    {(f'style = "filled"' if node.name == self.schema else '')}
                 ];''' for node in mod.schema_nodes
             ]
             inner_nodes_str = '\n'.join(inner_nodes)

@@ -4,7 +4,8 @@ $(document).ready(function () {
   var currentSelection = [];
   let optionData = { tags: [], schemas: [] };
   // Map of schema label -> schema name for autocomplete selection
-  let schemaLabelToName = {};
+  // Now map label -> schema fullname so we send fullname to backend
+  let schemaLabelToFullname = {};
 
   function highlight() {
     let highlightedNodes = $();
@@ -140,12 +141,13 @@ $(document).ready(function () {
     // Populate schemas (single-select)
     optionData.schemas = Array.isArray(data.schemas) ? data.schemas : [];
     const $schema = $("#schema");
-    schemaLabelToName = {};
+    schemaLabelToFullname = {};
     const schemaLabels = [];
     for (const s of optionData.schemas) {
       const label = `${s.name} (${s.fullname})`;
       schemaLabels.push(label);
-      schemaLabelToName[label] = s.name;
+      // Map label to fullname so we can submit fullname
+      schemaLabelToFullname[label] = s.fullname;
     }
     // Initialize jQuery UI Autocomplete for schemas
     $schema.val("");
@@ -156,8 +158,8 @@ $(document).ready(function () {
         delay: 0,
         select: function (event, ui) {
           // when a schema is selected, ui.item.value is the label
-          // we map it to the actual schema name when generating
-          $(this).data("selected-schema", schemaLabelToName[ui.item.value]);
+          // we map it to the actual schema fullname when generating
+          $(this).data("selected-schema", schemaLabelToFullname[ui.item.value]);
         },
         change: function (event, ui) {
           if (!ui.item) {
@@ -201,15 +203,16 @@ $(document).ready(function () {
 
     const schemaInput = $("#schema").val() || "";
     // If user selected from the autocomplete, we stored the actual name on data
-    const selectedSchemaName =
+    const selectedSchemaFullname =
       $("#schema").data("selected-schema") ||
-      schemaLabelToName[schemaInput] ||
+      schemaLabelToFullname[schemaInput] ||
       schemaInput ||
       null;
 
     const payload = {
       tags: selectedTags ? [selectedTags] : null,
-      schema_name: selectedSchemaName ? selectedSchemaName : null,
+  // send fullname to backend (server keeps the field name schema_name for compatibility)
+  schema_name: selectedSchemaFullname ? selectedSchemaFullname : null,
       show_fields: $("#show_fields").val(),
     };
 
