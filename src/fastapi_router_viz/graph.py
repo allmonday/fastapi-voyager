@@ -270,14 +270,15 @@ class Analytics:
     def generate_dot(self):
         def _get_link_attributes(link: Link):
             if link.type == 'child':
-                return 'style = "dashed", label = ""'
+                return 'style = "dashed", label = "", minlen=3'
             elif link.type == 'parent':
-                return 'style = "solid", label = "inherits", color = "purple"'
+                return 'style = "solid", dir="back", minlen=3, taillabel = "<< inherit >>", color = "purple"'
             elif link.type == 'entry':
                 return 'style = "solid", label = ""'
             elif link.type == 'subset':
-                return 'style = "solid", label = "subset", color = "orange"'
-            return 'style = "solid"'
+                return 'style = "solid", dir="back", labeldistance=1, minlen=3, taillabel = "<< subset >>", color = "orange"'
+
+            return 'style = "solid", arrowtail="odiamond", dir="back", minlen=3'
 
         _tags, _routes, _nodes, _links = self.filter_nodes_and_schemas_based_on_schemas()
         _modules = build_module_tree(_nodes)
@@ -319,6 +320,7 @@ class Analytics:
             return f'''
             subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
                 label = "{mod.name}"
+                labeljust = "l"
                 {(f'color = "{color}"' if color else '')}
                 {inner_nodes_str}
                 {child_str}
@@ -355,6 +357,7 @@ class Analytics:
 
             subgraph cluster_tags {{ 
                 label = "Tags"
+                labeljust = "l"
                 style = "rounded";
                 fontsize = "20"
                 {tag_str}
@@ -362,6 +365,7 @@ class Analytics:
 
             subgraph cluster_router {{
                 label = "Route apis"
+                labeljust = "l"
                 style = "rounded";
                 fontsize = "20"
                 {route_str}
@@ -369,6 +373,7 @@ class Analytics:
 
             subgraph cluster_schema {{
                 label = "Schema"
+                labeljust = "l"
                 fontsize = "20"
                 style = "rounded";
                     {modules_str}
