@@ -280,7 +280,7 @@ class Analytics:
             fields_parts.append(field_str)
         
         header_color = 'tomato' if node.id == self.schema else '#009485'
-        header = f"""<tr><td port="r1" cellpadding="1.5" bgcolor="{header_color}" align="center" colspan="1"> <font color="white">{PK} {name}</font> </td> </tr>"""
+        header = f"""<tr><td cellpadding="1.5" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">{name}</font> </td> </tr>"""
         field_content = ''.join(fields_parts) if fields_parts else ''
 
         return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content} </table>>"""
@@ -290,11 +290,11 @@ class Analytics:
             if link.type == 'child':
                 return 'style = "dashed", label = "", minlen=3'
             elif link.type == 'parent':
-                return 'style = "solid", dir="back", minlen=3, taillabel = "<< inherit >>", color = "purple"'
+                return 'style = "solid", dir="back", minlen=3, taillabel = "< inherit >", color = "purple"'
             elif link.type == 'entry':
                 return 'style = "solid", label = ""'
             elif link.type == 'subset':
-                return 'style = "solid", dir="back", minlen=3, taillabel = "<< subset >>", color = "orange"'
+                return 'style = "solid", dir="back", minlen=3, taillabel = "< subset >", color = "orange"'
 
             return 'style = "solid", arrowtail="odiamond", dir="back", minlen=3'
 
