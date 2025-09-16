@@ -1,7 +1,10 @@
 <html>
   <head>
     <link rel="stylesheet" href="/static/graphviz.svg.css" />
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
+    />
   </head>
 
   <style>
@@ -39,15 +42,27 @@
       "
     >
       <label for="tags" style="min-width: 60px">Tags</label>
-  <input id="tags" type="text" style="min-width: 200px" placeholder="-- All tags --" />
+      <input
+        id="tags"
+        type="text"
+        style="min-width: 200px"
+        placeholder="-- All tags --"
+      />
 
       <label for="schema" style="min-width: 60px">Schema</label>
-  <input id="schema" type="text" style="min-width: 320px" placeholder="-- All schemas --" />
+      <input
+        id="schema"
+        type="text"
+        style="min-width: 320px"
+        placeholder="-- All schemas --"
+      />
 
-      <label style="display: inline-flex; align-items: center; gap: 6px">
-        <input type="checkbox" id="show_fields" />
-        Show fields
-      </label>
+      <label for="show_fields" style="min-width: 50px">Fields</label>
+      <select id="show_fields" style="min-width: 120px">
+        <option value="single">No fields</option>
+        <option value="object" selected>Object fields</option>
+        <option value="all">All fields</option>
+      </select>
 
       <button id="generate" style="padding: 6px 12px">Generate</button>
       <button id="reset" style="padding: 6px 12px">Reset</button>

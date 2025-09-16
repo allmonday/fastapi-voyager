@@ -13,7 +13,7 @@ app = FastAPI(title="Demo API", description="A demo FastAPI application for rout
 def get_sprint():
     return []
 
-class A(BaseModel):
+class LooooooooonnnnnnnnnnggggggggggggggggA(BaseModel):
     id: int
 
 class B(BaseModel):
@@ -38,11 +38,11 @@ class Sprint(serv.Sprint):
     stories: list[PageStory]
     owner: Optional[serv.Member]
 
-AB = A | B
+AB = LooooooooonnnnnnnnnnggggggggggggggggA | B
 
 class PageOverall(BaseModel):
     sprints: list[Sprint]
-    item: Union[A, B]
+    item: Union[LooooooooonnnnnnnnnnggggggggggggggggA, B]
     ab: AB
 
 

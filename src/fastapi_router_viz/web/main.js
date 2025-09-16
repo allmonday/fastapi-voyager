@@ -117,7 +117,7 @@ $(document).ready(function () {
         $svg.attr("height", "100%");
         $svg.attr("preserveAspectRatio", "xMidYMid meet");
         // notify listeners that graph rendering is complete
-        $(document).trigger('graphviz:render:end');
+        $(document).trigger("graphviz:render:end");
       });
   }
 
@@ -127,11 +127,15 @@ $(document).ready(function () {
     const $tags = $("#tags");
     // Initialize jQuery UI Autocomplete for tags
     $tags.val("");
-    $tags.autocomplete({
-      source: optionData.tags,
-      minLength: 0,
-      delay: 0,
-    }).on('focus', function () { $(this).autocomplete('search', ''); });
+    $tags
+      .autocomplete({
+        source: optionData.tags,
+        minLength: 0,
+        delay: 0,
+      })
+      .on("focus", function () {
+        $(this).autocomplete("search", "");
+      });
 
     // Populate schemas (single-select)
     optionData.schemas = Array.isArray(data.schemas) ? data.schemas : [];
@@ -145,22 +149,26 @@ $(document).ready(function () {
     }
     // Initialize jQuery UI Autocomplete for schemas
     $schema.val("");
-    $schema.autocomplete({
-      source: schemaLabels,
-      minLength: 0,
-      delay: 0,
-      select: function (event, ui) {
-        // when a schema is selected, ui.item.value is the label
-        // we map it to the actual schema name when generating
-        $(this).data('selected-schema', schemaLabelToName[ui.item.value]);
-      },
-      change: function (event, ui) {
-        if (!ui.item) {
-          // if the value typed doesn't match a known label, clear selection
-          $(this).data('selected-schema', null);
-        }
-      }
-    }).on('focus', function () { $(this).autocomplete('search', ''); });
+    $schema
+      .autocomplete({
+        source: schemaLabels,
+        minLength: 0,
+        delay: 0,
+        select: function (event, ui) {
+          // when a schema is selected, ui.item.value is the label
+          // we map it to the actual schema name when generating
+          $(this).data("selected-schema", schemaLabelToName[ui.item.value]);
+        },
+        change: function (event, ui) {
+          if (!ui.item) {
+            // if the value typed doesn't match a known label, clear selection
+            $(this).data("selected-schema", null);
+          }
+        },
+      })
+      .on("focus", function () {
+        $(this).autocomplete("search", "");
+      });
   }
 
   async function loadInitial() {
@@ -174,15 +182,15 @@ $(document).ready(function () {
     const $generate = $("#generate");
     const $controls = $("#controls :input, #controls button");
     if (isGenerating) {
-      if (!$generate.data('original-text')) {
-        $generate.data('original-text', $generate.text());
+      if (!$generate.data("original-text")) {
+        $generate.data("original-text", $generate.text());
       }
-      $generate.text('generating...');
-      $controls.prop('disabled', true);
+      $generate.text("generating...");
+      $controls.prop("disabled", true);
     } else {
-      const original = $generate.data('original-text') || 'Generate';
+      const original = $generate.data("original-text") || "Generate";
       $generate.text(original);
-      $controls.prop('disabled', false);
+      $controls.prop("disabled", false);
     }
   }
 
@@ -193,13 +201,18 @@ $(document).ready(function () {
 
     const schemaInput = $("#schema").val() || "";
     // If user selected from the autocomplete, we stored the actual name on data
-    const selectedSchemaName = $("#schema").data('selected-schema') || schemaLabelToName[schemaInput] || schemaInput || null;
+    const selectedSchemaName =
+      $("#schema").data("selected-schema") ||
+      schemaLabelToName[schemaInput] ||
+      schemaInput ||
+      null;
 
     const payload = {
       tags: selectedTags ? [selectedTags] : null,
       schema_name: selectedSchemaName ? selectedSchemaName : null,
-      show_fields: $("#show_fields").is(":checked"),
+      show_fields: $("#show_fields").val(),
     };
+    console.log(payload);
 
     try {
       const res = await fetch("/dot", {
@@ -209,7 +222,7 @@ $(document).ready(function () {
       });
       const dotText = await res.text();
       // when rendering completes, revert loading state (one-time listener)
-      $(document).one('graphviz:render:end', function () {
+      $(document).one("graphviz:render:end", function () {
         setGeneratingState(false);
       });
       render(dotText);
@@ -223,7 +236,7 @@ $(document).ready(function () {
     // reset selects to default "-- All --"
     $("#tags").val("");
     $("#schema").val("");
-    $("#show_fields").prop("checked", false);
+    $("#show_fields").val("object");
     // reload options and default graph
     try {
       await loadInitial();

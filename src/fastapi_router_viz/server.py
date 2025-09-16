@@ -22,7 +22,8 @@ class OptionParam(BaseModel):
 class Payload(BaseModel):
 	tags: Optional[list[str]] = None
 	schema_name: Optional[str] = None
-	show_fields: bool = False
+	# Accept enum or legacy bool
+	show_fields: str = 'object'
 
 def create_app_with_fastapi(
 	target_app: FastAPI,

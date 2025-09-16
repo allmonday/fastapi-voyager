@@ -182,8 +182,9 @@ Examples:
     )
     parser.add_argument(
         "--show_fields",
-        action="store_true",
-        help="Include field details in the visualization"
+        choices=["single", "object", "all"],
+        default="object",
+        help="Field display mode: single (no fields), object (only object-like fields), all (all fields). Default: object"
     )
 
     

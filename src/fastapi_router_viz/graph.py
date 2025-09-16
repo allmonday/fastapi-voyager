@@ -13,7 +13,7 @@ class Analytics:
     def __init__(
             self, 
             schema: str | None = None, 
-            show_fields: bool = False,
+            show_fields: Literal['single', 'object', 'all'] = 'single',
             include_tags: list[str] | None = None,
             module_color: dict[str, str] | None = None,
         ):
@@ -31,7 +31,7 @@ class Analytics:
 
         self.include_tags = include_tags
         self.schema = schema
-        self.show_fields = show_fields
+        self.show_fields = show_fields if show_fields in ('single','object','all') else 'object'
         self.module_color = module_color or {}
     
     def _get_available_route(self, app: FastAPI):
@@ -264,14 +264,20 @@ class Analytics:
 
     def generate_node_label(self, node: SchemaNode):
         name = node.name
-        fields = []
+        fields_parts: list[str] = []
 
-        _fields = node.fields if self.show_fields else [f for f in node.fields if f.is_object is True]
+        if self.show_fields == 'all':
+            _fields = node.fields
+        elif self.show_fields == 'object':
+            _fields = [f for f in node.fields if f.is_object is True]
+        else:  # 'single'
+            _fields = []
 
         for field in _fields:
-            fields.append(f'<f{field.name}> {field.name}: {field.type_name}')
+            type_name = field.type_name[:25] + '..' if len(field.type_name) > 25 else field.type_name
+            fields_parts.append(f'<f{field.name}> {field.name}: {type_name}')
 
-        field_str = ' | '.join(fields)
+        field_str = ' | '.join(fields_parts)
         return f'<{PK}> {name} | {field_str}' if field_str else name
 
     def generate_dot(self):
