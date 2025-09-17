@@ -14,6 +14,9 @@ router-viz -m tests.demo --app app --server
 
 <img width="1528" height="603" alt="image" src="https://github.com/user-attachments/assets/e977cba0-1bfb-4fce-8c77-e5fbfb779fb7" />
 
+youtube:
+
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/msYsB9Cc3CA/0.jpg)](https://www.youtube.com/watch?v=msYsB9Cc3CA "Unity Snake Game")
 
 ## Installation
 
