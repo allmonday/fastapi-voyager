@@ -164,6 +164,7 @@ class Analytics:
                     target= self.generate_node_head(full_class_name(subset_reference)), 
                     target_origin=full_class_name(subset_reference),
                     type='subset')
+                self.analysis_schemas(subset_reference)
 
         # handle bases
         for base_class in schema.__bases__:
@@ -175,6 +176,7 @@ class Analytics:
                     target=self.generate_node_head(full_class_name(base_class)),
                     target_origin=full_class_name(base_class),
                     type='parent')
+                self.analysis_schemas(base_class)
 
         # handle fields
         for k, v in schema.model_fields.items():

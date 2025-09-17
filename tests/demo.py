@@ -12,6 +12,15 @@ app = FastAPI(title="Demo API", description="A demo FastAPI application for rout
 def get_sprint():
     return []
 
+class BBB(BaseModel):
+    id: int
+
+class BB(BBB):
+    name: str
+
+class B(BB):
+    age: int
+
 class PageTask(Task):
     owner: Optional[serv.Member]
 
@@ -30,6 +39,7 @@ class PageSprint(serv.Sprint):
 
 class PageOverall(BaseModel):
     sprints: list[PageSprint]
+    b: B
 
 
 @app.get("/page_overall", tags=['for-page'], response_model=PageOverall)
