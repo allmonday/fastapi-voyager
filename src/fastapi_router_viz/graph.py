@@ -271,19 +271,20 @@ class Analytics:
             _fields = node.fields
         elif self.show_fields == 'object':
             _fields = [f for f in node.fields if f.is_object is True]
+            
         else:  # 'single'
             _fields = []
 
         for field in _fields:
             type_name = field.type_name[:25] + '..' if len(field.type_name) > 25 else field.type_name
-            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>{field.name}: {type_name}</font></td></tr>""" 
+            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>  {field.name}: {type_name}    </font></td></tr>""" 
             fields_parts.append(field_str)
         
         header_color = 'tomato' if node.id == self.schema else '#009485'
         header = f"""<tr><td cellpadding="1.5" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">{name}</font> </td> </tr>"""
         field_content = ''.join(fields_parts) if fields_parts else ''
 
-        return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content} </table>>"""
+        return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content}   </table>>"""
 
     def generate_dot(self):
         def _get_link_attributes(link: Link):
@@ -292,7 +293,7 @@ class Analytics:
             elif link.type == 'parent':
                 return 'style = "solid", dir="back", minlen=3, taillabel = "< inherit >", color = "purple"'
             elif link.type == 'entry':
-                return 'style = "solid", label = ""'
+                return 'style = "solid", label = "", minlen=3'
             elif link.type == 'subset':
                 return 'style = "solid", dir="back", minlen=3, taillabel = "< subset >", color = "orange"'
 
@@ -304,7 +305,7 @@ class Analytics:
         tags = [
             f'''
             "{t.id}" [
-                label = "{t.name}"
+                label = "    {t.name}    "
                 shape = "record"
             ];''' for t in _tags]
         tag_str = '\n'.join(tags)
@@ -312,7 +313,7 @@ class Analytics:
         routes = [
             f'''
             "{r.id}" [
-                label = "{r.name}"
+                label = "    {r.name}    "
                 shape = "record"
             ];''' for r in _routes]
         route_str = '\n'.join(routes)
@@ -334,6 +335,7 @@ class Analytics:
 
             return f'''
             subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
+                color = "#666"
                 label = "{mod.name}"
                 labeljust = "l"
                 {(f'color = "{color}"' if color else '')}
@@ -371,6 +373,7 @@ class Analytics:
             ];
 
             subgraph cluster_tags {{ 
+                color = "#666"
                 label = "Tags"
                 labeljust = "l"
                 style = "rounded";
@@ -379,6 +382,7 @@ class Analytics:
             }}
 
             subgraph cluster_router {{
+                color = "#666"
                 label = "Route apis"
                 labeljust = "l"
                 style = "rounded";
@@ -387,6 +391,7 @@ class Analytics:
             }}
 
             subgraph cluster_schema {{
+                color = "#666"
                 label = "Schema"
                 labeljust = "l"
                 fontsize = "20"

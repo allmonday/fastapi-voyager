@@ -6,21 +6,11 @@ from pydantic_resolve import ensure_subset
 from tests.service import Story, Task
 import tests.service as serv
 
-# 创建FastAPI应用实例
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 
-@app.get("/sprints", tags=['restapi'], response_model=list[serv.Sprint])
+@app.get("/sprints", tags=['for-restapi'], response_model=list[serv.Sprint])
 def get_sprint():
     return []
-
-class LooooooooonnnnnnnnnnggggggggggggggggA(BaseModel):
-    id: int
-
-class B(BaseModel):
-    id: int
-    name: str
-class Member(serv.Member):
-    pass
 
 class PageTask(Task):
     owner: Optional[serv.Member]
@@ -32,22 +22,17 @@ class PageStory(BaseModel):
     title: str
 
     tasks: list[PageTask] = []
-    owner: Optional[Member] = None
+    owner: Optional[serv.Member] = None
 
-class Sprint(serv.Sprint):
+class PageSprint(serv.Sprint):
     stories: list[PageStory]
-    owner: Optional[serv.Member]
-
-AB = LooooooooonnnnnnnnnnggggggggggggggggA | B
+    owner: Optional[serv.Member] = None
 
 class PageOverall(BaseModel):
-    sprints: list[Sprint]
-    item: Union[LooooooooonnnnnnnnnnggggggggggggggggA, B]
-    ab: AB
+    sprints: list[PageSprint]
 
 
-
-@app.get("/page_overall", tags=['page'], response_model=PageOverall)
+@app.get("/page_overall", tags=['for-page'], response_model=PageOverall)
 def get_page_info():
     return {"sprints": []}
 
@@ -55,16 +40,6 @@ def get_page_info():
 class PageStories(BaseModel):
     stories: list[PageStory] 
 
-@app.get("/page_stories/", tags=['page'], response_model=PageStories)
-def get_page_info_2():
-    return {}
-
-def test_analysis():
-    """Test function to demonstrate the analytics"""
-    analytics = Analytics()
-    analytics.analysis(app)
-    print(analytics.generate_dot())
-
-
-if __name__ == "__main__":
-    test_analysis()
+@app.get("/page_info/", tags=['for-page'], response_model=PageStories)
+def get_page_stories():
+    return {} # no implementation
