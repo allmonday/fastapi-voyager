@@ -91,6 +91,7 @@ def generate_visualization(
     schema: str | None = None,
     show_fields: bool = False,
     module_color: dict[str, str] | None = None,
+    route_name: str | None = None,
 ):
 
     """Generate DOT file for FastAPI router visualization."""
@@ -99,6 +100,7 @@ def generate_visualization(
         schema=schema,
         show_fields=show_fields,
         module_color=module_color,
+        route_name=route_name,
     )
 
     analytics.analysis(app)
@@ -195,6 +197,12 @@ Examples:
         default="object",
         help="Field display mode: single (no fields), object (only object-like fields), all (all fields). Default: object"
     )
+    parser.add_argument(
+        "--route_name",
+        type=str,
+        default=None,
+        help="Filter by route id (format: <endpoint>_<path with _>)"
+    )
     
     args = parser.parse_args()
     
@@ -247,6 +255,7 @@ Examples:
                 schema=args.schema,
                 show_fields=args.show_fields,
                 module_color=module_color,
+                route_name=args.route_name,
             )
     except Exception as e:
         print(f"Error generating visualization: {e}")

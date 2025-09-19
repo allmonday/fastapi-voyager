@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_router_viz.graph import Analytics
+from fastapi_router_viz.type import Tag
 
 
 WEB_DIR = Path(__file__).parent / "web"
@@ -15,13 +16,14 @@ class SchemaType(BaseModel):
 	fullname: str
 
 class OptionParam(BaseModel):
-	tags: list[str]
+	tags: list[Tag]
 	schemas: list[SchemaType]
 	dot: str
 
 class Payload(BaseModel):
 	tags: Optional[list[str]] = None
 	schema_name: Optional[str] = None
+	route_name: Optional[str] = None
 	# Accept enum or legacy bool
 	show_fields: str = 'object'
 
@@ -42,8 +44,8 @@ def create_app_with_fastapi(
 		analytics.analysis(target_app)
 		dot = analytics.generate_dot()
 
-		tags = [t.name for t in analytics.tags]
-		tags.sort()
+		# include tags and their routes
+		tags = analytics.tags
 
 		schemas = [SchemaType(name=s.name, fullname=s.id) for s in analytics.nodes]
 		schemas.sort(key=lambda s: s.name)
@@ -57,6 +59,7 @@ def create_app_with_fastapi(
 			schema=payload.schema_name,
 			show_fields=payload.show_fields,
 			module_color=module_color,
+			route_name=payload.route_name,
 		)
 		analytics.analysis(target_app)
 		return analytics.generate_dot()

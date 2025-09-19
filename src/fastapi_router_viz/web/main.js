@@ -3,6 +3,7 @@ $(document).ready(function () {
   let gv;
   var currentSelection = [];
   let optionData = { tags: [], schemas: [] };
+  let currentRouteId = "";
   // Map of schema label -> schema name for autocomplete selection
   // Now map label -> schema fullname so we send fullname to backend
   let schemaLabelToFullname = {};
@@ -123,20 +124,56 @@ $(document).ready(function () {
   }
 
   function populateControls(data) {
-    // Populate tags (single-select)
+    // Populate tags (objects with routes)
     optionData.tags = Array.isArray(data.tags) ? data.tags : [];
     const $tags = $("#tags");
-    // Initialize jQuery UI Autocomplete for tags
+    const $routes = $("#routes");
+    // reset
     $tags.val("");
+    $routes.empty().append('<option value="">-- All routes --</option>');
+
+    // Build tag list for autocomplete using tag.name
+    const tagNames = optionData.tags.map((t) => t.name);
     $tags
       .autocomplete({
-        source: optionData.tags,
+        source: tagNames,
         minLength: 0,
         delay: 0,
+        select: function (event, ui) {
+          const tagName = ui.item.value;
+          populateRoutesForTag(tagName);
+        },
+        change: function (event, ui) {
+          if (!ui.item) {
+            // text not matching any tag => clear routes
+            $routes.empty().append('<option value="">-- All routes --</option>');
+          }
+        },
       })
       .on("focus", function () {
         $(this).autocomplete("search", "");
+      })
+      .on("autocompleteselect", function (e, ui) {
+        const tagName = ui.item.value;
+        populateRoutesForTag(tagName);
+      })
+      .on("blur", function () {
+        const tagName = $(this).val();
+        populateRoutesForTag(tagName);
       });
+
+    function populateRoutesForTag(tagName) {
+      const tag = optionData.tags.find((t) => t.name === tagName);
+      const $routes = $("#routes");
+      $routes.empty().append('<option value="">-- All routes --</option>');
+      if (tag && Array.isArray(tag.routes)) {
+        for (const r of tag.routes) {
+          const opt = $('<option></option>').val(r.id).text(r.name);
+          $routes.append(opt);
+        }
+      }
+      currentRouteId = "";
+    }
 
     // Populate schemas (single-select)
     optionData.schemas = Array.isArray(data.schemas) ? data.schemas : [];
@@ -213,6 +250,7 @@ $(document).ready(function () {
       tags: selectedTags ? [selectedTags] : null,
   // send fullname to backend (server keeps the field name schema_name for compatibility)
   schema_name: selectedSchemaFullname ? selectedSchemaFullname : null,
+      route_name: $("#routes").val() || null,
       show_fields: $("#show_fields").val(),
     };
 
@@ -237,6 +275,7 @@ $(document).ready(function () {
   $("#reset").on("click", async function () {
     // reset selects to default "-- All --"
     $("#tags").val("");
+    $("#routes").empty().append('<option value="">-- All routes --</option>');
     $("#schema").val("");
     $("#show_fields").val("object");
     // reload options and default graph

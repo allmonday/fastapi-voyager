@@ -12,6 +12,7 @@ class FieldInfo:
 class Tag:
     id: str
     name: str
+    routes: list['Route']  # route.id
 
 @dataclass
 class Route:

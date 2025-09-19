@@ -16,6 +16,7 @@ class Analytics:
             show_fields: Literal['single', 'object', 'all'] = 'single',
             include_tags: list[str] | None = None,
             module_color: dict[str, str] | None = None,
+            route_name: str | None = None,
         ):
 
         self.routes: list[Route] = []
@@ -26,13 +27,15 @@ class Analytics:
         self.link_set: set[tuple[str, str]] = set()
         self.links: list[Link] = []
 
-        self.tag_set: set[str] = set()
+        # store Tag by id, and also keep a list for rendering order
+        self.tag_set: dict[str, Tag] = {}
         self.tags: list[Tag] = []
 
         self.include_tags = include_tags
         self.schema = schema
         self.show_fields = show_fields if show_fields in ('single','object','all') else 'object'
         self.module_color = module_color or {}
+        self.route_name = route_name
     
     def _get_available_route(self, app: FastAPI):
         for route in app.routes:
@@ -58,19 +61,27 @@ class Analytics:
                 continue
 
             # add tag if not exists
-            tag_id=f'tag__{route_tag}'
-            if route_tag not in self.tag_set:  # prevent duplication
-                self.tag_set.add(route_tag)
-                self.tags.append(Tag(
-                    id=f'tag__{route_tag}',
-                    name=route_tag))
+            tag_id = f'tag__{route_tag}'
+            if tag_id not in self.tag_set:
+                tag_obj = Tag(id=tag_id, name=route_tag, routes=[])
+                self.tag_set[tag_id] = tag_obj
+                self.tags.append(tag_obj)
 
             # add route and create links
             route_id = f'{route.endpoint.__name__}_{route.path.replace("/", "_")}'
             route_name = route.endpoint.__name__
-            self.routes.append(Route(
+
+            # filter by route_name (route.id) if provided
+            if self.route_name is not None and route_id != self.route_name:
+                continue
+
+            route_obj = Route(
                 id=route_id,
-                name=route_name))
+                name=route_name
+            )
+            self.routes.append(route_obj)
+            # add route into current tag
+            self.tag_set[tag_id].routes.append(route_obj)
             self.links.append(Link(
                 source=tag_id,
                 source_origin=tag_id,
