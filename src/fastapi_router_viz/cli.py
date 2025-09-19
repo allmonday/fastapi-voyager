@@ -120,12 +120,15 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  router-viz app.py                    # Load 'app' from app.py
-  router-viz -m demo                   # Load 'app' from demo module
-  router-viz main.py --app main_app    # Load 'main_app' from main.py
-  router-viz -m mypackage.main --app my_app  # Load 'my_app' from mypackage.main
-  router-viz app.py -o my_graph.dot    # Output to my_graph.dot
-        """
+  router-viz app.py                                                             # Load 'app' from app.py
+  router-viz -m tests.demo                                                      # Load 'app' from demo module
+  router-viz -m tests.demo --app app                                            # Load 'app' from tests.demo
+  router-viz -m tests.demo --schema NodeA                                       # [str] filter nodes by schema name
+  router-viz -m tests.demo --tags page restful                                  # list[str] filter nodes route's tags
+  router-viz -m tests.demo --module_color  tests.demo:red tests.service:yellow  # list[str] filter nodes route's tags
+  router-viz -m tests.demo -o my_graph.dot                                      # Output to my_graph.dot
+  router-viz -m tests.demo --server                                             # start a local server to preview
+"""
     )
     
     # Create mutually exclusive group for module loading options
@@ -157,6 +160,12 @@ Examples:
         action="store_true",
         help="Start a local server to preview the generated DOT graph"
     )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="Port for the preview server when --server is used (default: 8000)"
+    )
     
     parser.add_argument(
         "--version", "-v",
@@ -186,8 +195,6 @@ Examples:
         default="object",
         help="Field display mode: single (no fields), object (only object-like fields), all (all fields). Default: object"
     )
-
-    
     
     args = parser.parse_args()
     
@@ -229,8 +236,8 @@ Examples:
                 print("Error: uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
                 sys.exit(1)
             app_server = viz_server.create_app_with_fastapi(app, module_color=module_color)
-            print("Starting preview server at http://127.0.0.1:8000 ... (Ctrl+C to stop)")
-            uvicorn.run(app_server, host="127.0.0.1", port=8000)
+            print(f"Starting preview server at http://127.0.0.1:{args.port} ... (Ctrl+C to stop)")
+            uvicorn.run(app_server, host="127.0.0.1", port=args.port)
         else:
             # Generate and write dot file locally
             generate_visualization(

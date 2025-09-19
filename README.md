@@ -6,7 +6,7 @@
 
 Visualize FastAPI application's routes and inner dependencies inside response_models.
 
-Help identify the potential impact of data on interfaces and pages
+It can help identify the potential impact of data on interfaces and pages
 
 > This repo is still in early stage.
 
@@ -86,10 +86,11 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] config params
     - [x] make a explorer dashboard, provide list of routes, schemas, to make it easy to switch and search
 - [x] support programmatic usage
-- [ ] better schema /router node appearance
-- [ ] support dataclass
+- [x] better schema /router node appearance
+- [ ] refactor the frontend to vue, and tweak the build process
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] add configuration for highlight (optional)
+- [ ] support dataclass
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
     - [ ] strikethrough for excluded fields
