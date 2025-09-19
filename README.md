@@ -6,6 +6,8 @@
 
 Visualize FastAPI application's routes and inner dependencies inside response_models.
 
+Help identify the potential impact of data on interfaces and pages
+
 > This repo is still in early stage.
 
 ```shell
