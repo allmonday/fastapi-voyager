@@ -4,7 +4,9 @@
 
 # fastapi-router-viz
 
-Visualize FastAPI application's routes and inner dependencies inside response_models.
+If you use FastAPI for internal API integration, `fastapi-router-viz` helps to improve project's visibility.
+
+It visualize FastAPI application's routes and inner dependencies inside response_models.
 
 It can help identify the potential impact of data on interfaces and pages
 
@@ -19,6 +21,12 @@ router-viz -m tests.demo --app app --server
 youtube:
 
 [![IMAGE ALT TEXT](http://img.youtube.com/vi/msYsB9Cc3CA/0.jpg)](https://www.youtube.com/watch?v=msYsB9Cc3CA "Unity Snake Game")
+
+## Feature
+
+- visualize the entity-relationship diagram of each API
+- quickly find the dependencies of picked entity
+- view the full dependencies of each tags/ routes
 
 ## Installation
 
