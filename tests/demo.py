@@ -2,7 +2,7 @@ from fastapi_router_viz.graph import Analytics
 from pydantic import BaseModel
 from fastapi import FastAPI
 from typing import Optional, Union
-from pydantic_resolve import ensure_subset
+from pydantic_resolve import ensure_subset, Resolver
 from tests.service import Story, Task
 import tests.service as serv
 
@@ -21,8 +21,14 @@ class BB(BBB):
 class B(BB):
     age: int
 
+
+class PageMember(serv.Member):
+    fullname: str = ''
+    def post_fullname(self):
+        return self.first_name + ' ' + self.last_name
+
 class PageTask(Task):
-    owner: Optional[serv.Member]
+    owner: Optional[PageMember]
 
 @ensure_subset(Story)
 class PageStory(BaseModel):
@@ -31,11 +37,11 @@ class PageStory(BaseModel):
     title: str
 
     tasks: list[PageTask] = []
-    owner: Optional[serv.Member] = None
+    owner: Optional[PageMember] = None
 
 class PageSprint(serv.Sprint):
     stories: list[PageStory]
-    owner: Optional[serv.Member] = None
+    owner: Optional[PageMember] = None
 
 class PageOverall(BaseModel):
     sprints: list[PageSprint]
@@ -43,8 +49,9 @@ class PageOverall(BaseModel):
 
 
 @app.get("/page_overall", tags=['for-page'], response_model=PageOverall)
-def get_page_info():
-    return {"sprints": []}
+async def get_page_info():
+    page_overall = PageOverall(sprints=[])
+    return await Resolver().resolve(page_overall)
 
 
 class PageStories(BaseModel):

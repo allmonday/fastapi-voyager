@@ -20,5 +20,6 @@ class Task(BaseModel):
 
 class Member(BaseModel):
     id: int
-    username: str
+    first_name: str
+    last_name: str
 

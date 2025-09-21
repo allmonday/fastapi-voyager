@@ -29,7 +29,7 @@ Homepage = "https://github.com/allmonday/fastapi-router-viz"
 Source = "https://github.com/allmonday/fastapi-router-viz"
 
 [project.optional-dependencies]
-dev = ["uvicorn", "ruff", "pytest"]
+dev = ["uvicorn", "ruff", "pytest", "pydantic-resolve"]
 
 [build-system]
 requires = ["hatchling"]
