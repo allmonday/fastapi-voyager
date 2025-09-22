@@ -304,11 +304,11 @@ class Analytics:
             if link.type == 'child':
                 return 'style = "dashed", label = "", minlen=3'
             elif link.type == 'parent':
-                return 'style = "solid", dir="back", minlen=3, taillabel = "< inherit >", color = "purple"'
+                return 'style = "solid", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"'
             elif link.type == 'entry':
                 return 'style = "solid", label = "", minlen=3'
             elif link.type == 'subset':
-                return 'style = "solid", dir="back", minlen=3, taillabel = "< subset >", color = "orange"'
+                return 'style = "solid", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"'
 
             return 'style = "solid", arrowtail="odiamond", dir="back", minlen=3'
 
