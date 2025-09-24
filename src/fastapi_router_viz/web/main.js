@@ -146,7 +146,9 @@ $(document).ready(function () {
         change: function (event, ui) {
           if (!ui.item) {
             // text not matching any tag => clear routes
-            $routes.empty().append('<option value="">-- All routes --</option>');
+            $routes
+              .empty()
+              .append('<option value="">-- All routes --</option>');
           }
         },
       })
@@ -168,7 +170,7 @@ $(document).ready(function () {
       $routes.empty().append('<option value="">-- All routes --</option>');
       if (tag && Array.isArray(tag.routes)) {
         for (const r of tag.routes) {
-          const opt = $('<option></option>').val(r.id).text(r.name);
+          const opt = $("<option></option>").val(r.id).text(r.name);
           $routes.append(opt);
         }
       }
@@ -248,8 +250,8 @@ $(document).ready(function () {
 
     const payload = {
       tags: selectedTags ? [selectedTags] : null,
-  // send fullname to backend (server keeps the field name schema_name for compatibility)
-  schema_name: selectedSchemaFullname ? selectedSchemaFullname : null,
+      // send fullname to backend (server keeps the field name schema_name for compatibility)
+      schema_name: selectedSchemaFullname ? selectedSchemaFullname : null,
       route_name: $("#routes").val() || null,
       show_fields: $("#show_fields").val(),
     };
