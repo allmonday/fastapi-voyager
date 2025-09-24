@@ -16,7 +16,8 @@ It can help identify the potential impact of data on interfaces and pages
 router-viz -m tests.demo --app app --server
 ```
 
-<img width="1528" height="603" alt="image" src="https://github.com/user-attachments/assets/e977cba0-1bfb-4fce-8c77-e5fbfb779fb7" />
+<img width="1847" height="801" alt="image" src="https://github.com/user-attachments/assets/181c7087-8bc0-4c94-bd66-34462f65a851" />
+
 
 youtube:
 
