@@ -2,7 +2,7 @@ from typing import Literal
 from fastapi import FastAPI, routing
 from fastapi_router_viz.type_helper import get_core_types, full_class_name, get_type_name
 from pydantic import BaseModel
-from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, FieldInfo
+from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, FieldInfo, ModuleNode
 from fastapi_router_viz.module import build_module_tree
 
 # support pydantic-resolve's ensure_subset
@@ -117,12 +117,13 @@ class Analytics:
         2. return the full_path
         """
         full_name = full_class_name(schema)
+        parents_fields = self.get_parents_fields(schema.__bases__)
         if full_name not in self.node_set:
             self.node_set[full_name] = SchemaNode(
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
-                fields=self.get_pydantic_fields(schema)
+                fields=self.get_pydantic_fields(schema, parents_fields)
             )
         return full_name
 
@@ -264,26 +265,41 @@ class Analytics:
     def _is_object(self, cls):
         _types = get_core_types(cls)
         return any(self._is_inheritance_of_BaseModel(t) for t in _types if t)
-    
-    def get_pydantic_fields(self, schema: type[BaseModel]) -> list[FieldInfo]:
+
+    def get_pydantic_fields(self, schema: type[BaseModel], parents_fields: set[str]) -> list[FieldInfo]:
         fields = []
         for k, v in schema.model_fields.items():
             anno = v.annotation
             fields.append(FieldInfo(
                 is_object=self._is_object(anno),
                 name=k,
+                from_base=k in parents_fields,
                 type_name=get_type_name(anno)
             ))
         return fields
+    
+    def get_parents_fields(self, schemas: list[type[BaseModel]]) -> set[str]:
+        fields = set()
+        for schema in schemas:
+            for k, _ in schema.model_fields.items():
+                fields.add(k)
+        return fields
+
 
     def generate_node_label(self, node: SchemaNode):
+        has_parent_fields = any(f.from_base for f in node.fields)
+
+        fields = [n for n in node.fields if n.from_base is False]
+
         name = node.name
         fields_parts: list[str] = []
 
         if self.show_fields == 'all':
-            _fields = node.fields
+            _fields = fields
+            if has_parent_fields:
+                fields_parts.append('<tr><td align="left" cellpadding="8"><font color="#999">  Inherited Fields ... </font></td></tr>')
         elif self.show_fields == 'object':
-            _fields = [f for f in node.fields if f.is_object is True]
+            _fields = [f for f in fields if f.is_object is True]
             
         else:  # 'single'
             _fields = []
@@ -331,7 +347,7 @@ class Analytics:
             ];''' for r in _routes]
         route_str = '\n'.join(routes)
 
-        def render_module(mod):
+        def render_module(mod: ModuleNode):
             color = self.module_color.get(mod.fullname)
             # render schema nodes inside this module
             inner_nodes = [
