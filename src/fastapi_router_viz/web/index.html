@@ -5,6 +5,9 @@
       rel="stylesheet"
       href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
     />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet" type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/quasar@2.18.5/dist/quasar.prod.css" rel="stylesheet" type="text/css">
+
   </head>
 
   <style>
@@ -17,8 +20,11 @@
       display: flex;
       flex-direction: column;
     }
-    #controls {
-      flex: 0 0 auto;
+    /* Quasar select menu max-height for scroll */
+    .select-popup {
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
     #graph {
       flex: 1 1 auto;
@@ -26,54 +32,109 @@
     }
   </style>
   <body>
-    <div
-      id="controls"
-      style="
-        padding: 8px;
-        position: sticky;
-        top: 0;
-        background: #eee;
-        z-index: 1;
-        color: #211d1d;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-      "
-    >
-      <label for="tags" style="min-width: 60px">Tags</label>
-      <input
-        id="tags"
-        type="text"
-        style="min-width: 200px"
-        placeholder="-- All tags --"
-      />
+    <div id="q-app" class="column" style="height: 100%">
+      <div
+        style="
+          padding: 8px;
+          position: sticky;
+          top: 0;
+          background: #eee;
+          z-index: 1;
+          color: #211d1d;
+        "
+      >
+        <div class="row items-center q-col-gutter-md">
+          <div class="col-auto">
+            <div class="text-caption text-grey-8">Tags</div>
+            <q-select
+              v-model="state.tag"
+              :options="state.tagOptions"
+              use-input
+              input-debounce="0"
+              behavior="menu"
+              dense
+              outlined
+              style="min-width: 220px"
+              popup-content-class="select-popup"
+              clearable
+              placeholder="-- All tags --"
+              @filter="onFilterTags"
+            />
+          </div>
 
-      <label for="routes" style="min-width: 60px">Routes</label>
-      <select id="routes" style="min-width: 260px">
-        <option value="">-- All routes --</option>
-      </select>
+          <div class="col-auto">
+            <div class="text-caption text-grey-8">Routes</div>
+            <q-select
+              v-model="state.routeId"
+              :options="state.routeOptions"
+              option-label="label"
+              option-value="value"
+              emit-value
+              map-options
+              dense
+              outlined
+              style="min-width: 280px"
+              popup-content-class="select-popup"
+              clearable
+              placeholder="-- All routes --"
+            />
+          </div>
 
-      <label for="schema" style="min-width: 60px">Schema</label>
-      <input
-        id="schema"
-        type="text"
-        style="min-width: 320px"
-        placeholder="-- All schemas --"
-      />
+          <div class="col-auto">
+            <div class="text-caption text-grey-8">Schema</div>
+            <q-select
+              v-model="state.schemaFullname"
+              :options="state.schemaOptions"
+              option-label="label"
+              option-value="value"
+              emit-value
+              map-options
+              use-input
+              input-debounce="0"
+              behavior="menu"
+              dense
+              outlined
+              style="min-width: 340px"
+              popup-content-class="select-popup"
+              clearable
+              placeholder="-- All schemas --"
+              @filter="onFilterSchemas"
+            />
+          </div>
 
-      <label for="show_fields" style="min-width: 50px">Fields</label>
-      <select id="show_fields" style="min-width: 120px">
-        <option value="single">No fields</option>
-        <option value="object" selected>Object fields</option>
-        <option value="all">All fields</option>
-      </select>
+          <div class="col-auto">
+            <div class="text-caption text-grey-8">Fields</div>
+            <q-select
+              v-model="state.showFields"
+              :options="state.fieldOptions"
+              option-label="label"
+              option-value="value"
+              emit-value
+              map-options
+              dense
+              outlined
+              style="min-width: 140px"
+              popup-content-class="select-popup"
+            />
+          </div>
 
-      <button id="generate" style="padding: 6px 12px">Generate</button>
-      <button id="reset" style="padding: 6px 12px">Reset</button>
+          <div class="col-auto q-mt-md">
+            <q-btn
+              color="primary"
+              :loading="state.generating"
+              @click="onGenerate"
+              label="Generate"
+              unelevated
+            />
+          </div>
+          <div class="col-auto q-mt-md">
+            <q-btn flat @click="onReset" label="Reset" />
+          </div>
+        </div>
+      </div>
+
+      <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>
     </div>
-
-    <div id="graph" style="width: 100%"></div>
 
     <script
       type="text/javascript"
@@ -85,7 +146,13 @@
     <script src="https://unpkg.com/d3-graphviz@5.6.0/build/d3-graphviz.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
+
+    <!-- Add the following at the end of your body tag -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quasar@2.18.5/dist/quasar.umd.prod.js"></script>
+
     <script src="/static/graphviz.svg.js"></script>
     <script type="module" src="/static/main.js"></script>
+    <script type="module" src="/static/vue-main.js"></script>
   </body>
 </html>
