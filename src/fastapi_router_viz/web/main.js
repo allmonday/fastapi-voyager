@@ -139,6 +139,7 @@ $(document).ready(function () {
         source: tagNames,
         minLength: 0,
         delay: 0,
+        maxHeight: 400,
         select: function (event, ui) {
           const tagName = ui.item.value;
           populateRoutesForTag(tagName);
@@ -151,6 +152,13 @@ $(document).ready(function () {
               .append('<option value="">-- All routes --</option>');
           }
         },
+        open: function() {
+          $(this).autocomplete("widget").css({
+            "max-height": "400px",
+            "overflow-y": "auto",
+            "overflow-x": "hidden"
+          });
+        }
       })
       .on("focus", function () {
         $(this).autocomplete("search", "");
@@ -195,6 +203,7 @@ $(document).ready(function () {
         source: schemaLabels,
         minLength: 0,
         delay: 0,
+        maxHeight: 400,
         select: function (event, ui) {
           // when a schema is selected, ui.item.value is the label
           // we map it to the actual schema fullname when generating
@@ -206,6 +215,13 @@ $(document).ready(function () {
             $(this).data("selected-schema", null);
           }
         },
+        open: function() {
+          $(this).autocomplete("widget").css({
+            "max-height": "400px",
+            "overflow-y": "auto",
+            "overflow-x": "hidden"
+          });
+        }
       })
       .on("focus", function () {
         $(this).autocomplete("search", "");
