@@ -23,6 +23,7 @@ const app = createApp({
       rawSchemas: [], // [{ name, fullname }]
     });
     const showDetail = ref(false);
+    const schemaName = ref("");
     function openDetail() {
       showDetail.value = true;
     }
@@ -102,8 +103,16 @@ const app = createApp({
           body: JSON.stringify(payload),
         });
         const dotText = await res.text();
-        const graphUI = new GraphUI("#graph");
-        await graphUI.render(dotText);
+
+        // create graph instance once
+        const graphUI = new GraphUI("#graph", {
+          onSchemaClick: (name) => {
+            schemaName.value = name;
+            openDetail();
+          },
+        });
+        
+        graphUI.render(dotText);
       } catch (e) {
         console.error("Generate failed", e);
       } finally {
@@ -140,6 +149,7 @@ const app = createApp({
       showDetail,
       openDetail,
       closeDetail,
+      schemaName,
     };
   },
 });

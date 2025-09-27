@@ -81,28 +81,6 @@
           </div>
 
           <div class="col-auto">
-            <div class="text-caption text-grey-8">Schema</div>
-            <q-select
-              v-model="state.schemaFullname"
-              :options="state.schemaOptions"
-              option-label="label"
-              option-value="value"
-              emit-value
-              map-options
-              use-input
-              input-debounce="0"
-              behavior="menu"
-              dense
-              outlined
-              style="min-width: 340px"
-              popup-content-class="select-popup"
-              clearable
-              placeholder="-- All schemas --"
-              @filter="onFilterSchemas"
-            />
-          </div>
-
-          <div class="col-auto">
             <div class="text-caption text-grey-8">Fields</div>
             <q-select
               v-model="state.showFields"
@@ -129,14 +107,25 @@
           <div class="col-auto q-mt-md">
             <q-btn flat @click="onReset" label="Reset" />
           </div>
-          <div class="col-auto q-mt-md">
-            <q-btn dense flat icon="info" @click="openDetail" label="Detail" />
-          </div>
+            <div class="col-auto q-mt-md">
+              <q-btn dense round flat icon="help_outline" aria-label="Help">
+                <q-tooltip anchor="bottom middle" self="top middle" :offset="[0,8]">
+                  <div class="column items-start text-left" style="line-height:1.4; font-size:12px;">
+                    <ul>
+                    <li>shift + click to see schema dependencies</li>
+                    <li>ctrl + click to see schema details</li>
+                    <li>scroll to zoom</li>
+
+                    </ul>
+                  </div>
+                </q-tooltip>
+              </q-btn>
+            </div>
         </div>
       </div>
       <!-- Detail Dialog -->
-      <q-dialog v-model="showDetail">
-        <detail-dialog @close="closeDetail" />
+      <q-dialog v-model="showDetail" :maximized="true">
+        <detail-dialog :schema-name="schemaName" :show_fields="state.showFields" :model-value="showDetail" @close="closeDetail" />
       </q-dialog>
 
       <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>

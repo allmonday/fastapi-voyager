@@ -1,7 +1,9 @@
 export class GraphUI {
-  constructor(selector = "#graph") {
+  constructor(selector = "#graph", options = {}) {
     this.selector = selector;
+    this.options = options; // e.g. { onSchemaClick: (name) => {} }
     this.graphviz = d3.select(this.selector).graphviz();
+
     this.gv = null;
     this.currentSelection = [];
     this._init();
@@ -67,12 +69,20 @@ export class GraphUI {
           const set = $();
           set.push(this);
           const obj = { set, direction: "bidirectional" };
-          if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            debugger
-            self.currentSelection.push(obj);
-          } else {
-            self.currentSelection = [obj];
+          // Shift+Click to trigger schema detail callback (if provided)
+          if (event.shiftKey && self.options.onSchemaClick) {
+            // try data-name or title text
+            const schemaName = event.currentTarget.dataset.name;
+            if (schemaName) {
+              try {
+                self.options.onSchemaClick(schemaName);
+              } catch (e) {
+                console.warn("onSchemaClick callback failed", e);
+              }
+            }
           }
+
+          self.currentSelection = [obj];
           self._highlight();
         });
 
@@ -98,27 +108,21 @@ export class GraphUI {
   }
 
   render(dotSrc) {
-    return new Promise((resolve, reject) => {
-      try {
-        this.graphviz
-          .engine("dot")
-          .tweenPaths(false)
-          .tweenShapes(false)
-          .zoomScaleExtent([0, Infinity])
-          .zoom(true)
-          .width("100%")
-          .height("100%")
-          .fit(true)
-          .renderDot(dotSrc)
-          .on("end", () => {
-            $(this.selector).data("graphviz.svg").setup();
-            this.graphviz.resetZoom();
-            $(document).trigger("graphviz:render:end");
-            resolve();
-          });
-      } catch (e) {
-        reject(e);
-      }
-    });
+    const height = this.options.height || '100%';
+    this.graphviz
+      .engine("dot")
+      .tweenPaths(false)
+      .tweenShapes(false)
+      .zoomScaleExtent([0, Infinity])
+      .zoom(true)
+      .width("100%")
+      .height(height)
+      .fit(true)
+      .renderDot(dotSrc)
+      .on("end", () => {
+        $(this.selector).data("graphviz.svg").setup();
+        this.graphviz.resetZoom();
+        $(document).trigger("graphviz:render:end");
+      });
   }
 }
