@@ -90,7 +90,7 @@ const app = createApp({
         const dotText = await res.text();
 
         // wait for graphviz render end via event dispatched in main.js
-        await window.GraphUI.renderDot(dotText);
+        await window.GraphUI.render(dotText);
       } catch (e) {
         console.error('Generate failed', e);
       } finally {

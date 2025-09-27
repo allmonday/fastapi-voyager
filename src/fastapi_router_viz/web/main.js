@@ -10,7 +10,6 @@ window.GraphUI = (function () {
       const nodes = getAffectedNodes(selection.set, "bidirectional");
       highlightedNodes = highlightedNodes.add(nodes);
     }
-
     gv.highlight(highlightedNodes, true);
     //gv.bringToFront(highlightedNodes);
   }
@@ -50,7 +49,6 @@ window.GraphUI = (function () {
   }
 
   function init() {
-    graphviz = d3.select("#graph").graphviz();
     $("#graph").graphviz({
       shrink: null,
       zoom: false,
@@ -104,34 +102,27 @@ window.GraphUI = (function () {
   function render(dotSrc) {
     graphviz
       .engine("dot")
-      .fade(true)
-      .tweenPaths(true) // default
-      .tweenShapes(true) // default
+      .tweenPaths(false) // default
+      .tweenShapes(false) // default
       .zoomScaleExtent([0, Infinity])
       .zoom(true)
+      .width('100%')
+      .height('100%')
+      .fit(true)
       .renderDot(dotSrc)
+      .resetZoom()
       .on("end", function () {
+        // enable highlights
         $("#graph").data("graphviz.svg").setup();
-        // Make SVG fill its container (which fills the viewport)
-        const $svg = $("#graph svg");
-        $svg.attr("width", "100%");
-        $svg.attr("height", "100%");
-        $svg.attr("preserveAspectRatio", "xMidYMid meet");
-        // notify listeners that graph rendering is complete
         $(document).trigger("graphviz:render:end");
       });
-  }
-  async function renderDot(dotText) {
-    return new Promise((resolve) => {
-      $(document).one("graphviz:render:end", resolve);
-      render(dotText);
-    });
   }
 
   // auto-init when DOM ready, so the Vue app can call render later
   $(document).ready(function () {
+    graphviz = d3.select("#graph").graphviz();
     init();
   });
 
-  return { renderDot };
+  return { render };
 })();
