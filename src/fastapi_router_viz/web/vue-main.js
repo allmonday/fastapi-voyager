@@ -1,5 +1,5 @@
 import DetailDialog from "./component/detail-dialog/detail-dialog.js";
-import { GraphUI } from "./main.js";
+import { GraphUI } from "./graph-ui.js";
 const { createApp, reactive, onMounted, watch, ref } = window.Vue;
 
 const app = createApp({

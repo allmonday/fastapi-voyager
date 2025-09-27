@@ -68,6 +68,7 @@ export class GraphUI {
           set.push(this);
           const obj = { set, direction: "bidirectional" };
           if (event.ctrlKey || event.metaKey || event.shiftKey) {
+            debugger
             self.currentSelection.push(obj);
           } else {
             self.currentSelection = [obj];

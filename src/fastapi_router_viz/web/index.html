@@ -120,11 +120,10 @@
 
           <div class="col-auto q-mt-md">
             <q-btn
-              color="primary"
               :loading="state.generating"
               @click="onGenerate"
               label="Generate"
-              unelevated
+              outline
             />
           </div>
           <div class="col-auto q-mt-md">
@@ -158,7 +157,7 @@
     <script src="https://cdn.jsdelivr.net/npm/quasar@2.18.5/dist/quasar.umd.prod.js"></script>
 
     <script src="/static/graphviz.svg.js"></script>
-    
+
     <script type="module" src="/static/vue-main.js"></script>
   </body>
 </html>
