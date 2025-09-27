@@ -1,128 +1,123 @@
-// Expose a small API to be used by the Vue/Quasar app
-window.GraphUI = (function () {
-  let graphviz;
-  let gv;
-  var currentSelection = [];
+export class GraphUI {
+  constructor(selector = "#graph") {
+    this.selector = selector;
+    this.graphviz = d3.select(this.selector).graphviz();
+    this.gv = null;
+    this.currentSelection = [];
+    this._init();
+  }
 
-  function highlight() {
+  _highlight() {
     let highlightedNodes = $();
-    for (const selection of currentSelection) {
-      const nodes = getAffectedNodes(selection.set, "bidirectional");
+    for (const selection of this.currentSelection) {
+      const nodes = this._getAffectedNodes(selection.set, "bidirectional");
       highlightedNodes = highlightedNodes.add(nodes);
     }
-    gv.highlight(highlightedNodes, true);
-    //gv.bringToFront(highlightedNodes);
+    if (this.gv) {
+      this.gv.highlight(highlightedNodes, true);
+    }
   }
-  function getAffectedNodes($set, $mode = "bidirectional") {
+
+  _getAffectedNodes($set, mode = "bidirectional") {
     let $result = $().add($set);
-    if ($mode === "bidirectional" || $mode === "downstream") {
+    if (mode === "bidirectional" || mode === "downstream") {
       $set.each((i, el) => {
         if (el.className.baseVal === "edge") {
           const edge = $(el).data("name");
-          const nodes = gv.nodesByName();
+          const nodes = this.gv.nodesByName();
           const downStreamNode = edge.split("->")[1];
           if (downStreamNode) {
             $result.push(nodes[downStreamNode]);
-            $result = $result.add(gv.linkedFrom(nodes[downStreamNode], true));
+            $result = $result.add(
+              this.gv.linkedFrom(nodes[downStreamNode], true)
+            );
           }
         } else {
-          $result = $result.add(gv.linkedFrom(el, true));
+          $result = $result.add(this.gv.linkedFrom(el, true));
         }
       });
     }
-    if ($mode === "bidirectional" || $mode === "upstream") {
+    if (mode === "bidirectional" || mode === "upstream") {
       $set.each((i, el) => {
         if (el.className.baseVal === "edge") {
           const edge = $(el).data("name");
-          const nodes = gv.nodesByName();
+          const nodes = this.gv.nodesByName();
           const upStreamNode = edge.split("->")[0];
           if (upStreamNode) {
             $result.push(nodes[upStreamNode]);
-            $result = $result.add(gv.linkedTo(nodes[upStreamNode], true));
+            $result = $result.add(this.gv.linkedTo(nodes[upStreamNode], true));
           }
         } else {
-          $result = $result.add(gv.linkedTo(el, true));
+          $result = $result.add(this.gv.linkedTo(el, true));
         }
       });
     }
     return $result;
   }
 
-  function init() {
-    $("#graph").graphviz({
+  _init() {
+    const self = this;
+    $(this.selector).graphviz({
       shrink: null,
       zoom: false,
       ready: function () {
-        gv = this;
+        self.gv = this;
 
-        gv.nodes().click(function (event) {
+        self.gv.nodes().click(function (event) {
           const set = $();
           set.push(this);
-
-          var obj = {
-            set: set,
-            direction: "bidirectional",
-          };
-          // If CMD or CTRL is pressed, then add this to the selection
+          const obj = { set, direction: "bidirectional" };
           if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            currentSelection.push(obj);
+            self.currentSelection.push(obj);
           } else {
-            currentSelection = [obj];
+            self.currentSelection = [obj];
           }
-
-          highlight();
+          self._highlight();
         });
-        gv.clusters().click(function (event) {
+
+        self.gv.clusters().click(function (event) {
           const set = $();
           set.push(this);
-
-          var obj = {
-            set: set,
-            direction: "single",
-          };
-          // If CMD or CTRL is pressed, then add this to the selection
+          const obj = { set, direction: "single" };
           if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            currentSelection.push(obj);
+            self.currentSelection.push(obj);
           } else {
-            currentSelection = [obj];
+            self.currentSelection = [obj];
           }
-          highlight();
+          self._highlight();
         });
 
-        $(document).keydown(function (evt) {
-          // press escape to cancel highlight
-          if (evt.keyCode == 27) {
-            gv.highlight();
+        $(document).on("keydown.graphui", function (evt) {
+          if (evt.keyCode === 27 && self.gv) {
+            self.gv.highlight();
           }
         });
       },
     });
   }
 
-  function render(dotSrc) {
-    graphviz
-      .engine("dot")
-      .tweenPaths(false) // default
-      .tweenShapes(false) // default
-      .zoomScaleExtent([0, Infinity])
-      .zoom(true)
-      .width('100%')
-      .height('100%')
-      .fit(true)
-      .renderDot(dotSrc)
-      .resetZoom()
-      .on("end", function () {
-        // enable highlights
-        $("#graph").data("graphviz.svg").setup();
-        $(document).trigger("graphviz:render:end");
-      });
+  render(dotSrc) {
+    return new Promise((resolve, reject) => {
+      try {
+        this.graphviz
+          .engine("dot")
+          .tweenPaths(false)
+          .tweenShapes(false)
+          .zoomScaleExtent([0, Infinity])
+          .zoom(true)
+          .width("100%")
+          .height("100%")
+          .fit(true)
+          .renderDot(dotSrc)
+          .on("end", () => {
+            $(this.selector).data("graphviz.svg").setup();
+            this.graphviz.resetZoom();
+            $(document).trigger("graphviz:render:end");
+            resolve();
+          });
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
-
-  // auto-init when DOM ready, so the Vue app can call render later
-  $(document).ready(function () {
-    graphviz = d3.select("#graph").graphviz();
-    init();
-  });
-
-  return { render };
-})();
+}

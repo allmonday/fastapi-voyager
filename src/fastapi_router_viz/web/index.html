@@ -130,8 +130,15 @@
           <div class="col-auto q-mt-md">
             <q-btn flat @click="onReset" label="Reset" />
           </div>
+          <div class="col-auto q-mt-md">
+            <q-btn dense flat icon="info" @click="openDetail" label="Detail" />
+          </div>
         </div>
       </div>
+      <!-- Detail Dialog -->
+      <q-dialog v-model="showDetail">
+        <detail-dialog @close="closeDetail" />
+      </q-dialog>
 
       <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>
     </div>
@@ -151,7 +158,7 @@
     <script src="https://cdn.jsdelivr.net/npm/quasar@2.18.5/dist/quasar.umd.prod.js"></script>
 
     <script src="/static/graphviz.svg.js"></script>
-    <script type="module" src="/static/main.js"></script>
+    
     <script type="module" src="/static/vue-main.js"></script>
   </body>
 </html>
