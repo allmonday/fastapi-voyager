@@ -13,6 +13,15 @@ const DetailDialog = defineComponent({
           <div class="text-body2" style="position: absolute; top: 10px; left: 10px; z-index: 10;">
             Schema: <span class="text-primary">{{ schemaName }}</span> (esc to close)
           </div>
+          <q-btn 
+            flat 
+            dense 
+            round 
+            icon="close" 
+            @click="close" 
+            aria-label="Close detail dialog"
+            style="position:absolute; top:6px; right:6px; z-index:11;"
+          />
           <div id="graph-container" style="width:100%; overflow:auto; background:#fafafa"></div>
     </div>
   `,

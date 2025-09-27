@@ -32,6 +32,7 @@
     <div id="q-app" class="column" style="height: 100%">
       <div
         style="
+          padding-top: 8px;
           padding-left: 8px;
           padding-bottom: 8px;
           position: absolute;
@@ -45,7 +46,6 @@
       >
         <div class="row items-center q-col-gutter-md">
           <div class="col-auto">
-            <div class="text-caption text-grey-8">Tags</div>
             <q-select
               v-model="state.tag"
               :options="state.tagOptions"
@@ -57,13 +57,12 @@
               style="min-width: 220px"
               popup-content-class="select-popup"
               clearable
-              placeholder="-- All tags --"
+              label="Tags"
               @filter="onFilterTags"
             />
           </div>
 
           <div class="col-auto">
-            <div class="text-caption text-grey-8">Routes</div>
             <q-select
               v-model="state.routeId"
               :options="state.routeOptions"
@@ -76,46 +75,44 @@
               style="min-width: 280px"
               popup-content-class="select-popup"
               clearable
-              placeholder="-- All routes --"
+              placeholder="All routes"
+              label="Routes"
             />
           </div>
 
           <div class="col-auto">
-            <div class="text-caption text-grey-8">Fields</div>
-            <q-select
-              v-model="state.showFields"
-              :options="state.fieldOptions"
-              option-label="label"
-              option-value="value"
-              emit-value
-              map-options
-              dense
-              outlined
-              style="min-width: 140px"
-              popup-content-class="select-popup"
-            />
+              <div class="column">
+                <q-option-group
+                  v-model="state.showFields"
+                  :options="state.fieldOptions"
+                  color="primary"
+                  type="radio"
+                  inline
+                  dense
+                />
+              </div>
           </div>
 
-          <div class="col-auto q-mt-md">
+          <div class="col-auto">
             <q-btn
+              class="q-ml-md"
               :loading="state.generating"
               @click="onGenerate"
               label="Generate"
               outline
             />
           </div>
-          <div class="col-auto q-mt-md">
+          <div class="col-auto">
             <q-btn flat @click="onReset" label="Reset" />
           </div>
-            <div class="col-auto q-mt-md">
-              <q-btn dense round flat icon="help_outline" aria-label="Help">
+            <div class="col-auto q-ml-auto">
+              <q-btn dense round flat icon="help_outline" aria-label="Help" class="q-mr-md">
                 <q-tooltip anchor="bottom middle" self="top middle" :offset="[0,8]">
                   <div class="column items-start text-left" style="line-height:1.4; font-size:12px;">
                     <ul>
                     <li>shift + click to see schema dependencies</li>
                     <li>ctrl + click to see schema details</li>
-                    <li>scroll to zoom</li>
-
+                    <li>scroll to zoom in/out</li>
                     </ul>
                   </div>
                 </q-tooltip>
@@ -124,11 +121,12 @@
         </div>
       </div>
       <!-- Detail Dialog -->
-      <q-dialog v-model="showDetail" :maximized="true">
-        <detail-dialog :schema-name="schemaName" :show_fields="state.showFields" :model-value="showDetail" @close="closeDetail" />
+      <q-dialog v-model="showDetail" :persistent="true" :maximized="true">
+        <detail-dialog :schema-name="schemaName" :show-fields="state.showFields" :model-value="showDetail" @close="closeDetail" />
       </q-dialog>
 
-      <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>
+      <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto">
+      </div>
     </div>
 
     <script

@@ -98,6 +98,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [x] better schema /router node appearance
 - [x] hide fields duplicated with parent's (show `parent fields` instead)
 - [x] refactor the frontend to vue, and tweak the build process
+- [ ] optimize statis resource (cdn)
 - [ ] find dependency based on picked schema and it's field.
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] add configuration for highlight (optional)

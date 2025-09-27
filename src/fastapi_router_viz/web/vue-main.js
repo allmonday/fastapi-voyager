@@ -33,7 +33,7 @@ const app = createApp({
 
     function applyRoutesForTag(tagName) {
       const tag = state.rawTags.find((t) => t.name === tagName);
-      state.routeOptions = [{ label: "-- All routes --", value: "" }];
+      state.routeOptions = [];
       if (tag && Array.isArray(tag.routes)) {
         state.routeOptions.push(
           ...tag.routes.map((r) => ({ label: r.name, value: r.id }))
@@ -84,7 +84,7 @@ const app = createApp({
         value: s.fullname,
       }));
       // default route options placeholder
-      state.routeOptions = [{ label: "-- All routes --", value: "" }];
+      state.routeOptions = [];
     }
 
     async function onGenerate() {
@@ -107,11 +107,13 @@ const app = createApp({
         // create graph instance once
         const graphUI = new GraphUI("#graph", {
           onSchemaClick: (name) => {
-            schemaName.value = name;
-            openDetail();
+            if (state.rawSchemas.find((s) => s.fullname === name)) {
+              schemaName.value = name;
+              openDetail();
+            }
           },
         });
-        
+
         graphUI.render(dotText);
       } catch (e) {
         console.error("Generate failed", e);
