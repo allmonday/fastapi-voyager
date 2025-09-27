@@ -96,9 +96,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] make a explorer dashboard, provide list of routes, schemas, to make it easy to switch and search
 - [x] support programmatic usage
 - [x] better schema /router node appearance
-- [ ] hide fields duplicated with parent's (show `parent fields` instead)
+- [x] hide fields duplicated with parent's (show `parent fields` instead)
+- [x] refactor the frontend to vue, and tweak the build process
 - [ ] find dependency based on picked schema and it's field.
-- [ ] refactor the frontend to vue, and tweak the build process
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] add configuration for highlight (optional)
 - [ ] support dataclass
