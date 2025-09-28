@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_router_viz.graph import Analytics
-from fastapi_router_viz.type import Tag
+from fastapi_router_viz.type import Tag, FieldInfo
 
 
 WEB_DIR = Path(__file__).parent / "web"
@@ -14,6 +14,7 @@ WEB_DIR.mkdir(exist_ok=True)
 class SchemaType(BaseModel):
 	name: str
 	fullname: str
+	fields: list[FieldInfo]
 
 class OptionParam(BaseModel):
 	tags: list[Tag]
@@ -47,7 +48,13 @@ def create_app_with_fastapi(
 		# include tags and their routes
 		tags = analytics.tags
 
-		schemas = [SchemaType(name=s.name, fullname=s.id) for s in analytics.nodes]
+		schemas = [
+			SchemaType(
+				name=s.name,
+				fullname=s.id,
+				fields=s.fields
+			) for s in analytics.nodes
+		]
 		schemas.sort(key=lambda s: s.name)
 
 		return OptionParam(tags=tags, schemas=schemas, dot=dot)

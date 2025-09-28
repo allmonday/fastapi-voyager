@@ -11,7 +11,7 @@ const DetailDialog = defineComponent({
   template: `
     <div style="height: 100vh; position: relative; background-color: #fff;">
           <div class="text-body2" style="position: absolute; top: 10px; left: 10px; z-index: 10;">
-            Schema: <span class="text-primary">{{ schemaName }}</span> (esc to close)
+            Schema: <span class="text-primary">{{ schemaName }}</span>
           </div>
           <q-btn 
             flat 
