@@ -1,4 +1,5 @@
 import DetailDialog from "./component/detail-dialog/detail-dialog.js";
+import SchemaFieldFilter from "./component/schema-field-filter/schema-field-filter.js";
 import { GraphUI } from "./graph-ui.js";
 const { createApp, reactive, onMounted, watch, ref } = window.Vue;
 
@@ -22,7 +23,8 @@ const app = createApp({
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: [], // [{ name, fullname }]
     });
-    const showDetail = ref(false);
+  const showDetail = ref(false);
+  const showSchemaFieldFilter = ref(false);
     const schemaName = ref("");
     function openDetail() {
       showDetail.value = true;
@@ -152,9 +154,11 @@ const app = createApp({
       openDetail,
       closeDetail,
       schemaName,
+      showSchemaFieldFilter,
     };
   },
 });
 app.use(window.Quasar);
 app.component("detail-dialog", DetailDialog);
+app.component("schema-field-filter", SchemaFieldFilter);
 app.mount("#q-app");

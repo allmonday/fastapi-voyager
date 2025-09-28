@@ -13,6 +13,7 @@ class Analytics:
     def __init__(
             self, 
             schema: str | None = None, 
+            schema_field: str | None = None,
             show_fields: Literal['single', 'object', 'all'] = 'single',
             include_tags: list[str] | None = None,
             module_color: dict[str, str] | None = None,
@@ -33,10 +34,12 @@ class Analytics:
 
         self.include_tags = include_tags
         self.schema = schema
+        self.schema_field = schema_field
         self.show_fields = show_fields if show_fields in ('single','object','all') else 'object'
         self.module_color = module_color or {}
         self.route_name = route_name
     
+
     def _get_available_route(self, app: FastAPI):
         for route in app.routes:
             if isinstance(route, routing.APIRoute) and route.response_model:
@@ -127,6 +130,7 @@ class Analytics:
             )
         return full_name
 
+
     def add_to_link_set(
             self, 
             source: str, 
@@ -150,11 +154,14 @@ class Analytics:
             ))
         return result
 
+
     def generate_node_head(self, link_name: str):
         return f'{link_name}::{PK}'
 
+
     def _is_inheritance_of_BaseModel(self, cls):
         return issubclass(cls, BaseModel) and cls is not BaseModel
+
 
     def analysis_schemas(self, schema: type[BaseModel]):
         """
@@ -206,6 +213,7 @@ class Analytics:
                         type='internal'):
                         self.analysis_schemas(anno)
 
+
     def filter_nodes_and_schemas_based_on_schemas(self):
         """
         0. if self.schema is none, return original self.tags, self.routes, self.nodes, self.links
@@ -218,36 +226,79 @@ class Analytics:
         if self.schema is None:
             return self.tags, self.routes, self.nodes, self.links
 
-        # Prefer matching by fullname (node.id). If no match, fall back to simple name.
+        # Seed schema(s) by full id match
         seed_node_ids: set[str] = {n.id for n in self.nodes if n.id == self.schema}
-
         if not seed_node_ids:
             return self.tags, self.routes, self.nodes, self.links
 
+        # Build filtered link list according to schema_field rule with recursive propagation.
+        # Rule:
+        #   - Active only when self.schema_field is provided together with self.schema.
+        #   - Start from the user specified schema (seed targets set).
+        #   - For parent/subset links whose target is in current targets, keep the link only if SOURCE schema has the field.
+        #   - When such a link is kept, the SOURCE schema becomes a new target for the next recursion layer.
+        #   - Repeat until no more links are accepted.
+        #   - Non parent/subset links are always retained.
+        # TODO: code review
+        if self.schema_field:
+            # visited set to avoid infinite loops (e.g., cyclic subset/inheritance, unlikely but safe)
+            current_targets = set(seed_node_ids)
+            accepted_targets = set(seed_node_ids)
+            accepted_links: list[Link] = []
+            # Pre-separate parent/subset vs others for efficiency
+            parent_subset_links = [lk for lk in self.links if lk.type in ("parent", "subset")]
+            other_links = [lk for lk in self.links if lk.type not in ("parent", "subset")]
+            while current_targets:
+                next_targets: set[str] = set()
+                for lk in parent_subset_links:
+                    if lk.target_origin in current_targets \
+                        and lk.source_origin not in accepted_targets \
+                        and lk.source_origin in self.node_set \
+                        and lk.target_origin in self.node_set:
+                        src_node = self.node_set.get(lk.source_origin)
+                        if src_node and any(f.name == self.schema_field for f in src_node.fields):
+                            accepted_links.append(lk)
+                            next_targets.add(lk.source_origin)
+                            accepted_targets.add(lk.source_origin)
+                    # Also consider links whose target is in current_targets but source already accepted (avoid duplicates)
+                    elif lk.target_origin in current_targets and lk.source_origin in accepted_targets:
+                        # If link already qualifies and not yet stored, verify and store (only if source has field)
+                        src_node = self.node_set.get(lk.source_origin)
+                        if src_node and any(f.name == self.schema_field for f in src_node.fields):
+                            if lk not in accepted_links:
+                                accepted_links.append(lk)
+                current_targets = next_targets
+            # Combine with other links
+            filtered_links = other_links + accepted_links
+        else:
+            filtered_links = self.links
+
+        # Build adjacency (using schema origins) for traversal
         fwd: dict[str, set[str]] = {}
         rev: dict[str, set[str]] = {}
-        
-        for lk in self.links:
+        for lk in filtered_links:
             fwd.setdefault(lk.source_origin, set()).add(lk.target_origin)
             rev.setdefault(lk.target_origin, set()).add(lk.source_origin)
 
+        # Upstream (reverse) walk (schema <- ...)
         upstream: set[str] = set()
         frontier = set(seed_node_ids)
         while frontier:
             new_layer: set[str] = set()
             for nid in frontier:
-                for src in rev.get(nid, ()):
+                for src in rev.get(nid, ()):  # who points to nid
                     if src not in upstream and src not in seed_node_ids:
                         new_layer.add(src)
             upstream.update(new_layer)
             frontier = new_layer
 
+        # Downstream (forward) walk
         downstream: set[str] = set()
         frontier = set(seed_node_ids)
         while frontier:
             new_layer: set[str] = set()
             for nid in frontier:
-                for tgt in fwd.get(nid, ()):
+                for tgt in fwd.get(nid, ()):  # nid points to tgt
                     if tgt not in downstream and tgt not in seed_node_ids:
                         new_layer.add(tgt)
             downstream.update(new_layer)
@@ -256,7 +307,7 @@ class Analytics:
         included_ids: set[str] = set(seed_node_ids) | upstream | downstream
 
         _nodes = [n for n in self.nodes if n.id in included_ids]
-        _links = [l for l in self.links if l.source_origin in included_ids and l.target_origin in included_ids]
+        _links = [l for l in filtered_links if l.source_origin in included_ids and l.target_origin in included_ids]
         _tags = [t for t in self.tags if t.id in included_ids]
         _routes = [r for r in self.routes if r.id in included_ids]
 

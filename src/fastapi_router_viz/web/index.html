@@ -2,9 +2,16 @@
   <head>
     <title>FastAPI Router Viz</title>
     <link rel="stylesheet" href="/static/graphviz.svg.css" />
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet" type="text/css">
-    <link href="https://cdn.jsdelivr.net/npm/quasar@2.18.5/dist/quasar.prod.css" rel="stylesheet" type="text/css">
-
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/quasar@2.18.5/dist/quasar.prod.css"
+      rel="stylesheet"
+      type="text/css"
+    />
   </head>
 
   <style>
@@ -81,16 +88,16 @@
           </div>
 
           <div class="col-auto">
-              <div class="column">
-                <q-option-group
-                  v-model="state.showFields"
-                  :options="state.fieldOptions"
-                  color="primary"
-                  type="radio"
-                  inline
-                  dense
-                />
-              </div>
+            <div class="column">
+              <q-option-group
+                v-model="state.showFields"
+                :options="state.fieldOptions"
+                color="primary"
+                type="radio"
+                inline
+                dense
+              />
+            </div>
           </div>
 
           <div class="col-auto">
@@ -103,31 +110,75 @@
             />
           </div>
           <div class="col-auto">
+            <q-btn
+              flat
+              icon="search"
+              label="Search"
+              @click="showSchemaFieldFilter = true"
+            />
+          </div>
+          <div class="col-auto">
             <q-btn flat @click="onReset" label="Reset" />
           </div>
-            <div class="col-auto q-ml-auto">
-              <q-btn dense round flat icon="help_outline" aria-label="Help" class="q-mr-md">
-                <q-tooltip anchor="bottom middle" self="top middle" :offset="[0,8]">
-                  <div class="column items-start text-left" style="line-height:1.4; font-size:12px;">
-                    <ul>
-                      <li>scroll to zoom in/out</li>
-                      <li>click node to check highlight related nodes on the chart, esc to unselect</li>
-                      <li>shift + click to see schema's dependencies without unrelated nodes</li>
-                      <li>ctrl + click to see schema details</li>
-                    </ul>
-                  </div>
-                </q-tooltip>
-              </q-btn>
-            </div>
+          <div class="col-auto q-ml-auto">
+            <q-btn
+              dense
+              round
+              flat
+              icon="help_outline"
+              aria-label="Help"
+              class="q-mr-md"
+            >
+              <q-tooltip
+                anchor="bottom middle"
+                self="top middle"
+                :offset="[0,8]"
+              >
+                <div
+                  class="column items-start text-left"
+                  style="line-height: 1.4; font-size: 12px"
+                >
+                  <ul>
+                    <li>scroll to zoom in/out</li>
+                    <li>
+                      click node to check highlight related nodes on the chart,
+                      esc to unselect
+                    </li>
+                    <li>
+                      shift + click to see schema's dependencies without
+                      unrelated nodes
+                    </li>
+                    <li>ctrl + click to see schema details</li>
+                  </ul>
+                </div>
+              </q-tooltip>
+            </q-btn>
+          </div>
         </div>
       </div>
       <!-- Detail Dialog -->
       <q-dialog v-model="showDetail" :persistent="true" :maximized="true">
-        <detail-dialog :schema-name="schemaName" :show-fields="state.showFields" :model-value="showDetail" @close="closeDetail" />
+        <detail-dialog
+          :schema-name="schemaName"
+          :show-fields="state.showFields"
+          :model-value="showDetail"
+          @close="closeDetail"
+        />
       </q-dialog>
 
-      <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto">
-      </div>
+      <!-- Schema Field Filter Dialog -->
+      <q-dialog
+        v-model="showSchemaFieldFilter"
+        :persistent="true"
+        :maximized="true"
+      >
+        <schema-field-filter
+          :show-fields="state.showFields"
+          @close="showSchemaFieldFilter = false"
+        />
+      </q-dialog>
+
+      <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>
     </div>
 
     <script

@@ -24,6 +24,7 @@ class OptionParam(BaseModel):
 class Payload(BaseModel):
 	tags: Optional[list[str]] = None
 	schema_name: Optional[str] = None
+	schema_field: Optional[str] = None
 	route_name: Optional[str] = None
 	# Accept enum or legacy bool
 	show_fields: str = 'object'
@@ -64,6 +65,7 @@ def create_app_with_fastapi(
 		analytics = Analytics(
 			include_tags=payload.tags,
 			schema=payload.schema_name,
+			schema_field=payload.schema_field,
 			show_fields=payload.show_fields,
 			module_color=module_color,
 			route_name=payload.route_name,
