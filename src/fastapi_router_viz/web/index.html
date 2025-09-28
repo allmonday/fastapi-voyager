@@ -111,10 +111,10 @@
           </div>
           <div class="col-auto">
             <q-btn
-              flat
+              outline
               icon="search"
               label="Search"
-              @click="showSchemaFieldFilter = true"
+              @click="showDialog()"
             />
           </div>
           <div class="col-auto">
@@ -172,10 +172,7 @@
         :persistent="true"
         :maximized="true"
       >
-        <schema-field-filter
-          :show-fields="state.showFields"
-          @close="showSchemaFieldFilter = false"
-        />
+        <schema-field-filter :schema-name="schemaFieldFilterSchema" @close="showSchemaFieldFilter = false" />
       </q-dialog>
 
       <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>

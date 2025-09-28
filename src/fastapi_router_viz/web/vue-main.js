@@ -1,4 +1,3 @@
-import DetailDialog from "./component/detail-dialog/detail-dialog.js";
 import SchemaFieldFilter from "./component/schema-field-filter/schema-field-filter.js";
 import { GraphUI } from "./graph-ui.js";
 const { createApp, reactive, onMounted, watch, ref } = window.Vue;
@@ -23,9 +22,10 @@ const app = createApp({
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: [], // [{ name, fullname }]
     });
-  const showDetail = ref(false);
-  const showSchemaFieldFilter = ref(false);
-    const schemaName = ref("");
+    const showDetail = ref(false);
+    const showSchemaFieldFilter = ref(false);
+    const schemaName = ref(""); // used by detail dialog
+    const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
     function openDetail() {
       showDetail.value = true;
     }
@@ -110,8 +110,8 @@ const app = createApp({
         const graphUI = new GraphUI("#graph", {
           onSchemaClick: (name) => {
             if (state.rawSchemas.find((s) => s.fullname === name)) {
-              schemaName.value = name;
-              openDetail();
+              schemaFieldFilterSchema.value = name;
+              showSchemaFieldFilter.value = true;
             }
           },
         });
@@ -122,6 +122,11 @@ const app = createApp({
       } finally {
         state.generating = false;
       }
+    };
+
+    function showDialog() {
+      schemaFieldFilterSchema.value = null;
+      showSchemaFieldFilter.value = true;
     }
 
     async function onReset() {
@@ -155,10 +160,11 @@ const app = createApp({
       closeDetail,
       schemaName,
       showSchemaFieldFilter,
+      schemaFieldFilterSchema,
+      showDialog
     };
   },
 });
 app.use(window.Quasar);
-app.component("detail-dialog", DetailDialog);
 app.component("schema-field-filter", SchemaFieldFilter);
 app.mount("#q-app");
