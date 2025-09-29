@@ -80,10 +80,11 @@ export class GraphUI {
                 console.warn("onSchemaClick callback failed", e);
               }
             }
+          } else {
+            self.currentSelection = [obj];
+            self._highlight();
           }
 
-          self.currentSelection = [obj];
-          self._highlight();
         });
 
         self.gv.clusters().click(function (event) {

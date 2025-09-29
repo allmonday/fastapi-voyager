@@ -8,7 +8,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 keywords = ["fastapi", "visualization", "routing", "openapi"]
 dependencies = [
-  "fastapi>=0.110"
+  "fastapi>=0.110",
+  "pydantic-resolve>=1.13.2"
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -29,7 +30,7 @@ Homepage = "https://github.com/allmonday/fastapi-router-viz"
 Source = "https://github.com/allmonday/fastapi-router-viz"
 
 [project.optional-dependencies]
-dev = ["uvicorn", "ruff", "pytest", "pydantic-resolve"]
+dev = ["uvicorn", "ruff", "pytest"]
 
 [build-system]
 requires = ["hatchling"]

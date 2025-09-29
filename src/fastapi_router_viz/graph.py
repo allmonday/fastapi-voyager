@@ -420,7 +420,7 @@ class Analytics:
             subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
                 color = "#666"
                 style="rounded"
-                label = "{mod.name}"
+                label = "  {mod.name}"
                 labeljust = "l"
                 {(f'color = "{color}"' if color else '')}
                 {inner_nodes_str}
@@ -458,8 +458,9 @@ class Analytics:
 
             subgraph cluster_tags {{ 
                 color = "#aaa"
+                margin=18
                 style="dashed"
-                label = "Tags"
+                label = "  Tags"
                 labeljust = "l"
                 fontsize = "20"
                 {tag_str}
@@ -467,8 +468,9 @@ class Analytics:
 
             subgraph cluster_router {{
                 color = "#aaa"
+                margin=18
                 style="dashed"
-                label = "Route apis"
+                label = "  Route apis"
                 labeljust = "l"
                 fontsize = "20"
                 {route_str}
@@ -476,10 +478,11 @@ class Analytics:
 
             subgraph cluster_schema {{
                 color = "#aaa"
+                margin=18
                 style="dashed"
-                label = "Schema"
-                labeljust = "l"
-                fontsize = "20"
+                label="  Schema"
+                labeljust="l"
+                fontsize="20"
                     {modules_str}
             }}
 

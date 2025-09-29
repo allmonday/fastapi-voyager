@@ -2,13 +2,9 @@
   <head>
     <title>FastAPI Router Viz</title>
     <link rel="stylesheet" href="/static/graphviz.svg.css" />
+    <link rel="stylesheet" href="/static/quasar.min.css" />
     <link
       href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/quasar@2.18.5/dist/quasar.prod.css"
       rel="stylesheet"
       type="text/css"
     />
@@ -178,20 +174,16 @@
       <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>
     </div>
 
-    <script
-      type="text/javascript"
-      src="https://code.jquery.com/jquery-2.1.3.min.js"
-    ></script>
-    <script src="//d3js.org/d3.v7.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://unpkg.com/@hpcc-js/wasm@2.20.0/dist/graphviz.umd.js"></script>
     <script src="https://unpkg.com/d3-graphviz@5.6.0/build/d3-graphviz.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
 
     <!-- Add the following at the end of your body tag -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quasar@2.18.5/dist/quasar.umd.prod.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.22/vue.global.prod.min.js" integrity="sha512-Y9sKU0AwzWRxKSLd2i35LuDpUdHY/E9tJrKG0mxw0qYQ75VVgGYazIUQPwKhFK9vGO3jIgAtxLiSq8GQ7PDfUg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/static/quasar.min.js"></script>
     <script src="/static/graphviz.svg.js"></script>
 
     <script type="module" src="/static/vue-main.js"></script>
