@@ -89,6 +89,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 ## Next
 
+features:
 - [x] group schemas by module hierarchy
 - [x] module-based coloring via Analytics(module_color={...})
 - [x] view in web browser
@@ -108,6 +109,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [ ] show difference between resolve, post fields
     - [ ] strikethrough for excluded fields
     - [ ] display loader as edges
+
+bugs:
+- [ ] fix duplicated link from class and parent class.
 
 
 ## Credits
