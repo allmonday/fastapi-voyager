@@ -361,7 +361,7 @@ class Analytics:
             fields_parts.append(field_str)
         
         header_color = 'tomato' if node.id == self.schema else '#009485'
-        header = f"""<tr><td cellpadding="1.5" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">{name}</font> </td> </tr>"""
+        header = f"""<tr><td cellpadding="1.5" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">    {name}    </font> </td> </tr>"""
         field_content = ''.join(fields_parts) if fields_parts else ''
 
         return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content}   </table>>"""
@@ -387,6 +387,7 @@ class Analytics:
             "{t.id}" [
                 label = "    {t.name}    "
                 shape = "record"
+                margin="0.5,0.1"
             ];''' for t in _tags]
         tag_str = '\n'.join(tags)
 
@@ -394,6 +395,7 @@ class Analytics:
             f'''
             "{r.id}" [
                 label = "    {r.name}    "
+                margin="0.5,0.1"
                 shape = "record"
             ];''' for r in _routes]
         route_str = '\n'.join(routes)
@@ -406,6 +408,7 @@ class Analytics:
                 "{node.id}" [
                     label = {self.generate_node_label(node)}
                     shape = "plain"
+                    margin="0.5,0.1"
                 ];''' for node in mod.schema_nodes
             ]
             inner_nodes_str = '\n'.join(inner_nodes)
@@ -416,6 +419,7 @@ class Analytics:
             return f'''
             subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
                 color = "#666"
+                style="rounded"
                 label = "{mod.name}"
                 labeljust = "l"
                 {(f'color = "{color}"' if color else '')}
@@ -453,29 +457,29 @@ class Analytics:
             ];
 
             subgraph cluster_tags {{ 
-                color = "#666"
+                color = "#aaa"
+                style="dashed"
                 label = "Tags"
                 labeljust = "l"
-                style = "rounded";
                 fontsize = "20"
                 {tag_str}
             }}
 
             subgraph cluster_router {{
-                color = "#666"
+                color = "#aaa"
+                style="dashed"
                 label = "Route apis"
                 labeljust = "l"
-                style = "rounded";
                 fontsize = "20"
                 {route_str}
             }}
 
             subgraph cluster_schema {{
-                color = "#666"
+                color = "#aaa"
+                style="dashed"
                 label = "Schema"
                 labeljust = "l"
                 fontsize = "20"
-                style = "rounded";
                     {modules_str}
             }}
 
