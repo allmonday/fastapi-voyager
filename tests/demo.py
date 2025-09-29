@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from fastapi import FastAPI
 from typing import Optional, Union
 from pydantic_resolve import ensure_subset, Resolver
-from tests.service import Story, Task
-import tests.service as serv
+from tests.service.schema import Story, Task
+import tests.service.schema as serv
 
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 

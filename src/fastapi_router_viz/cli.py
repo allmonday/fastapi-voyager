@@ -124,12 +124,13 @@ def main():
 Examples:
   router-viz app.py                                                             # Load 'app' from app.py
   router-viz -m tests.demo                                                      # Load 'app' from demo module
-  router-viz -m tests.demo --app app                                            # Load 'app' from tests.demo
-  router-viz -m tests.demo --schema NodeA                                       # [str] filter nodes by schema name
-  router-viz -m tests.demo --tags page restful                                  # list[str] filter nodes route's tags
-  router-viz -m tests.demo --module_color  tests.demo:red tests.service:yellow  # list[str] filter nodes route's tags
+  router-viz -m tests.demo --app=app                                            # Load 'app' from tests.demo
+  router-viz -m tests.demo --schema=NodeA                                       # [str] filter nodes by schema name
+  router-viz -m tests.demo --tags=page restful                                  # list[str] filter nodes route's tags
+  router-viz -m tests.demo --module_color=tests.demo:red --module_color=tests.service:yellow  # list[str] filter nodes route's tags
   router-viz -m tests.demo -o my_graph.dot                                      # Output to my_graph.dot
   router-viz -m tests.demo --server                                             # start a local server to preview
+  router-viz -m tests.demo --server --port=8001                                 # start a local server to preview
 """
     )
     
@@ -181,9 +182,9 @@ Examples:
     )
     parser.add_argument(
         "--module_color",
-        nargs="+",
+        action="append",
         metavar="KEY:VALUE",
-        help="Module color mapping as key:value (module name to Graphviz color)"
+        help="Module color mapping as key1:value1 key2:value2 (module name to Graphviz color)"
     )
     # removed service_prefixes option
     parser.add_argument(
@@ -222,6 +223,7 @@ Examples:
     
     # helper: parse KEY:VALUE pairs into dict
     def parse_kv_pairs(pairs: list[str] | None) -> dict[str, str] | None:
+        print(pairs)
         if not pairs:
             return None
         result: dict[str, str] = {}
