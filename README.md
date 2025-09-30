@@ -33,7 +33,7 @@ router-viz -m tests.demo --server --port=8001 --module_color=tests.service:blue 
 
 `alt` click to show source code and open file in vscode.
 
-<img width="1212" height="926" alt="image" src="https://github.com/user-attachments/assets/d409270f-01f7-484c-852c-8d8b87eec73a" />
+<img width="497" height="402" alt="image" src="https://github.com/user-attachments/assets/ac81711a-d9c2-4fb1-8b3a-0f4bd1f02572" />
 
 more in video:
 
