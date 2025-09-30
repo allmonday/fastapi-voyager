@@ -100,10 +100,10 @@ features:
 - [x] hide fields duplicated with parent's (show `parent fields` instead)
 - [x] refactor the frontend to vue, and tweak the build process
 - [x] find dependency based on picked schema and it's field.
-- [ ] optimize statis resource (cdn)
+- [x] optimize static resource (cdn -> local)
+- [x] add configuration for highlight (optional)
 - [ ] ctrl+click to show field details
 - [ ] user can generate nodes/edges manually and connect to generated ones
-- [ ] add configuration for highlight (optional)
 - [ ] support dataclass
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
