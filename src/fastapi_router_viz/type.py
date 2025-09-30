@@ -8,6 +8,7 @@ class FieldInfo:
     type_name: str
     from_base: bool = False
     is_object: bool = False
+    is_exclude: bool = False
 
 @dataclass
 class Tag:

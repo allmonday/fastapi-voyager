@@ -1,5 +1,5 @@
 from fastapi_router_viz.graph import Analytics
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi import FastAPI
 from typing import Optional, Union
 from pydantic_resolve import ensure_subset, Resolver
@@ -16,7 +16,8 @@ class BBB(BaseModel):
     id: int
 
 class BB(BBB):
-    name: str
+    name: str = Field(default='', exclude=True)
+    display_name: str = Field(default='', exclude=True)
 
 class B(BB):
     age: int

@@ -237,7 +237,8 @@ class Analytics:
 
         for field in _fields:
             type_name = field.type_name[:25] + '..' if len(field.type_name) > 25 else field.type_name
-            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>  {field.name}: {type_name}    </font></td></tr>""" 
+            display_xml = f'<s align="left">{field.name}: {type_name}</s>' if field.is_exclude else f'{field.name}: {type_name}'
+            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>  {display_xml}    </font></td></tr>""" 
             fields_parts.append(field_str)
         
         header_color = 'tomato' if node.id == self.schema else '#009485'

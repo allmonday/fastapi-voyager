@@ -156,6 +156,7 @@ def get_pydantic_fields(schema: type[BaseModel], bases_fields: set[str]) -> list
             is_object=_is_object(anno),
             name=k,
             from_base=k in bases_fields,
-            type_name=get_type_name(anno)
+            type_name=get_type_name(anno),
+            is_exclude=bool(v.exclude)
         ))
     return fields
