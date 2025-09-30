@@ -11,27 +11,36 @@ uv add fastapi-router-viz
 router-viz --demo  # open localhost:8000 to visit demo page
 ```
 
+## Dependencies
+
+- FastAPI
+- pydantic-resolve
+
+
 ## Feature
 
-If you use FastAPI for internal API integration, `fastapi-router-viz` helps to improve project's visibility.
-
-It visualize FastAPI application's routes and inner dependencies inside response_models.
-
-It can help identify the potential impact of data on interfaces and pages
+For scenarios of using FastAPI as internal API integration endpoints, `fastapi-router-viz` helps to see the internal dependencies.
 
 > This repo is still in early stage.
 
 ```shell
-router-viz -m tests.demo --server --port=8001 --module_color=tests.service:blue --module_color=tests.demo:tomato
+router-viz -m tests.demo 
+           --server --port=8001 
+           --module_color=tests.service:blue 
+           --module_color=tests.demo:tomato
 ```
+
+pick tag, rotue (optional) and click `generate`.
 
 <img width="1919" height="898" alt="image" src="https://github.com/user-attachments/assets/05e321d0-49f3-4af6-a7c7-f4c9c6b1dbfd" />
 
-`shift` click to check related nodes.
+`shift` click a node to check related nodes.
+
+pick a field to narrow the result.
 
 <img width="1917" height="800" alt="image" src="https://github.com/user-attachments/assets/e770dc70-f293-49e1-bcd7-d8dffa15d9ea" />
 
-`alt` click to show source code and open file in vscode.
+`alt` click a node to show source code or open file in vscode.
 
 <img width="497" height="402" alt="image" src="https://github.com/user-attachments/assets/ac81711a-d9c2-4fb1-8b3a-0f4bd1f02572" />
 
