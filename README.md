@@ -102,6 +102,7 @@ features:
 - [x] find dependency based on picked schema and it's field.
 - [x] optimize static resource (cdn -> local)
 - [x] add configuration for highlight (optional)
+- [ ] display source code of routes (including response_model)
 - [ ] ctrl+click to show field details
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] support dataclass
