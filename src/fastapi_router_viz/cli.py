@@ -135,7 +135,7 @@ Examples:
     )
     
     # Create mutually exclusive group for module loading options
-    group = parser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument(
         "module",
         nargs="?",
@@ -204,15 +204,37 @@ Examples:
         default=None,
         help="Filter by route id (format: <endpoint>_<path with _>)"
     )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run built-in demo (equivalent to: --module tests.demo --server --module_color=tests.service:blue --module_color=tests.demo:tomato)"
+    )
     
     args = parser.parse_args()
     
-    # Load FastAPI app based on the input method
+    # Handle demo mode: override module_name and defaults
+    if args.demo:
+        # Force module loading path
+        args.module_name = "tests.demo"
+        # Ensure server mode on
+        args.server = True
+        # Inject default module colors if absent / merge
+        demo_defaults = ["tests.service:blue", "tests.demo:tomato"]
+        existing = set(args.module_color or [])
+        for d in demo_defaults:
+            # only add if same key not already provided
+            key = d.split(":", 1)[0]
+            if not any(mc.startswith(key + ":") for mc in existing):
+                args.module_color = (args.module_color or []) + [d]
+
+    # Validate required target if not demo
+    if not args.demo and not (args.module_name or args.module):
+        parser.error("You must provide a module file, -m module name, or use --demo")
+
+    # Load FastAPI app based on the input method (module_name takes precedence)
     if args.module_name:
-        # Load from module name
         app = load_fastapi_app_from_module(args.module_name, args.app)
     else:
-        # Load from file path
         if not os.path.exists(args.module):
             print(f"Error: File '{args.module}' not found")
             sys.exit(1)

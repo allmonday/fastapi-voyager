@@ -1,7 +1,6 @@
-from fastapi_router_viz.graph import Analytics
 from pydantic import BaseModel, Field
 from fastapi import FastAPI
-from typing import Optional, Union
+from typing import Optional
 from pydantic_resolve import ensure_subset, Resolver
 from tests.service.schema import Story, Task
 import tests.service.schema as serv
@@ -11,17 +10,6 @@ app = FastAPI(title="Demo API", description="A demo FastAPI application for rout
 @app.get("/sprints", tags=['for-restapi'], response_model=list[serv.Sprint])
 def get_sprint():
     return []
-
-class BBB(BaseModel):
-    id: int
-
-class BB(BBB):
-    name: str = Field(default='', exclude=True)
-    display_name: str = Field(default='', exclude=True)
-
-class B(BB):
-    age: int
-
 
 class PageMember(serv.Member):
     fullname: str = ''
@@ -35,7 +23,11 @@ class PageTask(Task):
 class PageStory(BaseModel):
     id: int
     sprint_id: int
-    title: str
+    title: str = Field(exclude=True)
+
+    desc: str = ''
+    def post_desc(self):
+        return self.title + ' (processed)'
 
     tasks: list[PageTask] = []
     owner: Optional[PageMember] = None
@@ -46,12 +38,11 @@ class PageSprint(serv.Sprint):
 
 class PageOverall(BaseModel):
     sprints: list[PageSprint]
-    b: B
 
 
 @app.get("/page_overall", tags=['for-page'], response_model=PageOverall)
 async def get_page_info():
-    page_overall = PageOverall(sprints=[])
+    page_overall = PageOverall(sprints=[]) # focus on schema only
     return await Resolver().resolve(page_overall)
 
 

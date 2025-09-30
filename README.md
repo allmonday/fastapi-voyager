@@ -1,8 +1,17 @@
 [![pypi](https://img.shields.io/pypi/v/fastapi-router-viz.svg)](https://pypi.python.org/pypi/fastapi-router-viz)
 ![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-router-viz)
 
+## Installation
 
-# fastapi-router-viz
+```bash
+pip install fastapi-router-viz
+# or
+uv add fastapi-router-viz
+
+router-viz --demo  # open localhost:8000 to visit demo page
+```
+
+## Feature
 
 If you use FastAPI for internal API integration, `fastapi-router-viz` helps to improve project's visibility.
 
@@ -18,7 +27,7 @@ router-viz -m tests.demo --server --port=8001 --module_color=tests.service:blue 
 
 <img width="1919" height="898" alt="image" src="https://github.com/user-attachments/assets/05e321d0-49f3-4af6-a7c7-f4c9c6b1dbfd" />
 
-`shift` click to check related nodes
+`shift` click to check related nodes.
 
 <img width="1917" height="800" alt="image" src="https://github.com/user-attachments/assets/e770dc70-f293-49e1-bcd7-d8dffa15d9ea" />
 
@@ -26,24 +35,10 @@ router-viz -m tests.demo --server --port=8001 --module_color=tests.service:blue 
 
 <img width="1212" height="926" alt="image" src="https://github.com/user-attachments/assets/d409270f-01f7-484c-852c-8d8b87eec73a" />
 
-
-youtube:
+more in video:
 
 [![IMAGE ALT TEXT](http://img.youtube.com/vi/msYsB9Cc3CA/0.jpg)](https://www.youtube.com/watch?v=msYsB9Cc3CA "Unity Snake Game")
 
-## Feature
-
-- visualize the entity-relationship diagram of each API
-- quickly find the dependencies of picked entity
-- view the full dependencies of each tags/ routes
-
-## Installation
-
-```bash
-pip install fastapi-router-viz
-# or
-uv add fastapi-router-viz
-```
 
 ## Command Line Usage
 
