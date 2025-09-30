@@ -166,10 +166,23 @@ def get_pydantic_fields(schema: type[BaseModel], bases_fields: set[str]) -> list
 def get_vscode_link(kls):
     try:
         source_file = inspect.getfile(kls)
-        source_lines, start_line = inspect.getsourcelines(kls)
-        # Construct a vscode link (assuming the user has VSCode installed and the 'vscode://' protocol is supported)
-        vscode_link = f"vscode://file/{source_file}:{start_line}"
-        return vscode_link
+        _lines, start_line = inspect.getsourcelines(kls)
+
+        # WSL path translation: /mnt/c/Users/... -> C:\Users\...
+        win_path = None
+        if source_file.startswith('/mnt/') and len(source_file) > 6:
+            # pattern /mnt/<drive-letter>/<rest>
+            parts = source_file.split('/')
+            # parts[0] == '' parts[1]=='mnt' parts[2]==drive
+            if len(parts) >= 4 and len(parts[2]) == 1:
+                drive = parts[2].upper()
+                rest = parts[3:]
+                win_path = drive + ':\\' + '\\'.join(rest)
+
+        # On Windows inside WSL, prefer translated path so host VSCode can open file
+        target_path = win_path or source_file
+        # Escape spaces is not required for vscode://file but keep raw path
+        return f"vscode://file/{target_path}:{start_line}"
     except Exception:
         return ""
 
