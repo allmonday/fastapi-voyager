@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from typing import get_origin, get_args, Union, Annotated, Any
 from types import UnionType
 
@@ -118,3 +119,15 @@ def get_type_name(anno):
         return str(tp).replace('typing.', '').replace('<class ', '').replace('>', '').replace("'", '')
 
     return name_of(anno)
+
+def is_inheritance_of_pydantic_base(cls):
+        return issubclass(cls, BaseModel) and cls is not BaseModel
+
+
+def get_bases_fields(schemas: list[type[BaseModel]]) -> set[str]:
+    """Collect field names from a list of BaseModel subclasses (their model_fields keys)."""
+    fields: set[str] = set()
+    for schema in schemas:
+        for k, _ in getattr(schema, 'model_fields', {}).items():
+            fields.add(k)
+    return fields

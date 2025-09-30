@@ -1,6 +1,6 @@
 from typing import Literal
 from fastapi import FastAPI, routing
-from fastapi_router_viz.type_helper import get_core_types, full_class_name, get_type_name
+from fastapi_router_viz.type_helper import get_core_types, full_class_name, get_type_name, get_bases_fields, is_inheritance_of_pydantic_base
 from pydantic import BaseModel
 from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, FieldInfo, ModuleNode
 from fastapi_router_viz.module import build_module_tree
@@ -120,7 +120,7 @@ class Analytics:
         2. return the full_path
         """
         full_name = full_class_name(schema)
-        bases_fields = self.get_bases_fields([s for s in schema.__bases__ if self._is_inheritance_of_BaseModel(s)])
+        bases_fields = get_bases_fields([s for s in schema.__bases__ if is_inheritance_of_pydantic_base(s)])
         if full_name not in self.node_set:
             self.node_set[full_name] = SchemaNode(
                 id=full_name, 
@@ -159,10 +159,6 @@ class Analytics:
         return f'{link_name}::{PK}'
 
 
-    def _is_inheritance_of_BaseModel(self, cls):
-        return issubclass(cls, BaseModel) and cls is not BaseModel
-
-
     def analysis_schemas(self, schema: type[BaseModel]):
         """
         1. cls is the source, add schema
@@ -174,7 +170,7 @@ class Analytics:
 
         # handle schema inside ensure_subset(schema)
         if subset_reference := getattr(schema, ENSURE_SUBSET_REFERENCE, None):
-            if self._is_inheritance_of_BaseModel(subset_reference):
+            if is_inheritance_of_pydantic_base(subset_reference):
 
                 self.add_to_node_set(subset_reference)
                 self.add_to_link_set(
@@ -187,7 +183,7 @@ class Analytics:
 
         # handle bases
         for base_class in schema.__bases__:
-            if self._is_inheritance_of_BaseModel(base_class):
+            if is_inheritance_of_pydantic_base(base_class):
                 self.add_to_node_set(base_class)
                 self.add_to_link_set(
                     source=self.generate_node_head(full_class_name(schema)),
@@ -201,7 +197,7 @@ class Analytics:
         for k, v in schema.model_fields.items():
             annos = get_core_types(v.annotation)
             for anno in annos:
-                if anno and self._is_inheritance_of_BaseModel(anno):
+                if anno and is_inheritance_of_pydantic_base(anno):
                     self.add_to_node_set(anno)
                     # add f prefix to fix highlight issue in vsc graphviz interactive previewer
                     source_name = f'{full_class_name(schema)}::f{k}'
@@ -315,7 +311,7 @@ class Analytics:
     
     def _is_object(self, cls):
         _types = get_core_types(cls)
-        return any(self._is_inheritance_of_BaseModel(t) for t in _types if t)
+        return any(is_inheritance_of_pydantic_base(t) for t in _types if t)
 
     def get_pydantic_fields(self, schema: type[BaseModel], bases_fields: set[str]) -> list[FieldInfo]:
         fields = []
@@ -329,12 +325,6 @@ class Analytics:
             ))
         return fields
     
-    def get_bases_fields(self, schemas: list[type[BaseModel]]) -> set[str]:
-        fields = set()
-        for schema in schemas:
-            for k, _ in schema.model_fields.items():
-                fields.add(k)
-        return fields
 
 
     def generate_node_label(self, node: SchemaNode):
