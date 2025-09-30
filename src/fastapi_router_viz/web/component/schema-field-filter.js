@@ -14,6 +14,7 @@ export default defineComponent({
   name: "SchemaFieldFilter",
   props: {
     schemaName: { type: String, default: null }, // external injection triggers auto-query
+    schemas: { type: Array, default: () => [] }, // externally provided schemas (state.rawSchemasFull or similar)
   },
   emits: ["queried", "close"],
   setup(props, { emit }) {
@@ -38,22 +39,15 @@ export default defineComponent({
     let lastAppliedExternal = null;
 
     async function loadSchemas() {
-      state.loadingSchemas = true;
+      // Refactored: use externally provided props.schemas directly; no network call.
       state.error = null;
-      try {
-        const res = await fetch("/dot");
-        const data = await res.json();
-        state.schemas = Array.isArray(data.schemas) ? data.schemas : [];
-        state.schemaOptions = state.schemas.map((s) => ({
-          label: `${s.name} (${s.fullname})`,
-          value: s.fullname,
-        }));
-      } catch (e) {
-        state.error = "Failed to load schemas";
-        console.error(e);
-      } finally {
-        state.loadingSchemas = false;
-      }
+      state.schemas = Array.isArray(props.schemas) ? props.schemas : [];
+      state.schemaOptions = state.schemas.map((s) => ({
+        label: `${s.name} (${s.fullname})`,
+        value: s.fullname,
+      }));
+      // Maintain compatibility: loadingSchemas flag toggled quickly (no async work)
+      state.loadingSchemas = false;
     }
 
     function onFilterSchemas(val, update) {
@@ -130,19 +124,6 @@ export default defineComponent({
       }
     });
 
-    watch(
-      () => props.schemaName,
-      (val) => {
-        if (val) {
-          // ensure schemas loaded
-          if (!state.schemas.length) {
-            loadSchemas().then(() => applyExternalSchema(val));
-          } else {
-            applyExternalSchema(val);
-          }
-        }
-      }
-    );
 
     function close() {
       emit("close");
@@ -160,7 +141,7 @@ export default defineComponent({
 				option-label="label"
 				option-value="value"
 				emit-value 
-                map-options
+        map-options
 				:loading="state.loadingSchemas"
 				style="min-width:220px"
 				clearable
