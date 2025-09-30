@@ -20,6 +20,7 @@ class Tag:
 class Route:
     id: str
     name: str
+    source_code: str
 
 @dataclass
 class SchemaNode:

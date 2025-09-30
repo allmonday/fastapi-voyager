@@ -92,8 +92,10 @@ class Analytics:
 
             route_obj = Route(
                 id=route_id,
-                name=route_name
+                name=route_name,
+                source_code=inspect.getsource(route.endpoint)
             )
+
             self.routes.append(route_obj)
             # add route into current tag
             self.tag_set[tag_id].routes.append(route_obj)
