@@ -111,7 +111,8 @@ features:
     - [ ] display loader as edges
 
 bugs:
-- [ ] fix duplicated link from class and parent class.
+- [ ] fix duplicated link from class and parent class, it also break clicking highlight
+- [ ] handle excluded field 
 
 
 ## Credits
