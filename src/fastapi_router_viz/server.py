@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional, Dict
 from fastapi import FastAPI
+from starlette.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
@@ -34,6 +35,7 @@ class Payload(BaseModel):
 def create_app_with_fastapi(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
+	gzip_minimum_size: int | None = 500,
 ) -> FastAPI:
 	"""Create a FastAPI server that serves DOT computed via Analytics.
 
@@ -41,6 +43,10 @@ def create_app_with_fastapi(
 	"""
 
 	app = FastAPI(title="fastapi-router-viz demo server")
+
+	# Enable gzip compression for larger responses (e.g. DOT / schemas payload)
+	if gzip_minimum_size is not None and gzip_minimum_size >= 0:
+		app.add_middleware(GZipMiddleware, minimum_size=gzip_minimum_size)
 
 	@app.get("/dot", response_model=OptionParam)
 	def get_dot() -> str:
