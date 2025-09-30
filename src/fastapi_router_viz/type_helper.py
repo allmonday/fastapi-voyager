@@ -1,4 +1,5 @@
 import inspect
+import os
 from pydantic import BaseModel
 from typing import get_origin, get_args, Union, Annotated, Any
 from fastapi_router_viz.type import FieldInfo
@@ -164,25 +165,35 @@ def get_pydantic_fields(schema: type[BaseModel], bases_fields: set[str]) -> list
 
 
 def get_vscode_link(kls):
+    """Build a VSCode deep link to the class definition.
+
+    Priority:
+      1. If running inside WSL and WSL_DISTRO_NAME is present, return a remote link:
+         vscode://vscode-remote/wsl+<distro>/<absolute/path>:<line>
+         (This opens directly in the VSCode WSL remote window.)
+      2. Else, if path is /mnt/<drive>/..., translate to Windows drive and return vscode://file/C:\\...:line
+      3. Else, fallback to vscode://file/<unix-absolute-path>:line
+    """
     try:
         source_file = inspect.getfile(kls)
         _lines, start_line = inspect.getsourcelines(kls)
 
-        # WSL path translation: /mnt/c/Users/... -> C:\Users\...
-        win_path = None
+        distro = os.environ.get("WSL_DISTRO_NAME")
+        if distro:
+            # Ensure absolute path (it should already be under /) and build remote link
+            return f"vscode://vscode-remote/wsl+{distro}{source_file}:{start_line}"
+
+        # Non-remote scenario: maybe user wants to open via translated Windows path
         if source_file.startswith('/mnt/') and len(source_file) > 6:
-            # pattern /mnt/<drive-letter>/<rest>
             parts = source_file.split('/')
-            # parts[0] == '' parts[1]=='mnt' parts[2]==drive
-            if len(parts) >= 4 and len(parts[2]) == 1:
+            if len(parts) >= 4 and len(parts[2]) == 1:  # drive letter
                 drive = parts[2].upper()
                 rest = parts[3:]
                 win_path = drive + ':\\' + '\\'.join(rest)
+                return f"vscode://file/{win_path}:{start_line}"
 
-        # On Windows inside WSL, prefer translated path so host VSCode can open file
-        target_path = win_path or source_file
-        # Escape spaces is not required for vscode://file but keep raw path
-        return f"vscode://file/{target_path}:{start_line}"
+        # Fallback plain unix path
+        return f"vscode://file/{source_file}:{start_line}"
     except Exception:
         return ""
 
