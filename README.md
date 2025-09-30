@@ -13,10 +13,18 @@ It can help identify the potential impact of data on interfaces and pages
 > This repo is still in early stage.
 
 ```shell
-router-viz -m tests.demo --app app --server
+router-viz -m tests.demo --server --port=8001 --module_color=tests.service:blue --module_color=tests.demo:tomato
 ```
 
-<img width="1847" height="801" alt="image" src="https://github.com/user-attachments/assets/181c7087-8bc0-4c94-bd66-34462f65a851" />
+<img width="1919" height="898" alt="image" src="https://github.com/user-attachments/assets/05e321d0-49f3-4af6-a7c7-f4c9c6b1dbfd" />
+
+`shift` click to check related nodes
+
+<img width="1917" height="800" alt="image" src="https://github.com/user-attachments/assets/e770dc70-f293-49e1-bcd7-d8dffa15d9ea" />
+
+`alt` click to show source code and open file in vscode.
+
+<img width="1212" height="926" alt="image" src="https://github.com/user-attachments/assets/d409270f-01f7-484c-852c-8d8b87eec73a" />
 
 
 youtube:
