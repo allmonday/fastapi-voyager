@@ -1,4 +1,4 @@
-import { GraphUI } from "../../graph-ui.js";
+import { GraphUI } from "../graph-ui.js";
 const { defineComponent, reactive, ref, onMounted, nextTick, watch } =
   window.Vue;
 

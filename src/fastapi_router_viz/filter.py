@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable, Tuple
+from typing import Tuple
 from fastapi_router_viz.type import Tag, Route, SchemaNode, Link
 
 

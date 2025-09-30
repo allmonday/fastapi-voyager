@@ -26,6 +26,7 @@ class SchemaNode:
     id: str
     module: str
     name: str
+    source_code: str
     fields: list[FieldInfo]
 
 @dataclass

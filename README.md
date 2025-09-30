@@ -107,7 +107,7 @@ features:
 - [ ] support dataclass
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
-    - [ ] strikethrough for excluded fields
+    - [x] strikethrough for excluded fields
     - [ ] display loader as edges
 
 bugs:

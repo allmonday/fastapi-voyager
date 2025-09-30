@@ -1,4 +1,5 @@
-import SchemaFieldFilter from "./component/schema-field-filter/schema-field-filter.js";
+import SchemaFieldFilter from "./component/schema-field-filter.js";
+import SchemaCodeDisplay from "./component/schema-code-display.js";
 import { GraphUI } from "./graph-ui.js";
 const { createApp, reactive, onMounted, watch, ref } = window.Vue;
 
@@ -21,11 +22,14 @@ const app = createApp({
       generating: false,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: [], // [{ name, fullname }]
+      rawSchemasFull: [], // full objects with source_code & fields
     });
     const showDetail = ref(false);
     const showSchemaFieldFilter = ref(false);
+    const showSchemaCode = ref(false);
     const schemaName = ref(""); // used by detail dialog
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
+    const schemaCodeName = ref("");
     function openDetail() {
       showDetail.value = true;
     }
@@ -78,7 +82,11 @@ const app = createApp({
       const res = await fetch("/dot");
       const data = await res.json();
       state.rawTags = Array.isArray(data.tags) ? data.tags : [];
-      state.rawSchemas = Array.isArray(data.schemas) ? data.schemas : [];
+      state.rawSchemasFull = Array.isArray(data.schemas) ? data.schemas : [];
+      state.rawSchemas = state.rawSchemasFull.map((s) => ({
+        name: s.name,
+        fullname: s.fullname,
+      }));
 
       state.tagOptions = state.rawTags.map((t) => t.name);
       state.schemaOptions = state.rawSchemas.map((s) => ({
@@ -112,6 +120,12 @@ const app = createApp({
             if (state.rawSchemas.find((s) => s.fullname === name)) {
               schemaFieldFilterSchema.value = name;
               showSchemaFieldFilter.value = true;
+            }
+          },
+          onSchemaAltClick: (name) => {
+            if (state.rawSchemas.find((s) => s.fullname === name)) {
+              schemaCodeName.value = name;
+              showSchemaCode.value = true;
             }
           },
         });
@@ -162,9 +176,12 @@ const app = createApp({
       showSchemaFieldFilter,
       schemaFieldFilterSchema,
       showDialog,
+      showSchemaCode,
+      schemaCodeName,
     };
   },
 });
 app.use(window.Quasar);
 app.component("schema-field-filter", SchemaFieldFilter);
+app.component("schema-code-display", SchemaCodeDisplay);
 app.mount("#q-app");

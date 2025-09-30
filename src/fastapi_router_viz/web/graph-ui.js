@@ -80,6 +80,9 @@ export class GraphUI {
                 console.warn("onSchemaClick callback failed", e);
               }
             }
+          } else if (event.altKey && self.options.onSchemaAltClick) {
+            const schemaName = event.currentTarget.dataset.name;
+            self.options.onSchemaAltClick(schemaName);
           } else {
             self.currentSelection = [obj];
             self._highlight();

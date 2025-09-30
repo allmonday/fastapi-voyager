@@ -14,6 +14,7 @@ WEB_DIR.mkdir(exist_ok=True)
 class SchemaType(BaseModel):
 	name: str
 	fullname: str
+	source_code: str
 	fields: list[FieldInfo]
 
 class OptionParam(BaseModel):
@@ -53,7 +54,8 @@ def create_app_with_fastapi(
 			SchemaType(
 				name=s.name,
 				fullname=s.id,
-				fields=s.fields
+				fields=s.fields,
+				source_code=s.source_code,
 			) for s in analytics.nodes
 		]
 		schemas.sort(key=lambda s: s.name)

@@ -171,6 +171,15 @@
         <schema-field-filter :schema-name="schemaFieldFilterSchema" @close="showSchemaFieldFilter = false" />
       </q-dialog>
 
+      <!-- Schema Source Code Dialog (Ctrl + Click) -->
+      <q-dialog v-model="showSchemaCode" :persistent="true">
+        <schema-code-display 
+          :schema-name="schemaCodeName" 
+          :model-value="showSchemaCode" 
+          :schemas="state.rawSchemasFull"
+          @close="showSchemaCode = false" />
+      </q-dialog>
+
       <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>
     </div>
 
@@ -185,7 +194,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.22/vue.global.prod.min.js" integrity="sha512-Y9sKU0AwzWRxKSLd2i35LuDpUdHY/E9tJrKG0mxw0qYQ75VVgGYazIUQPwKhFK9vGO3jIgAtxLiSq8GQ7PDfUg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="/static/quasar.min.js"></script>
     <script src="/static/graphviz.svg.js"></script>
-
+    <!-- highlight.js minimal ES module load (python only) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+    <script type="module">
+      import hljs from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js';
+      import python from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/python.min.js';
+      hljs.registerLanguage('python', python);
+      window.hljs = hljs;
+    </script>
     <script type="module" src="/static/vue-main.js"></script>
   </body>
 </html>

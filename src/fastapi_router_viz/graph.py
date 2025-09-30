@@ -1,3 +1,4 @@
+import inspect
 from typing import Literal
 from fastapi import FastAPI, routing
 from fastapi_router_viz.type_helper import (
@@ -133,6 +134,7 @@ class Analytics:
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
+                source_code=inspect.getsource(schema),
                 fields=get_pydantic_fields(schema, bases_fields)
             )
         return full_name
