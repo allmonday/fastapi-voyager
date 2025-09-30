@@ -21,6 +21,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const loading = ref(false);
     const code = ref("");
+    const link = ref("");
     const error = ref(null);
 
     function close() {
@@ -33,14 +34,14 @@ export default defineComponent({
         try {
           if (window.hljs) {
             const block = document.querySelector(
-              '.frv-code-display pre code.language-python'
+              ".frv-code-display pre code.language-python"
             );
             if (block) {
               window.hljs.highlightElement(block);
             }
           }
         } catch (e) {
-          console.warn('highlight failed', e);
+          console.warn("highlight failed", e);
         }
       });
     }
@@ -57,6 +58,7 @@ export default defineComponent({
       try {
         const item = props.schemas.find((s) => s.fullname === props.schemaName);
         if (item) {
+          link.value = item.vscode_link || "";
           code.value = item.source_code || "// no source code available";
           highlightLater();
         } else {
@@ -82,13 +84,18 @@ export default defineComponent({
       if (props.modelValue) loadSource();
     });
 
-    return { loading, code, error, close };
+    return { loading, link, code, error, close };
   },
   template: `
     <div class="frv-code-display" style="position:relative; width:100%; height:100%; background:#fff;">
 			<q-btn dense flat round icon="close" @click="close" aria-label="Close"
 				style="position:absolute; top:6px; right:6px; z-index:10; background:rgba(255,255,255,0.85)" />
-      <div style="padding:48px 16px 16px 16px; height:100%; box-sizing:border-box; overflow:auto;">
+      <div v-if="link" class="q-ml-md q-mt-md">
+        <a :href="link" target="_blank" rel="noopener" style="font-size:12px; color:#3b82f6;">
+          Open in VSCode
+        </a>
+      </div>
+      <div style="padding:48px 16px 16px 16px; height:80%; box-sizing:border-box; overflow:auto;">
         <div v-if="loading" style="font-family:Menlo, monospace; font-size:12px;">Loading source...</div>
         <div v-else-if="error" style="color:#c10015; font-family:Menlo, monospace; font-size:12px;">{{ error }}</div>
         <pre v-else style="margin:0;"><code class="language-python">{{ code }}</code></pre>

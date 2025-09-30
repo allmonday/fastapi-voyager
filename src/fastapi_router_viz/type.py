@@ -27,6 +27,7 @@ class SchemaNode:
     module: str
     name: str
     source_code: str
+    vscode_link: str
     fields: list[FieldInfo]
 
 @dataclass

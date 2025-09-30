@@ -1,3 +1,4 @@
+import inspect
 from pydantic import BaseModel
 from typing import get_origin, get_args, Union, Annotated, Any
 from fastapi_router_viz.type import FieldInfo
@@ -160,3 +161,14 @@ def get_pydantic_fields(schema: type[BaseModel], bases_fields: set[str]) -> list
             is_exclude=bool(v.exclude)
         ))
     return fields
+
+
+def get_vscode_link(kls):
+    try:
+        source_file = inspect.getfile(kls)
+        source_lines, start_line = inspect.getsourcelines(kls)
+        # Construct a vscode link (assuming the user has VSCode installed and the 'vscode://' protocol is supported)
+        vscode_link = f"vscode://file/{source_file}:{start_line}"
+        return vscode_link
+    except Exception:
+        return ""

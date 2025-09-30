@@ -144,7 +144,7 @@
                       shift + click to see schema's dependencies without
                       unrelated nodes
                     </li>
-                    <li>ctrl + click to see schema details</li>
+                    <li>alt + click to see schema details</li>
                   </ul>
                 </div>
               </q-tooltip>
@@ -172,7 +172,7 @@
       </q-dialog>
 
       <!-- Schema Source Code Dialog (Ctrl + Click) -->
-      <q-dialog v-model="showSchemaCode" :persistent="true">
+      <q-dialog v-model="showSchemaCode">
         <schema-code-display 
           :schema-name="schemaCodeName" 
           :model-value="showSchemaCode" 

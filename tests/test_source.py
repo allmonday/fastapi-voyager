@@ -13,5 +13,10 @@ class B(BaseModel):
     id: int
 
 
+from pprint import pprint
+
 code = inspect.getsource(B)
+path = inspect.getfile(B)
 print(code)
+print(path)
+pprint(inspect.getsourcelines(B))

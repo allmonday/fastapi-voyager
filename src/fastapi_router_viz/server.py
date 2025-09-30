@@ -15,6 +15,7 @@ class SchemaType(BaseModel):
 	name: str
 	fullname: str
 	source_code: str
+	vscode_link: str
 	fields: list[FieldInfo]
 
 class OptionParam(BaseModel):
@@ -56,6 +57,7 @@ def create_app_with_fastapi(
 				fullname=s.id,
 				fields=s.fields,
 				source_code=s.source_code,
+				vscode_link=s.vscode_link
 			) for s in analytics.nodes
 		]
 		schemas.sort(key=lambda s: s.name)

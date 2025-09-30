@@ -7,9 +7,10 @@ from fastapi_router_viz.type_helper import (
     get_bases_fields,
     is_inheritance_of_pydantic_base,
     get_pydantic_fields,
+    get_vscode_link
 )
 from pydantic import BaseModel
-from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, FieldInfo, ModuleNode
+from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, ModuleNode
 from fastapi_router_viz.module import build_module_tree
 from fastapi_router_viz.filter import filter_graph
 
@@ -135,6 +136,7 @@ class Analytics:
                 module=schema.__module__,
                 name=schema.__name__,
                 source_code=inspect.getsource(schema),
+                vscode_link=get_vscode_link(schema),
                 fields=get_pydantic_fields(schema, bases_fields)
             )
         return full_name
