@@ -34,6 +34,11 @@ pick tag, rotue (optional) and click `generate`.
 
 <img width="1919" height="898" alt="image" src="https://github.com/user-attachments/assets/05e321d0-49f3-4af6-a7c7-f4c9c6b1dbfd" />
 
+click a node to highlight it's upperstream and downstream nodes.
+
+<img width="1485" height="616" alt="image" src="https://github.com/user-attachments/assets/70c4095f-86c7-45da-a6f0-fd41ac645813" />
+
+
 `shift` click a node to check related nodes.
 
 pick a field to narrow the result.
