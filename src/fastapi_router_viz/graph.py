@@ -28,6 +28,7 @@ class Analytics:
             include_tags: list[str] | None = None,
             module_color: dict[str, str] | None = None,
             route_name: str | None = None,
+            load_meta: bool = False
         ):
 
         self.routes: list[Route] = []
@@ -48,6 +49,7 @@ class Analytics:
         self.show_fields = show_fields if show_fields in ('single','object','all') else 'object'
         self.module_color = module_color or {}
         self.route_name = route_name
+        self.load_meta = load_meta
     
 
     def _get_available_route(self, app: FastAPI):
@@ -132,12 +134,13 @@ class Analytics:
         full_name = full_class_name(schema)
         bases_fields = get_bases_fields([s for s in schema.__bases__ if is_inheritance_of_pydantic_base(s)])
         if full_name not in self.node_set:
+            # skip meta info for normal queries
             self.node_set[full_name] = SchemaNode(
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
-                source_code=get_source(schema),
-                vscode_link=get_vscode_link(schema),
+                source_code=get_source(schema) if self.load_meta else None,
+                vscode_link=get_vscode_link(schema) if self.load_meta else None,
                 fields=get_pydantic_fields(schema, bases_fields)
             )
         return full_name

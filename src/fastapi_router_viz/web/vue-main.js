@@ -23,6 +23,7 @@ const app = createApp({
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: [], // [{ name, fullname }]
       rawSchemasFull: [], // full objects with source_code & fields
+  initializing: true,
     });
     const showDetail = ref(false);
     const showSchemaFieldFilter = ref(false);
@@ -79,22 +80,29 @@ const app = createApp({
     }
 
     async function loadInitial() {
-      const res = await fetch("/dot");
-      const data = await res.json();
-      state.rawTags = Array.isArray(data.tags) ? data.tags : [];
-      state.rawSchemasFull = Array.isArray(data.schemas) ? data.schemas : [];
-      state.rawSchemas = state.rawSchemasFull.map((s) => ({
-        name: s.name,
-        fullname: s.fullname,
-      }));
+      state.initializing = true;
+      try {
+        const res = await fetch("/dot");
+        const data = await res.json();
+        state.rawTags = Array.isArray(data.tags) ? data.tags : [];
+        state.rawSchemasFull = Array.isArray(data.schemas) ? data.schemas : [];
+        state.rawSchemas = state.rawSchemasFull.map((s) => ({
+          name: s.name,
+          fullname: s.fullname,
+        }));
 
-      state.tagOptions = state.rawTags.map((t) => t.name);
-      state.schemaOptions = state.rawSchemas.map((s) => ({
-        label: `${s.name} (${s.fullname})`,
-        value: s.fullname,
-      }));
-      // default route options placeholder
-      state.routeOptions = [];
+        state.tagOptions = state.rawTags.map((t) => t.name);
+        state.schemaOptions = state.rawSchemas.map((s) => ({
+          label: `${s.name} (${s.fullname})`,
+          value: s.fullname,
+        }));
+        // default route options placeholder
+        state.routeOptions = [];
+      } catch (e) {
+        console.error("Initial load failed", e);
+      } finally {
+        state.initializing = false;
+      }
     }
 
     async function onGenerate() {

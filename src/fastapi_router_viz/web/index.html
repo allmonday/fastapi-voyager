@@ -33,6 +33,12 @@
   </style>
   <body>
     <div id="q-app" class="column" style="height: 100%">
+      <div v-if="state.initializing" style="position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:2000; background:rgba(255,255,255,0.85); font-size:18px; font-family:Roboto, sans-serif; color:#444;">
+        <div style="text-align:center;">
+          <div class="q-mb-sm">Initializing...</div>
+          <q-spinner color="primary" size="32px" />
+        </div>
+      </div>
       <div
         style="
           padding-top: 8px;

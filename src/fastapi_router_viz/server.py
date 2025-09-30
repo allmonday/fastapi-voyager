@@ -29,8 +29,8 @@ class Payload(BaseModel):
 	schema_name: Optional[str] = None
 	schema_field: Optional[str] = None
 	route_name: Optional[str] = None
-	# Accept enum or legacy bool
 	show_fields: str = 'object'
+	show_meta: bool = False
 
 def create_app_with_fastapi(
 	target_app: FastAPI,
@@ -50,7 +50,7 @@ def create_app_with_fastapi(
 
 	@app.get("/dot", response_model=OptionParam)
 	def get_dot() -> str:
-		analytics = Analytics(module_color=module_color)
+		analytics = Analytics(module_color=module_color, load_meta=True)
 		analytics.analysis(target_app)
 		dot = analytics.generate_dot()
 
@@ -79,6 +79,7 @@ def create_app_with_fastapi(
 			show_fields=payload.show_fields,
 			module_color=module_color,
 			route_name=payload.route_name,
+			load_meta=False,
 		)
 		analytics.analysis(target_app)
 		return analytics.generate_dot()
