@@ -172,3 +172,11 @@ def get_vscode_link(kls):
         return vscode_link
     except Exception:
         return ""
+
+
+def get_source(kls):
+    try:
+        source = inspect.getsource(kls)
+        return source
+    except Exception:
+        return "failed to get source"
