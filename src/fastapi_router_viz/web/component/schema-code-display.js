@@ -87,7 +87,7 @@ export default defineComponent({
     return { loading, link, code, error, close };
   },
   template: `
-    <div class="frv-code-display" style="position:relative; width:100%; height:100%; background:#fff;">
+  <div class="frv-code-display" style="position:relative; width:60vw; max-width:60vw; height:100%; background:#fff;">
 			<q-btn dense flat round icon="close" @click="close" aria-label="Close"
 				style="position:absolute; top:6px; right:6px; z-index:10; background:rgba(255,255,255,0.85)" />
       <div v-if="link" class="q-ml-md q-mt-md">
