@@ -84,7 +84,6 @@ export class GraphUI {
             self.currentSelection = [obj];
             self._highlight();
           }
-
         });
 
         self.gv.clusters().click(function (event) {
@@ -108,22 +107,28 @@ export class GraphUI {
     });
   }
 
-  render(dotSrc) {
-    const height = this.options.height || '100%';
-    this.graphviz
-      .engine("dot")
-      .tweenPaths(false)
-      .tweenShapes(false)
-      .zoomScaleExtent([0, Infinity])
-      .zoom(true)
-      .width("100%")
-      .height(height)
-      .fit(true)
-      .renderDot(dotSrc)
-      .on("end", () => {
-        $(this.selector).data("graphviz.svg").setup();
-        this.graphviz.resetZoom();
-        $(document).trigger("graphviz:render:end");
-      });
+  async render(dotSrc) {
+    const height = this.options.height || "100%";
+    return new Promise((resolve, reject) => {
+      try {
+        this.graphviz
+          .engine("dot")
+          .tweenPaths(false)
+          .tweenShapes(false)
+          .zoomScaleExtent([0, Infinity])
+          .zoom(true)
+          .width("100%")
+          .height(height)
+          .fit(true)
+          .renderDot(dotSrc)
+          .on("end", () => {
+            $(this.selector).data("graphviz.svg").setup();
+            this.graphviz.resetZoom();
+            resolve();
+          });
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 }

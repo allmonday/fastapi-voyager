@@ -223,7 +223,6 @@ Examples:
     
     # helper: parse KEY:VALUE pairs into dict
     def parse_kv_pairs(pairs: list[str] | None) -> dict[str, str] | None:
-        print(pairs)
         if not pairs:
             return None
         result: dict[str, str] = {}

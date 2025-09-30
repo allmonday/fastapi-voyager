@@ -422,7 +422,8 @@ class Analytics:
                 style="rounded"
                 label = "  {mod.name}"
                 labeljust = "l"
-                {(f'bgcolor = "{color}"' if color else 'bgcolor=white')}
+                {(f'pencolor = "{color}"' if color else 'pencolor=""')}
+                {(f'penwidth = 3' if color else 'penwidth=""')}
                 {inner_nodes_str}
                 {child_str}
             }}'''

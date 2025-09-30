@@ -116,13 +116,13 @@ const app = createApp({
           },
         });
 
-        graphUI.render(dotText);
+        await graphUI.render(dotText);
       } catch (e) {
         console.error("Generate failed", e);
       } finally {
         state.generating = false;
       }
-    };
+    }
 
     function showDialog() {
       schemaFieldFilterSchema.value = null;
@@ -161,7 +161,7 @@ const app = createApp({
       schemaName,
       showSchemaFieldFilter,
       schemaFieldFilterSchema,
-      showDialog
+      showDialog,
     };
   },
 });
