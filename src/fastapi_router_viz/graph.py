@@ -1,9 +1,16 @@
 from typing import Literal
 from fastapi import FastAPI, routing
-from fastapi_router_viz.type_helper import get_core_types, full_class_name, get_type_name, get_bases_fields, is_inheritance_of_pydantic_base
+from fastapi_router_viz.type_helper import (
+    get_core_types,
+    full_class_name,
+    get_bases_fields,
+    is_inheritance_of_pydantic_base,
+    get_pydantic_fields,
+)
 from pydantic import BaseModel
 from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, FieldInfo, ModuleNode
 from fastapi_router_viz.module import build_module_tree
+from fastapi_router_viz.filter import filter_graph
 
 # support pydantic-resolve's ensure_subset
 ENSURE_SUBSET_REFERENCE = '__pydantic_resolve_ensure_subset_reference__'
@@ -126,7 +133,7 @@ class Analytics:
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
-                fields=self.get_pydantic_fields(schema, bases_fields)
+                fields=get_pydantic_fields(schema, bases_fields)
             )
         return full_name
 
@@ -153,10 +160,6 @@ class Analytics:
                 type=type
             ))
         return result
-
-
-    def generate_node_head(self, link_name: str):
-        return f'{link_name}::{PK}'
 
 
     def analysis_schemas(self, schema: type[BaseModel]):
@@ -210,121 +213,8 @@ class Analytics:
                         self.analysis_schemas(anno)
 
 
-    def filter_nodes_and_schemas_based_on_schemas(self):
-        """
-        0. if self.schema is none, return original self.tags, self.routes, self.nodes, self.links
-        1. search nodes based on self.schema (a str, filter self.nodes with node.name), and collect the node.id
-        2. starting from these node.id, extend to the RIGHT via model links (child/parent/subset) recursively;
-           extend to the LEFT only via entry links in reverse (schema <- route <- tag) for the seed schema.
-        3. using the collected node.id to filter out self.tags, self.routes, self.nodes and self.links
-        4. return the new tags, routes, nodes, links
-        """
-        if self.schema is None:
-            return self.tags, self.routes, self.nodes, self.links
-
-        # Seed schema(s) by full id match
-        seed_node_ids: set[str] = {n.id for n in self.nodes if n.id == self.schema}
-        if not seed_node_ids:
-            return self.tags, self.routes, self.nodes, self.links
-
-        # Build filtered link list according to schema_field rule with recursive propagation.
-        # Rule:
-        #   - Active only when self.schema_field is provided together with self.schema.
-        #   - Start from the user specified schema (seed targets set).
-        #   - For parent/subset links whose target is in current targets, keep the link only if SOURCE schema has the field.
-        #   - When such a link is kept, the SOURCE schema becomes a new target for the next recursion layer.
-        #   - Repeat until no more links are accepted.
-        #   - Non parent/subset links are always retained.
-        # TODO: code review
-        if self.schema_field:
-            # visited set to avoid infinite loops (e.g., cyclic subset/inheritance, unlikely but safe)
-            current_targets = set(seed_node_ids)
-            accepted_targets = set(seed_node_ids)
-            accepted_links: list[Link] = []
-            # Pre-separate parent/subset vs others for efficiency
-            parent_subset_links = [lk for lk in self.links if lk.type in ("parent", "subset")]
-            other_links = [lk for lk in self.links if lk.type not in ("parent", "subset")]
-            while current_targets:
-                next_targets: set[str] = set()
-                for lk in parent_subset_links:
-                    if lk.target_origin in current_targets \
-                        and lk.source_origin not in accepted_targets \
-                        and lk.source_origin in self.node_set \
-                        and lk.target_origin in self.node_set:
-                        src_node = self.node_set.get(lk.source_origin)
-                        if src_node and any(f.name == self.schema_field for f in src_node.fields):
-                            accepted_links.append(lk)
-                            next_targets.add(lk.source_origin)
-                            accepted_targets.add(lk.source_origin)
-                    # Also consider links whose target is in current_targets but source already accepted (avoid duplicates)
-                    elif lk.target_origin in current_targets and lk.source_origin in accepted_targets:
-                        # If link already qualifies and not yet stored, verify and store (only if source has field)
-                        src_node = self.node_set.get(lk.source_origin)
-                        if src_node and any(f.name == self.schema_field for f in src_node.fields):
-                            if lk not in accepted_links:
-                                accepted_links.append(lk)
-                current_targets = next_targets
-            # Combine with other links
-            filtered_links = other_links + accepted_links
-        else:
-            filtered_links = self.links
-
-        # Build adjacency (using schema origins) for traversal
-        fwd: dict[str, set[str]] = {}
-        rev: dict[str, set[str]] = {}
-        for lk in filtered_links:
-            fwd.setdefault(lk.source_origin, set()).add(lk.target_origin)
-            rev.setdefault(lk.target_origin, set()).add(lk.source_origin)
-
-        # Upstream (reverse) walk (schema <- ...)
-        upstream: set[str] = set()
-        frontier = set(seed_node_ids)
-        while frontier:
-            new_layer: set[str] = set()
-            for nid in frontier:
-                for src in rev.get(nid, ()):  # who points to nid
-                    if src not in upstream and src not in seed_node_ids:
-                        new_layer.add(src)
-            upstream.update(new_layer)
-            frontier = new_layer
-
-        # Downstream (forward) walk
-        downstream: set[str] = set()
-        frontier = set(seed_node_ids)
-        while frontier:
-            new_layer: set[str] = set()
-            for nid in frontier:
-                for tgt in fwd.get(nid, ()):  # nid points to tgt
-                    if tgt not in downstream and tgt not in seed_node_ids:
-                        new_layer.add(tgt)
-            downstream.update(new_layer)
-            frontier = new_layer
-
-        included_ids: set[str] = set(seed_node_ids) | upstream | downstream
-
-        _nodes = [n for n in self.nodes if n.id in included_ids]
-        _links = [l for l in filtered_links if l.source_origin in included_ids and l.target_origin in included_ids]
-        _tags = [t for t in self.tags if t.id in included_ids]
-        _routes = [r for r in self.routes if r.id in included_ids]
-
-        return _tags, _routes, _nodes, _links
-    
-    def _is_object(self, cls):
-        _types = get_core_types(cls)
-        return any(is_inheritance_of_pydantic_base(t) for t in _types if t)
-
-    def get_pydantic_fields(self, schema: type[BaseModel], bases_fields: set[str]) -> list[FieldInfo]:
-        fields = []
-        for k, v in schema.model_fields.items():
-            anno = v.annotation
-            fields.append(FieldInfo(
-                is_object=self._is_object(anno),
-                name=k,
-                from_base=k in bases_fields,
-                type_name=get_type_name(anno)
-            ))
-        return fields
-    
+    def generate_node_head(self, link_name: str):
+        return f'{link_name}::{PK}'
 
 
     def generate_node_label(self, node: SchemaNode):
@@ -357,7 +247,8 @@ class Analytics:
         return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content}   </table>>"""
 
     def generate_dot(self):
-        def _get_link_attributes(link: Link):
+
+        def get_link_attributes(link: Link):
             if link.type == 'child':
                 return 'style = "dashed", label = "", minlen=3'
             elif link.type == 'parent':
@@ -368,27 +259,6 @@ class Analytics:
                 return 'style = "solid", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"'
 
             return 'style = "solid", arrowtail="odiamond", dir="back", minlen=3'
-
-        _tags, _routes, _nodes, _links = self.filter_nodes_and_schemas_based_on_schemas()
-        _modules = build_module_tree(_nodes)
-
-        tags = [
-            f'''
-            "{t.id}" [
-                label = "    {t.name}    "
-                shape = "record"
-                margin="0.5,0.1"
-            ];''' for t in _tags]
-        tag_str = '\n'.join(tags)
-
-        routes = [
-            f'''
-            "{r.id}" [
-                label = "    {r.name}    "
-                margin="0.5,0.1"
-                shape = "record"
-            ];''' for r in _routes]
-        route_str = '\n'.join(routes)
 
         def render_module(mod: ModuleNode):
             color = self.module_color.get(mod.fullname)
@@ -418,16 +288,46 @@ class Analytics:
                 {child_str}
             }}'''
 
-        modules_str = '\n'.join(render_module(m) for m in _modules)
-
         def handle_entry(source: str):
             if '::' in source:
                 a, b = source.split('::', 1)
                 return f'"{a}":{b}'
             return f'"{source}"'
 
+
+        _tags, _routes, _nodes, _links = filter_graph(
+            schema=self.schema,
+            schema_field=self.schema_field,
+            tags=self.tags,
+            routes=self.routes,
+            nodes=self.nodes,
+            links=self.links,
+            node_set=self.node_set,
+        )
+        _modules = build_module_tree(_nodes)
+
+        tags = [
+            f'''
+            "{t.id}" [
+                label = "    {t.name}    "
+                shape = "record"
+                margin="0.5,0.1"
+            ];''' for t in _tags]
+        tag_str = '\n'.join(tags)
+
+        routes = [
+            f'''
+            "{r.id}" [
+                label = "    {r.name}    "
+                margin="0.5,0.1"
+                shape = "record"
+            ];''' for r in _routes]
+        route_str = '\n'.join(routes)
+
+        modules_str = '\n'.join(render_module(m) for m in _modules)
+
         links = [
-            f'''{handle_entry(link.source)} -> {handle_entry(link.target)} [ {_get_link_attributes(link)} ];''' for link in _links
+            f'''{handle_entry(link.source)} -> {handle_entry(link.target)} [ {get_link_attributes(link)} ];''' for link in _links
         ]
         link_str = '\n'.join(links)
 

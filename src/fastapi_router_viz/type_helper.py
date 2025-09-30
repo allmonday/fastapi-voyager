@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import get_origin, get_args, Union, Annotated, Any
+from fastapi_router_viz.type import FieldInfo
 from types import UnionType
 
 
@@ -130,4 +131,31 @@ def get_bases_fields(schemas: list[type[BaseModel]]) -> set[str]:
     for schema in schemas:
         for k, _ in getattr(schema, 'model_fields', {}).items():
             fields.add(k)
+    return fields
+
+
+def get_pydantic_fields(schema: type[BaseModel], bases_fields: set[str]) -> list[FieldInfo]:
+    """Extract pydantic model fields with metadata.
+
+    Parameters:
+        schema: The pydantic BaseModel subclass to inspect.
+        bases_fields: Set of field names that come from base classes (for from_base marking).
+
+    Returns:
+        A list of FieldInfo objects describing the schema's direct fields.
+    """
+
+    def _is_object(anno):  # internal helper, previously a method on Analytics
+        _types = get_core_types(anno)
+        return any(is_inheritance_of_pydantic_base(t) for t in _types if t)
+
+    fields: list[FieldInfo] = []
+    for k, v in schema.model_fields.items():
+        anno = v.annotation
+        fields.append(FieldInfo(
+            is_object=_is_object(anno),
+            name=k,
+            from_base=k in bases_fields,
+            type_name=get_type_name(anno)
+        ))
     return fields
