@@ -42,28 +42,32 @@ router-viz -m tests.demo
            --module_color=tests.demo:tomato
 ```
 
-pick tag, rotue (optional) and click `generate`.
+### generate the graph
+after initialization, pick tag, rotue (optional) and click `generate`.
 
 <img width="1919" height="898" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/05e321d0-49f3-4af6-a7c7-f4c9c6b1dbfd" />
 
+### highlight
 click a node to highlight it's upperstream and downstream nodes. figure out the related models of one page, or homw many pages are related with one model.
 
 <img width="1485" height="616" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/70c4095f-86c7-45da-a6f0-fd41ac645813" />
 
-
-`shift` click a node to check related nodes.
-
-pick a field to narrow the result.
+### filter related nodes
+`shift` click a node to check related node, pick a field to narrow the result.
 
 <img width="1917" height="800" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/e770dc70-f293-49e1-bcd7-d8dffa15d9ea" />
 
+### view source code
 `alt` click a node to show source code or open file in vscode.
 
-<img width="497" height="402" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/ac81711a-d9c2-4fb1-8b3a-0f4bd1f02572" />
+<img width="1049" height="694" alt="image" src="https://github.com/user-attachments/assets/7839ac83-8d60-44ad-b1c9-9652a76339b1" />
 
-more in video:
+<img width="1042" height="675" alt="image" src="https://github.com/user-attachments/assets/38ae705f-5982-4a02-9c3f-038b1d00bcf6" />
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/msYsB9Cc3CA/0.jpg)](https://www.youtube.com/watch?v=msYsB9Cc3CA "Unity Snake Game")
+`alt` click a route to show source code or open file in vscode
+
+<img width="882" height="445" alt="image" src="https://github.com/user-attachments/assets/158560ef-63ca-4991-9b7d-587be4fa04e4" />
+
 
 
 ## Command Line Usage
