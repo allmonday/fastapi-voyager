@@ -20,7 +20,8 @@ class Tag:
 class Route:
     id: str
     name: str
-    source_code: str
+    source_code: str = ''
+    vscode_link: str = ''  # optional vscode deep link
 
 @dataclass
 class SchemaNode:

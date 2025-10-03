@@ -112,6 +112,9 @@
             />
           </div>
           <div class="col-auto">
+            <q-btn flat @click="onReset" label="Reset" />
+          </div>
+          <div class="col-auto q-ml-auto">
             <q-btn
               outline
               icon="search"
@@ -120,9 +123,6 @@
             />
           </div>
           <div class="col-auto">
-            <q-btn flat @click="onReset" label="Reset" />
-          </div>
-          <div class="col-auto q-ml-auto">
             <q-btn
               dense
               round
@@ -186,6 +186,15 @@
           :model-value="showSchemaCode" 
           :schemas="state.rawSchemasFull"
           @close="showSchemaCode = false" />
+      </q-dialog>
+
+      <!-- Route Source Code Dialog (Alt + Click on route) -->
+      <q-dialog v-model="showRouteCode" :maximized="true" :persistent="false" position="right" :seamless="false">
+        <route-code-display 
+          :route-id="routeCodeId" 
+          :model-value="showRouteCode" 
+          :routes="state.routeItems"
+          @close="showRouteCode = false" />
       </q-dialog>
 
       <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>

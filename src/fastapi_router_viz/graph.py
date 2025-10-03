@@ -93,7 +93,8 @@ class Analytics:
             route_obj = Route(
                 id=route_id,
                 name=route_name,
-                source_code=inspect.getsource(route.endpoint)
+                vscode_link=get_vscode_link(route.endpoint) if self.load_meta else None,
+                source_code=inspect.getsource(route.endpoint) if self.load_meta else None
             )
 
             self.routes.append(route_obj)

@@ -1,5 +1,6 @@
 import SchemaFieldFilter from "./component/schema-field-filter.js";
 import SchemaCodeDisplay from "./component/schema-code-display.js";
+import RouteCodeDisplay from "./component/route-code-display.js";
 import { GraphUI } from "./graph-ui.js";
 const { createApp, reactive, onMounted, watch, ref } = window.Vue;
 
@@ -13,6 +14,7 @@ const app = createApp({
       routeOptions: [], // [{ label, value }]
       schemaFullname: null,
       schemaOptions: [], // [{ label, value }]
+      routeItems: {}, // { id: { label, value } }
       showFields: "object",
       fieldOptions: [
         { label: "No fields", value: "single" },
@@ -27,10 +29,12 @@ const app = createApp({
     });
     const showDetail = ref(false);
     const showSchemaFieldFilter = ref(false);
-    const showSchemaCode = ref(false);
+  const showSchemaCode = ref(false);
+  const showRouteCode = ref(false);
     const schemaName = ref(""); // used by detail dialog
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
-    const schemaCodeName = ref("");
+  const schemaCodeName = ref("");
+  const routeCodeId = ref("");
     function openDetail() {
       showDetail.value = true;
     }
@@ -90,6 +94,10 @@ const app = createApp({
           name: s.name,
           fullname: s.fullname,
         }));
+        state.routeItems = data.tags.map((t) => t.routes).flat().reduce((acc, r) => {
+          acc[r.id] = r;
+          return acc;
+        }, {});
 
         state.tagOptions = state.rawTags.map((t) => t.name);
         state.schemaOptions = state.rawSchemas.map((s) => ({
@@ -131,9 +139,16 @@ const app = createApp({
             }
           },
           onSchemaAltClick: (name) => {
+            // priority: schema full name; else route id
             if (state.rawSchemas.find((s) => s.fullname === name)) {
               schemaCodeName.value = name;
               showSchemaCode.value = true;
+              return;
+            }
+            if (name in state.routeItems) {
+              routeCodeId.value = name;
+              showRouteCode.value = true;
+              return;
             }
           },
         });
@@ -185,11 +200,14 @@ const app = createApp({
       schemaFieldFilterSchema,
       showDialog,
       showSchemaCode,
+      showRouteCode,
       schemaCodeName,
+      routeCodeId,
     };
   },
 });
 app.use(window.Quasar);
 app.component("schema-field-filter", SchemaFieldFilter);
 app.component("schema-code-display", SchemaCodeDisplay);
+app.component("route-code-display", RouteCodeDisplay);
 app.mount("#q-app");
