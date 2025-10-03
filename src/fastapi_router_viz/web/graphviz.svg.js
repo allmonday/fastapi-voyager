@@ -379,6 +379,7 @@
       if (color.stroke && color.stroke != "none") {
         $this.attr("stroke", getColor(color.stroke, bg));
       }
+      $this.attr('stroke-width', 1.6)
     });
   };
 
@@ -392,6 +393,7 @@
       if (color.stroke && color.stroke != "none") {
         $this.attr("stroke", color.stroke);
       }
+      $this.attr('stroke-width', 1)
     });
   };
 

@@ -63,7 +63,7 @@
               behavior="menu"
               dense
               outlined
-              style="min-width: 220px"
+              style="min-width: 320px"
               popup-content-class="select-popup"
               clearable
               label="Tags"
@@ -81,7 +81,7 @@
               map-options
               dense
               outlined
-              style="min-width: 280px"
+              style="min-width: 320px"
               popup-content-class="select-popup"
               clearable
               placeholder="All routes"
@@ -180,7 +180,7 @@
       </q-dialog>
 
       <!-- Schema Source Code Dialog (Ctrl + Click) -->
-      <q-dialog v-model="showSchemaCode">
+      <q-dialog v-model="showSchemaCode" :maximized="true" :persistent="false" position="left" :seamless="false">
         <schema-code-display 
           :schema-name="schemaCodeName" 
           :model-value="showSchemaCode" 
