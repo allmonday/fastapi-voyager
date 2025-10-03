@@ -1,7 +1,7 @@
 [![pypi](https://img.shields.io/pypi/v/fastapi-router-viz.svg)](https://pypi.python.org/pypi/fastapi-router-viz)
 ![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-router-viz)
 
-> This repo is still in early stage, currently it support pydantic v2 only
+> This repo is still in early stage, currently it supports pydantic v2 only
 
 Inspect your API interactively
 
