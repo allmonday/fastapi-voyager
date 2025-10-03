@@ -3,6 +3,10 @@
 
 > This repo is still in early stage, currently it support pydantic v2 only
 
+Inspect your API interactively
+
+<img width="1480" height="648" alt="image" src="https://github.com/user-attachments/assets/a6ccc9f1-cf06-493a-b99b-eb07767564bd" />
+
 ## Installation
 
 ```bash
