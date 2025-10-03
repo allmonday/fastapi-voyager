@@ -68,35 +68,30 @@ more in video:
 
 ## Command Line Usage
 
+### open in browser
+
 ```bash
-# Basic usage - assumes your FastAPI app is named 'app' in app.py
-router-viz tests/demo.py
+# open in browser
+router-viz -m tests.demo --server  
 
-# Specify custom app variable name
-router-viz tests/demo.py --app app
+router-viz -m tests.demo --server --port=8002
+```
 
-# filter tag name
-router-viz tests/demo.py --app app --tags page
+### generate the dot file
+```bash
+# generate .dot file
+router-viz -m tests.demo  
 
-# filter schema name, display related nodes
-router-viz tests/demo.py --app app --schema Task
+router-viz -m tests.demo --app my_app
 
-# show fields
-router-viz tests/demo.py --app app --show_fields all
+router-viz -m tests.demo --schema Task
 
-# highlight module
-router-viz tests/demo.py --app app --module_color=tests.demo:red
+router-viz -m tests.demo --show_fields all
 
-# Custom output file
-router-viz tests/demo.py -o my_visualization.dot
+router-viz -m tests.demo --module_color=tests.demo:red --module_color=tests.service:tomato
 
-# server mode
-router-viz tests/demo.py --app app --server --show_fields --module_color=tests.demo:red 
+router-viz -m tests.demo -o my_visualization.dot
 
-# Show help
-router-viz --help
-
-# Show version
 router-viz --version
 ```
 
@@ -116,7 +111,7 @@ dot -Tpng router_viz.dot -o router_viz.png
 or you can open router_viz.dot with vscode extension `graphviz interactive preview`
 
 
-## Next
+## Plan
 
 features:
 - [x] group schemas by module hierarchy
@@ -141,6 +136,7 @@ features:
     - [ ] show difference between resolve, post fields
     - [x] strikethrough for excluded fields
     - [ ] display loader as edges
+- [ ] test cases
 
 bugs:
 - [ ] fix duplicated link from class and parent class, it also break clicking highlight
