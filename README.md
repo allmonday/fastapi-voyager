@@ -1,15 +1,16 @@
 [![pypi](https://img.shields.io/pypi/v/fastapi-router-viz.svg)](https://pypi.python.org/pypi/fastapi-router-viz)
 ![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-router-viz)
 
+> This repo is still in early stage, currently it support pydantic v2 only
+
 ## Installation
 
 ```bash
 pip install fastapi-router-viz
 # or
 uv add fastapi-router-viz
-
-router-viz --demo  # open localhost:8000 to visit demo page
 ```
+
 
 ## Dependencies
 
@@ -19,11 +20,18 @@ router-viz --demo  # open localhost:8000 to visit demo page
 
 ## Feature
 
-For scenarios of using FastAPI as internal API integration endpoints, `fastapi-router-viz` helps to see the internal dependencies.
+For scenarios of using FastAPI as internal API integration endpoints, `fastapi-router-viz` helps to visualize the dependencies.
 
-> This repo is still in early stage.
+It is also an architecture inspection tool that can identify issues in data relationships through visualization during the design phase.
+
+If the process of building the view model follows the ER model, the full potential of fastapi-router-viz can be realized. It allows for quick identification of APIs  that use entities, as well as which entities are used by a specific API
+
+
 
 ```shell
+git clone https://github.com/allmonday/fastapi-router-viz.git
+cd fastapi-router-viz
+
 router-viz -m tests.demo 
            --server --port=8001 
            --module_color=tests.service:blue 
@@ -32,22 +40,22 @@ router-viz -m tests.demo
 
 pick tag, rotue (optional) and click `generate`.
 
-<img width="1919" height="898" alt="image" src="https://github.com/user-attachments/assets/05e321d0-49f3-4af6-a7c7-f4c9c6b1dbfd" />
+<img width="1919" height="898" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/05e321d0-49f3-4af6-a7c7-f4c9c6b1dbfd" />
 
 click a node to highlight it's upperstream and downstream nodes. figure out the related models of one page, or homw many pages are related with one model.
 
-<img width="1485" height="616" alt="image" src="https://github.com/user-attachments/assets/70c4095f-86c7-45da-a6f0-fd41ac645813" />
+<img width="1485" height="616" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/70c4095f-86c7-45da-a6f0-fd41ac645813" />
 
 
 `shift` click a node to check related nodes.
 
 pick a field to narrow the result.
 
-<img width="1917" height="800" alt="image" src="https://github.com/user-attachments/assets/e770dc70-f293-49e1-bcd7-d8dffa15d9ea" />
+<img width="1917" height="800" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/e770dc70-f293-49e1-bcd7-d8dffa15d9ea" />
 
 `alt` click a node to show source code or open file in vscode.
 
-<img width="497" height="402" alt="image" src="https://github.com/user-attachments/assets/ac81711a-d9c2-4fb1-8b3a-0f4bd1f02572" />
+<img width="497" height="402" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/ac81711a-d9c2-4fb1-8b3a-0f4bd1f02572" />
 
 more in video:
 
@@ -136,4 +144,5 @@ bugs:
 
 ## Credits
 
+- https://apis.guru/graphql-voyager/, for inspiration.
 - https://github.com/tintinweb/vscode-interactive-graphviz, for web visualization.
