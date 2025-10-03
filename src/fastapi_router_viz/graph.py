@@ -345,6 +345,7 @@ class Analytics:
         template = f'''
         digraph world {{
             pad="0.5"
+            nodesep=0.8
             fontname="Helvetica,Arial,sans-serif"
             node [fontname="Helvetica,Arial,sans-serif"]
             edge [
