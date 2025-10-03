@@ -16,6 +16,14 @@ class PageMember(serv.Member):
     def post_fullname(self):
         return self.first_name + ' ' + self.last_name
 
+class TaskA(Task):
+    task_type: str = 'A'
+
+class TaskB(Task):
+    task_type: str = 'B'
+
+
+type TaskUnion = TaskA | TaskB
 class PageTask(Task):
     owner: Optional[PageMember]
 
@@ -31,6 +39,7 @@ class PageStory(BaseModel):
 
     tasks: list[PageTask] = []
     owner: Optional[PageMember] = None
+    union_tasks: list[TaskUnion] = []
 
 class PageSprint(serv.Sprint):
     stories: list[PageStory]

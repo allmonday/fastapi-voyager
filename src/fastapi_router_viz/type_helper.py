@@ -5,6 +5,14 @@ from typing import get_origin, get_args, Union, Annotated, Any
 from fastapi_router_viz.type import FieldInfo
 from types import UnionType
 
+# Python <3.12 compatibility: TypeAliasType exists only from 3.12 (PEP 695)
+try:  # pragma: no cover - import guard
+    from typing import TypeAliasType  # type: ignore
+except Exception:  # pragma: no cover
+    class _DummyTypeAliasType:  # minimal sentinel so isinstance checks are safe
+        pass
+    TypeAliasType = _DummyTypeAliasType  # type: ignore
+
 
 def _is_optional(annotation):
     origin = get_origin(annotation)
@@ -36,6 +44,20 @@ def get_core_types(tp):
     if tp is type(None):
         return tuple()
 
+    # Unwrap PEP 695 type aliases (they wrap the actual annotation in __value__)
+    # Repeat in case of nested aliasing.
+    def _unwrap_alias(t):
+        while isinstance(t, TypeAliasType) or (
+            t.__class__.__name__ == 'TypeAliasType' and hasattr(t, '__value__')
+        ):
+            try:
+                t = t.__value__
+            except Exception:  # pragma: no cover - defensive
+                break
+        return t
+
+    tp = _unwrap_alias(tp)
+
     # 1. Unwrap list layers
     def _shell_list(_tp):
         while _is_list(_tp):
@@ -47,6 +69,9 @@ def get_core_types(tp):
         return _tp
     
     tp = _shell_list(tp)
+
+    # Alias could wrap a list element, unwrap again
+    tp = _unwrap_alias(tp)
 
     if tp is type(None): # check again
         return tuple()
@@ -61,6 +86,7 @@ def get_core_types(tp):
             # Optional[T] case -> keep unwrapping (exactly one real type + None)
             if has_none and len(non_none) == 1:
                 tp = non_none[0]
+                tp = _unwrap_alias(tp)
                 tp = _shell_list(tp)
                 continue
             # General union: return all non-None members (order preserved)

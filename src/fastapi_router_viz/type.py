@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 
@@ -27,9 +27,9 @@ class SchemaNode:
     id: str
     module: str
     name: str
-    source_code: str
-    vscode_link: str
-    fields: list[FieldInfo]
+    source_code: str = ''  # optional for tests / backward compatibility
+    vscode_link: str = ''  # optional vscode deep link
+    fields: list[FieldInfo] = field(default_factory=list)
 
 @dataclass
 class ModuleNode:
