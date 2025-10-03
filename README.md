@@ -120,10 +120,11 @@ features:
 - [x] optimize static resource (cdn -> local)
 - [x] add configuration for highlight (optional)
 - [x] alt+click to show field details
-- [ ] display source code of routes (including response_model)
+- [x] display source code of routes (including response_model)
+- [x] handle excluded field 
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] support dataclass
-- [x] handle excluded field 
+- [ ] group routes by module hierarchy
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
     - [x] strikethrough for excluded fields
