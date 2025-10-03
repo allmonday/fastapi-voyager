@@ -19,7 +19,7 @@ uv add fastapi-router-viz
 ## Dependencies
 
 - FastAPI
-- pydantic-resolve
+- [pydantic-resolve](https://github.com/allmonday/pydantic-resolve)
 
 
 ## Feature
