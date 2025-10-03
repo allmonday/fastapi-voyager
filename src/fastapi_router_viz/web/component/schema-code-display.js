@@ -23,6 +23,8 @@ export default defineComponent({
     const code = ref("");
     const link = ref("");
     const error = ref(null);
+    const fields = ref([]); // schema fields list
+    const tab = ref('source');
 
     function close() {
       emit("close");
@@ -60,6 +62,8 @@ export default defineComponent({
         if (item) {
           link.value = item.vscode_link || "";
           code.value = item.source_code || "// no source code available";
+          // capture fields if provided
+          fields.value = Array.isArray(item.fields) ? item.fields : [];
           highlightLater();
         } else {
           error.value = "Schema not found";
@@ -70,6 +74,16 @@ export default defineComponent({
         loading.value = false;
       }
     }
+
+    // re-highlight when switching back to source tab
+    watch(
+      () => tab.value,
+      (val) => {
+        if (val === 'source') {
+          highlightLater();
+        }
+      }
+    );
 
     watch(
       () => props.modelValue,
@@ -84,7 +98,7 @@ export default defineComponent({
       if (props.modelValue) loadSource();
     });
 
-    return { loading, link, code, error, close };
+    return { loading, link, code, error, close, fields, tab };
   },
   template: `
   <div class="frv-code-display" style="border: 1px solid #ccc; border-left: none; position:relative; width:40vw; max-width:40vw; height:100%; background:#fff;">
@@ -95,11 +109,44 @@ export default defineComponent({
           Open in VSCode
         </a>
       </div>
-      <div style="padding:48px 16px 16px 16px; height:80%; box-sizing:border-box; overflow:auto;">
+
+      <div style="padding:8px 12px 0 12px; box-sizing:border-box;">
+        <q-tabs v-model="tab" align="left" dense active-color="primary" indicator-color="primary" class="text-grey-8">
+          <q-tab name="source" label="Source Code" />
+          <q-tab name="fields" label="Fields" />
+        </q-tabs>
+      </div>
+      <q-separator />
+      <div style="padding:8px 16px 16px 16px; height:75%; box-sizing:border-box; overflow:auto;">
         <div v-if="loading" style="font-family:Menlo, monospace; font-size:12px;">Loading source...</div>
         <div v-else-if="error" style="color:#c10015; font-family:Menlo, monospace; font-size:12px;">{{ error }}</div>
-        <pre v-else style="margin:0;"><code class="language-python">{{ code }}</code></pre>
-	  </div>
+        <template v-else>
+          <div v-show="tab === 'source'">
+            <pre style="margin:0;"><code class="language-python">{{ code }}</code></pre>
+          </div>
+          <div v-show="tab === 'fields'">
+            <table style="border-collapse:collapse; width:100%; font-size:12px; font-family:Menlo, monospace;">
+              <thead>
+                <tr>
+                  <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Field</th>
+                  <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Type</th>
+                  <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">From Base</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="f in fields" :key="f.name">
+                  <td style="padding:4px 6px; border-bottom:1px solid #f0f0f0;">{{ f.name }}</td>
+                  <td style="padding:4px 6px; border-bottom:1px solid #f0f0f0; white-space:nowrap;">{{ f.type_name }}</td>
+                  <td style="padding:4px 6px; border-bottom:1px solid #f0f0f0; text-align:left;">{{ f.from_base ? '✔︎' : '' }}</td>
+                </tr>
+                <tr v-if="!fields.length">
+                  <td colspan="3" style="padding:8px 6px; color:#666; font-style:italic;">No fields</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
 	</div>
 	`,
 });

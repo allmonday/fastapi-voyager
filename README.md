@@ -119,10 +119,11 @@ features:
 - [x] find dependency based on picked schema and it's field.
 - [x] optimize static resource (cdn -> local)
 - [x] add configuration for highlight (optional)
+- [x] alt+click to show field details
 - [ ] display source code of routes (including response_model)
-- [ ] ctrl+click to show field details
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] support dataclass
+- [x] handle excluded field 
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
     - [x] strikethrough for excluded fields
@@ -130,7 +131,6 @@ features:
 
 bugs:
 - [ ] fix duplicated link from class and parent class, it also break clicking highlight
-- [ ] handle excluded field 
 
 
 ## Credits
