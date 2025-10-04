@@ -1,6 +1,8 @@
 [![pypi](https://img.shields.io/pypi/v/fastapi-voyager.svg)](https://pypi.python.org/pypi/fastapi-voyager)
 ![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-voyager)
 
+<p align="center"><img src="./voyager.jpg" alt="" /></p>
+
 > This repo is still in early stage, currently it supports pydantic v2 only, previous name: fastapi-router-viz
 
 Inspect your API interactively
