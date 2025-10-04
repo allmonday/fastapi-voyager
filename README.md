@@ -1,7 +1,7 @@
-[![pypi](https://img.shields.io/pypi/v/fastapi-router-viz.svg)](https://pypi.python.org/pypi/fastapi-router-viz)
-![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-router-viz)
+[![pypi](https://img.shields.io/pypi/v/fastapi-voyager.svg)](https://pypi.python.org/pypi/fastapi-voyager)
+![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-voyager)
 
-> This repo is still in early stage, currently it supports pydantic v2 only
+> This repo is still in early stage, currently it supports pydantic v2 only, previous name: fastapi-router-viz
 
 Inspect your API interactively
 
@@ -10,9 +10,9 @@ Inspect your API interactively
 ## Installation
 
 ```bash
-pip install fastapi-router-viz
+pip install fastapi-voyager
 # or
-uv add fastapi-router-viz
+uv add fastapi-voyager
 ```
 
 
@@ -24,19 +24,19 @@ uv add fastapi-router-viz
 
 ## Feature
 
-For scenarios of using FastAPI as internal API integration endpoints, `fastapi-router-viz` helps to visualize the dependencies.
+For scenarios of using FastAPI as internal API integration endpoints, `fastapi-voyager` helps to visualize the dependencies.
 
 It is also an architecture inspection tool that can identify issues in data relationships through visualization during the design phase.
 
-If the process of building the view model follows the ER model, the full potential of fastapi-router-viz can be realized. It allows for quick identification of APIs  that use entities, as well as which entities are used by a specific API
+If the process of building the view model follows the ER model, the full potential of fastapi-voyager can be realized. It allows for quick identification of APIs  that use entities, as well as which entities are used by a specific API
 
 
 
 ```shell
-git clone https://github.com/allmonday/fastapi-router-viz.git
-cd fastapi-router-viz
+git clone https://github.com/allmonday/fastapi-voyager.git
+cd fastapi-voyager
 
-router-viz -m tests.demo 
+voyager -m tests.demo 
            --server --port=8001 
            --module_color=tests.service:blue 
            --module_color=tests.demo:tomato
@@ -76,27 +76,27 @@ click a node to highlight it's upperstream and downstream nodes. figure out the 
 
 ```bash
 # open in browser
-router-viz -m tests.demo --server  
+voyager -m tests.demo --server  
 
-router-viz -m tests.demo --server --port=8002
+voyager -m tests.demo --server --port=8002
 ```
 
 ### generate the dot file
 ```bash
 # generate .dot file
-router-viz -m tests.demo  
+voyager -m tests.demo  
 
-router-viz -m tests.demo --app my_app
+voyager -m tests.demo --app my_app
 
-router-viz -m tests.demo --schema Task
+voyager -m tests.demo --schema Task
 
-router-viz -m tests.demo --show_fields all
+voyager -m tests.demo --show_fields all
 
-router-viz -m tests.demo --module_color=tests.demo:red --module_color=tests.service:tomato
+voyager -m tests.demo --module_color=tests.demo:red --module_color=tests.service:tomato
 
-router-viz -m tests.demo -o my_visualization.dot
+voyager -m tests.demo -o my_visualization.dot
 
-router-viz --version
+voyager --version
 ```
 
 The tool will generate a DOT file that you can render using Graphviz:

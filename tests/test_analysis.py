@@ -1,4 +1,4 @@
-from fastapi_router_viz.graph import Analytics
+from fastapi_voyager.graph import Analytics
 from pydantic import BaseModel
 from fastapi import FastAPI
 from typing import Optional

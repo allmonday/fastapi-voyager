@@ -1,4 +1,4 @@
-"""Command line interface for fastapi-router-viz."""
+"""Command line interface for fastapi-voyager."""
 import argparse
 import sys
 import importlib.util
@@ -7,9 +7,9 @@ import os
 from typing import Optional
 
 from fastapi import FastAPI
-from fastapi_router_viz.graph import Analytics
-from fastapi_router_viz.version import __version__
-from fastapi_router_viz import server as viz_server
+from fastapi_voyager.graph import Analytics
+from fastapi_voyager.version import __version__
+from fastapi_voyager import server as viz_server
 
 
 def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optional[FastAPI]:
@@ -122,15 +122,15 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  router-viz app.py                                                             # Load 'app' from app.py
-  router-viz -m tests.demo                                                      # Load 'app' from demo module
-  router-viz -m tests.demo --app=app                                            # Load 'app' from tests.demo
-  router-viz -m tests.demo --schema=NodeA                                       # [str] filter nodes by schema name
-  router-viz -m tests.demo --tags=page restful                                  # list[str] filter nodes route's tags
-  router-viz -m tests.demo --module_color=tests.demo:red --module_color=tests.service:yellow  # list[str] filter nodes route's tags
-  router-viz -m tests.demo -o my_graph.dot                                      # Output to my_graph.dot
-  router-viz -m tests.demo --server                                             # start a local server to preview
-  router-viz -m tests.demo --server --port=8001                                 # start a local server to preview
+  voyager app.py                                                             # Load 'app' from app.py
+  voyager -m tests.demo                                                      # Load 'app' from demo module
+  voyager -m tests.demo --app=app                                            # Load 'app' from tests.demo
+  voyager -m tests.demo --schema=NodeA                                       # [str] filter nodes by schema name
+  voyager -m tests.demo --tags=page restful                                  # list[str] filter nodes route's tags
+  voyager -m tests.demo --module_color=tests.demo:red --module_color=tests.service:yellow  # list[str] filter nodes route's tags
+  voyager -m tests.demo -o my_graph.dot                                      # Output to my_graph.dot
+  voyager -m tests.demo --server                                             # start a local server to preview
+  voyager -m tests.demo --server --port=8001                                 # start a local server to preview
 """
     )
     
@@ -173,7 +173,7 @@ Examples:
     parser.add_argument(
         "--version", "-v",
         action="version",
-        version=f"fastapi-router-viz {__version__}"
+        version=f"fastapi-voyager {__version__}"
     )
     parser.add_argument(
         "--tags",

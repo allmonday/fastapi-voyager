@@ -1,5 +1,5 @@
-from fastapi_router_viz.module import build_module_tree
-from fastapi_router_viz.type import SchemaNode
+from fastapi_voyager.module import build_module_tree
+from fastapi_voyager.type import SchemaNode
 
 
 def _sn(id: str, module: str, name: str) -> SchemaNode:

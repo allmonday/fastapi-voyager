@@ -2,7 +2,7 @@ import sys
 import pytest
 from typing import get_args, get_origin
 
-from fastapi_router_viz.type_helper import get_core_types
+from fastapi_voyager.type_helper import get_core_types
 
 # Only Python 3.12+ supports the PEP 695 `type` statement producing TypeAliasType
 pytestmark = pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 type aliases require Python 3.12+")

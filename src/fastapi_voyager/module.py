@@ -1,4 +1,4 @@
-from fastapi_router_viz.type import SchemaNode, ModuleNode
+from fastapi_voyager.type import SchemaNode, ModuleNode
 
 def build_module_tree(schema_nodes: list[SchemaNode]) -> list[ModuleNode]:
     """

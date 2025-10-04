@@ -5,8 +5,8 @@ from starlette.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi_router_viz.graph import Analytics
-from fastapi_router_viz.type import Tag, FieldInfo
+from fastapi_voyager.graph import Analytics
+from fastapi_voyager.type import Tag, FieldInfo
 
 
 WEB_DIR = Path(__file__).parent / "web"
@@ -42,7 +42,7 @@ def create_app_with_fastapi(
 	This avoids module-level globals by keeping state in closures.
 	"""
 
-	app = FastAPI(title="fastapi-router-viz demo server")
+	app = FastAPI(title="fastapi-voyager demo server")
 
 	# Enable gzip compression for larger responses (e.g. DOT / schemas payload)
 	if gzip_minimum_size is not None and gzip_minimum_size >= 0:
@@ -95,7 +95,7 @@ def create_app_with_fastapi(
 		<html>
 		<head><meta charset=\"utf-8\"><title>Graphviz Preview</title></head>
 		<body>
-		  <p>index.html not found. Create one under src/fastapi_router_viz/web/index.html</p>
+		  <p>index.html not found. Create one under src/fastapi_voyager/web/index.html</p>
 		</body>
 		</html>
 		"""

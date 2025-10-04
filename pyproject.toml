@@ -1,5 +1,5 @@
 [project]
-name = "fastapi-router-viz"
+name = "fastapi-voyager"
 dynamic = ["version"]
 description = "Visualize FastAPI application's routing tree and dependencies"
 authors = [ { name = "Tangkikodo", email = "allmonday@126.com" } ]
@@ -23,11 +23,11 @@ classifiers = [
 ]
 
 [project.scripts]
-router-viz = "fastapi_router_viz.cli:main"
+voyager = "fastapi_voyager.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/allmonday/fastapi-router-viz"
-Source = "https://github.com/allmonday/fastapi-router-viz"
+Homepage = "https://github.com/allmonday/fastapi-voyager"
+Source = "https://github.com/allmonday/fastapi-voyager"
 
 [project.optional-dependencies]
 dev = ["uvicorn", "ruff", "pytest"]
@@ -37,7 +37,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "src/fastapi_router_viz/version.py"
+path = "src/fastapi_voyager/version.py"
 
 [tool.uv]
 # You can pin resolution or indexes here later.

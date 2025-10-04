@@ -1,7 +1,7 @@
 import inspect
 from typing import Literal
 from fastapi import FastAPI, routing
-from fastapi_router_viz.type_helper import (
+from fastapi_voyager.type_helper import (
     get_core_types,
     full_class_name,
     get_bases_fields,
@@ -11,9 +11,9 @@ from fastapi_router_viz.type_helper import (
     get_source
 )
 from pydantic import BaseModel
-from fastapi_router_viz.type import Route, SchemaNode, Link, Tag, ModuleNode
-from fastapi_router_viz.module import build_module_tree
-from fastapi_router_viz.filter import filter_graph
+from fastapi_voyager.type import Route, SchemaNode, Link, Tag, ModuleNode
+from fastapi_voyager.module import build_module_tree
+from fastapi_voyager.filter import filter_graph
 
 # support pydantic-resolve's ensure_subset
 ENSURE_SUBSET_REFERENCE = '__pydantic_resolve_ensure_subset_reference__'

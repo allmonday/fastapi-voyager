@@ -2,7 +2,7 @@ import inspect
 import os
 from pydantic import BaseModel
 from typing import get_origin, get_args, Union, Annotated, Any
-from fastapi_router_viz.type import FieldInfo
+from fastapi_voyager.type import FieldInfo
 from types import UnionType
 
 # Python <3.12 compatibility: TypeAliasType exists only from 3.12 (PEP 695)

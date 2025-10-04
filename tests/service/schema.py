@@ -1,4 +1,4 @@
-from fastapi_router_viz.graph import Analytics
+from fastapi_voyager.graph import Analytics
 from pydantic import BaseModel
 from pydantic_resolve import ensure_subset
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Tuple
-from fastapi_router_viz.type import Tag, Route, SchemaNode, Link
+from fastapi_voyager.type import Tag, Route, SchemaNode, Link
 
 
 def filter_graph(

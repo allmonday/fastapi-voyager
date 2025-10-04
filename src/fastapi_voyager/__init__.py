@@ -1,4 +1,4 @@
-"""fastapi_router_viz
+"""fastapi_voyager
 
 Utilities to introspect a FastAPI application and visualize its routing tree.
 """
