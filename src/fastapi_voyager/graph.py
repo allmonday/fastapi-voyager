@@ -8,7 +8,8 @@ from fastapi_voyager.type_helper import (
     is_inheritance_of_pydantic_base,
     get_pydantic_fields,
     get_vscode_link,
-    get_source
+    get_source,
+    update_forward_refs
 )
 from pydantic import BaseModel
 from fastapi_voyager.type import Route, SchemaNode, Link, Tag, ModuleNode
@@ -111,6 +112,7 @@ class Analytics:
             # add response_models and create links from route -> response_model
             for schema in get_core_types(route.response_model):
                 if schema and issubclass(schema, BaseModel):
+                    update_forward_refs(schema)
                     target_name = full_class_name(schema)
                     self.links.append(Link(
                         source=route_id,

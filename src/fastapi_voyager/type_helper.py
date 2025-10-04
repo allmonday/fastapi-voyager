@@ -1,7 +1,7 @@
 import inspect
 import os
 from pydantic import BaseModel
-from typing import get_origin, get_args, Union, Annotated, Any
+from typing import get_origin, get_args, Union, Annotated, Any, Type
 from fastapi_voyager.type import FieldInfo
 from types import UnionType
 
@@ -230,3 +230,25 @@ def get_source(kls):
         return source
     except Exception:
         return "failed to get source"
+
+
+def safe_issubclass(kls, classinfo):
+    try:
+        return issubclass(kls, classinfo)
+    except TypeError:
+        return False
+
+
+def update_forward_refs(kls):
+    def update_pydantic_forward_refs(kls: Type[BaseModel]):
+        """
+        recursively update refs.
+        """
+        kls.model_rebuild()
+        values = kls.model_fields.values()
+        for field in values:
+            update_forward_refs(field.annotation)
+
+    for shelled_types in get_core_types(kls):
+        if safe_issubclass(shelled_types, BaseModel):
+            update_pydantic_forward_refs(shelled_types)
