@@ -112,7 +112,6 @@ class Analytics:
             # add response_models and create links from route -> response_model
             for schema in get_core_types(route.response_model):
                 if schema and issubclass(schema, BaseModel):
-                    update_forward_refs(schema)
                     target_name = full_class_name(schema)
                     self.links.append(Link(
                         source=route_id,
@@ -182,6 +181,7 @@ class Analytics:
         3. recursively run walk_schema
         """
         
+        update_forward_refs(schema)
         self.add_to_node_set(schema)
 
         # handle schema inside ensure_subset(schema)

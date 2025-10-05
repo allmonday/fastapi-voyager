@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import get_origin, get_args, Union, Annotated, Any, Type
 from fastapi_voyager.type import FieldInfo
 from types import UnionType
+import pydantic_resolve.constant as const
 
 # Python <3.12 compatibility: TypeAliasType exists only from 3.12 (PEP 695)
 try:  # pragma: no cover - import guard
@@ -149,8 +150,9 @@ def get_type_name(anno):
 
     return name_of(anno)
 
+
 def is_inheritance_of_pydantic_base(cls):
-        return issubclass(cls, BaseModel) and cls is not BaseModel
+    return issubclass(cls, BaseModel) and cls is not BaseModel
 
 
 def get_bases_fields(schemas: list[type[BaseModel]]) -> set[str]:
@@ -240,15 +242,30 @@ def safe_issubclass(kls, classinfo):
 
 
 def update_forward_refs(kls):
-    def update_pydantic_forward_refs(kls: Type[BaseModel]):
+    def update_pydantic_forward_refs(kls2: Type[BaseModel]):
         """
         recursively update refs.
         """
-        kls.model_rebuild()
-        values = kls.model_fields.values()
+
+        kls2.model_rebuild()
+        setattr(kls2, const.PYDANTIC_FORWARD_REF_UPDATED, True)
+
+        values = kls2.model_fields.values()
         for field in values:
             update_forward_refs(field.annotation)
 
-    for shelled_types in get_core_types(kls):
-        if safe_issubclass(shelled_types, BaseModel):
-            update_pydantic_forward_refs(shelled_types)
+    if safe_issubclass(kls, BaseModel):
+        kls.model_rebuild()
+        setattr(kls, const.PYDANTIC_FORWARD_REF_UPDATED, True)
+        
+    for shelled_type in get_core_types(kls):
+        if getattr(shelled_type, const.PYDANTIC_FORWARD_REF_UPDATED, False):
+            continue
+        if safe_issubclass(shelled_type, BaseModel):
+            update_pydantic_forward_refs(shelled_type)
+
+if __name__ == "__main__":
+    from tests.demo_anno import PageSprint, PageOverall
+
+    update_forward_refs(PageOverall)
+    update_forward_refs(PageSprint)

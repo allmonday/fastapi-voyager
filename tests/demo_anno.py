@@ -12,6 +12,11 @@ app = FastAPI(title="Demo API", description="A demo FastAPI application for rout
 def get_sprint():
     return []
 
+class Tree(BaseModel):
+    id: int
+    name: str
+    children: list[Tree] = []
+
 class PageMember(serv.Member):
     fullname: str = ''
     def post_fullname(self):
@@ -50,6 +55,8 @@ class PageStory(BaseModel):
     tasks: list[PageTask] = []
     owner: Optional[PageMember] = None
     union_tasks: list[TaskUnion] = []
+
+    tree: Optional[Tree] = None
 
 @app.get("/page_overall", tags=['for-page'], response_model=PageOverall)
 async def get_page_info():
