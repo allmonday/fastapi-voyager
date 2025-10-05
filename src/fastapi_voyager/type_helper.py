@@ -242,6 +242,7 @@ def safe_issubclass(kls, classinfo):
 
 
 def update_forward_refs(kls):
+    # TODO: refactor
     def update_pydantic_forward_refs(kls2: Type[BaseModel]):
         """
         recursively update refs.

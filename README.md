@@ -117,9 +117,9 @@ dot -Tpng router_viz.dot -o router_viz.png
 or you can open router_viz.dot with vscode extension `graphviz interactive preview`
 
 
-## Plan
+## Plan before v1.0
 
-features:
+features 
 - [x] group schemas by module hierarchy
 - [x] module-based coloring via Analytics(module_color={...})
 - [x] view in web browser
@@ -135,17 +135,27 @@ features:
 - [x] alt+click to show field details
 - [x] display source code of routes (including response_model)
 - [x] handle excluded field 
+- [ ] ui optimization
+    - [ ] fixed left/right bar show field information
 - [ ] user can generate nodes/edges manually and connect to generated ones
 - [ ] support dataclass
 - [ ] group routes by module hierarchy
+- [ ] display standard ER diagram
+    - [ ] display potential invalid links
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
     - [x] strikethrough for excluded fields
     - [ ] display loader as edges
-- [ ] test cases
+- [ ] add tests
 
 bugs:
 - [ ] fix duplicated link from class and parent class, it also break clicking highlight
+
+## Using with pydantic-resolve
+
+pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `source class` in safe.
+
+TODO: ...
 
 
 ## Credits
