@@ -135,11 +135,13 @@ features
 - [x] alt+click to show field details
 - [x] display source code of routes (including response_model)
 - [x] handle excluded field 
-- [ ] group routes by module hierarchy
+- [ ] add tooltips
+- [ ] route
+    - [ ] group routes by module hierarchy
+    - [ ] add response_model in route
 - [ ] support dataclass
+- [ ] click field to highlight links
 - [ ] user can generate nodes/edges manually and connect to generated ones
-- [ ] refactor
-    - [ ] abstract render module
 - [ ] ui optimization
     - [ ] fixed left/right bar show field information
 - [ ] display standard ER diagram
@@ -149,6 +151,8 @@ features
     - [x] strikethrough for excluded fields
     - [ ] display loader as edges
 - [ ] add tests
+- [ ] refactor
+    - [ ] abstract render module
 
 bugs:
 - [ ] fix duplicated link from class and parent class, it also break clicking highlight

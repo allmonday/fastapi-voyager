@@ -106,7 +106,7 @@ class Analytics:
                 source_origin=tag_id,
                 target=route_id,
                 target_origin=route_id,
-                type='entry'
+                type='tag_route'
             ))
 
             # add response_models and create links from route -> response_model
@@ -118,7 +118,7 @@ class Analytics:
                         source_origin=route_id,
                         target=self.generate_node_head(target_name),
                         target_origin=target_name,
-                        type='entry'
+                        type='route_to_schema'
                     ))
 
                     schemas.append(schema)
@@ -223,7 +223,7 @@ class Analytics:
                         source_origin=full_class_name(schema),
                         target=self.generate_node_head(full_class_name(anno)),
                         target_origin=full_class_name(anno),
-                        type='internal'):
+                        type='schema'):
                         self.analysis_schemas(anno)
 
 
@@ -263,22 +263,27 @@ class Analytics:
 
     def generate_dot(self):
 
+        def handle_schema(source: str):
+            if '::' in source:
+                a, b = source.split('::', 1)
+                return f'"{a}":{b}'
+            return f'"{source}"'
+
+
         def generate_link(link: Link):
-            if link.type == 'internal':
-                return f'''{handle_entry(link.source)}:e -> {handle_entry(link.target)}:w [ {get_link_attributes(link)} ];'''
-            else:
-                return f'''{handle_entry(link.source)} -> {handle_entry(link.target)} [ {get_link_attributes(link)} ];'''
-
-
-        def get_link_attributes(link: Link):
-            if link.type == 'parent':
-                return 'style = "solid, dashed", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"'
-            elif link.type == 'entry':
-                return 'style = "solid", label = "", minlen=3, tailport="e", headport="w"'
+            if link.type == 'tag_route':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid", minlen=3];'''
+            elif link.type == 'route_to_schema':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:{PK} [style = "solid", minlen=3];'''
+            elif link.type == 'schema':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid", label = "", dir="back", minlen=3, arrowtail="odot"];'''
+            elif link.type == 'parent':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid, dashed", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"];'''
             elif link.type == 'subset':
-                return 'style = "solid, dashed", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"'
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid, dashed", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"];'''
+            else:
+                raise ValueError(f'Unknown link type: {link.type}')
 
-            return 'style = "solid", arrowtail="odot", dir="back", minlen=3'
 
         def render_module(mod: ModuleNode):
             color = self.module_color.get(mod.fullname)
@@ -307,12 +312,6 @@ class Analytics:
                 {inner_nodes_str}
                 {child_str}
             }}'''
-
-        def handle_entry(source: str):
-            if '::' in source:
-                a, b = source.split('::', 1)
-                return f'"{a}":{b}'
-            return f'"{source}"'
 
 
         _tags, _routes, _nodes, _links = filter_graph(

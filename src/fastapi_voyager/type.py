@@ -39,11 +39,12 @@ class ModuleNode:
 
 
 # type: 
-#    - entry: tag -> route, route -> response model
+#    - tag_route: tag -> route
+#    - route_to_schema: route -> response model
 #    - subset: schema -> schema (subset)
 #    - parent: schema -> schema (inheritance)
-#    - internal: schema -> schema (field reference)
-LinkType = Literal['internal', 'parent', 'entry', 'subset']
+#    - schema: schema -> schema (field reference)
+LinkType = Literal['schema', 'parent', 'tag_route', 'subset', 'route_to_schema']
 
 @dataclass
 class Link:
