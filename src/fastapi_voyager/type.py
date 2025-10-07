@@ -37,17 +37,16 @@ class ModuleNode:
     schema_nodes: list[SchemaNode]
     modules: list['ModuleNode']
 
+
+# type: 
+#    - entry: tag -> route, route -> response model
+#    - subset: schema -> schema (subset)
+#    - parent: schema -> schema (inheritance)
+#    - internal: schema -> schema (field reference)
 LinkType = Literal['internal', 'parent', 'entry', 'subset']
 
 @dataclass
 class Link:
-    """
-    type: 
-        - entry: tag -> route, route -> response model
-        - subset: schema -> schema (subset)
-        - parent: schema -> schema (inheritance)
-        - internal: schema -> schema (field reference)
-    """
     # node + field level links
     source: str
     target: str
