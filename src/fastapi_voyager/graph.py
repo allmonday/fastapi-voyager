@@ -272,11 +272,11 @@ class Analytics:
 
         def get_link_attributes(link: Link):
             if link.type == 'parent':
-                return 'style = "solid", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"'
+                return 'style = "solid, dashed", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"'
             elif link.type == 'entry':
                 return 'style = "solid", label = "", minlen=3, tailport="e", headport="w"'
             elif link.type == 'subset':
-                return 'style = "solid", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"'
+                return 'style = "solid, dashed", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"'
 
             return 'style = "solid", arrowtail="odot", dir="back", minlen=3'
 

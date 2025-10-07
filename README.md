@@ -135,11 +135,13 @@ features
 - [x] alt+click to show field details
 - [x] display source code of routes (including response_model)
 - [x] handle excluded field 
+- [ ] group routes by module hierarchy
+- [ ] support dataclass
+- [ ] user can generate nodes/edges manually and connect to generated ones
+- [ ] refactor
+    - [ ] abstract render module
 - [ ] ui optimization
     - [ ] fixed left/right bar show field information
-- [ ] user can generate nodes/edges manually and connect to generated ones
-- [ ] support dataclass
-- [ ] group routes by module hierarchy
 - [ ] display standard ER diagram
     - [ ] display potential invalid links
 - [ ] integration with pydantic-resolve
