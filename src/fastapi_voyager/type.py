@@ -1,6 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Literal
 
+@dataclass
+class NodeBase:
+    id: str
+    name: str
 
 @dataclass
 class FieldInfo:
@@ -11,23 +15,17 @@ class FieldInfo:
     is_exclude: bool = False
 
 @dataclass
-class Tag:
-    id: str
-    name: str
+class Tag(NodeBase):
     routes: list['Route']  # route.id
 
 @dataclass
-class Route:
-    id: str
-    name: str
+class Route(NodeBase):
     source_code: str = ''
     vscode_link: str = ''  # optional vscode deep link
 
 @dataclass
-class SchemaNode:
-    id: str
+class SchemaNode(NodeBase):
     module: str
-    name: str
     source_code: str = ''  # optional for tests / backward compatibility
     vscode_link: str = ''  # optional vscode deep link
     fields: list[FieldInfo] = field(default_factory=list)
