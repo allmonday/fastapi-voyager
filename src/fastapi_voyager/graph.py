@@ -263,15 +263,22 @@ class Analytics:
 
     def generate_dot(self):
 
+        def generate_link(link: Link):
+            if link.type == 'internal':
+                return f'''{handle_entry(link.source)}:e -> {handle_entry(link.target)}:w [ {get_link_attributes(link)} ];'''
+            else:
+                return f'''{handle_entry(link.source)} -> {handle_entry(link.target)} [ {get_link_attributes(link)} ];'''
+
+
         def get_link_attributes(link: Link):
             if link.type == 'parent':
                 return 'style = "solid", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"'
             elif link.type == 'entry':
-                return 'style = "solid", label = "", minlen=3'
+                return 'style = "solid", label = "", minlen=3, tailport="e", headport="w"'
             elif link.type == 'subset':
                 return 'style = "solid", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"'
 
-            return 'style = "solid", arrowtail="odiamond", dir="back", minlen=3'
+            return 'style = "solid", arrowtail="odot", dir="back", minlen=3'
 
         def render_module(mod: ModuleNode):
             color = self.module_color.get(mod.fullname)
@@ -339,9 +346,7 @@ class Analytics:
 
         modules_str = '\n'.join(render_module(m) for m in _modules)
 
-        links = [
-            f'''{handle_entry(link.source)} -> {handle_entry(link.target)} [ {get_link_attributes(link)} ];''' for link in _links
-        ]
+        links = [ generate_link(link) for link in _links ]
         link_str = '\n'.join(links)
 
         template = f'''
@@ -375,7 +380,7 @@ class Analytics:
                 color = "#aaa"
                 margin=18
                 style="dashed"
-                label = "  Route apis"
+                label = "  Routes"
                 labeljust = "l"
                 fontsize = "20"
                 {route_str}

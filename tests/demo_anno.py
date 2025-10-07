@@ -56,8 +56,6 @@ class PageStory(BaseModel):
     owner: Optional[PageMember] = None
     union_tasks: list[TaskUnion] = []
 
-    tree: Optional[Tree] = None
-
 @app.get("/page_overall", tags=['for-page'], response_model=PageOverall)
 async def get_page_info():
     page_overall = PageOverall(sprints=[]) # focus on schema only
@@ -69,4 +67,8 @@ class PageStories(BaseModel):
 
 @app.get("/page_info/", tags=['for-page'], response_model=PageStories)
 def get_page_stories():
+    return {} # no implementation
+
+@app.get("/rest-tree/", tags=['for-restapi'], response_model=Tree)
+def get_tree():
     return {} # no implementation
