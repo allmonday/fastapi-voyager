@@ -50,16 +50,11 @@ def test_build_module_tree_basic():
     assert [sn.name for sn in other.schema_nodes] == ["C"]
     assert other.modules == []
 
-    # x.y.z level
-    x = _find_top(top_modules, "x")
+    # x.y.z chain should collapse to a single module named "x.y.z"
+    x = _find_top(top_modules, "x.y.z")
     assert x is not None
-    assert x.schema_nodes == []
-    y = _find_child(x, "y")
-    assert y is not None
-    z = _find_child(y, "z")
-    assert z is not None
-    assert [sn.name for sn in z.schema_nodes] == ["D"]
-    assert z.modules == []
+    assert [sn.name for sn in x.schema_nodes] == ["D"]
+    assert x.modules == []
 
 
 def test_build_module_tree_empty_input():
@@ -83,3 +78,34 @@ def test_build_module_tree_root_level_nodes():
     assert sorted(sn.name for sn in root.schema_nodes) == ["Root1", "Root2"]
     pkg = _find_top(top_modules, "pkg")
     assert pkg is not None and [sn.name for sn in pkg.schema_nodes] == ["PkgA"]
+
+
+def test_collapse_single_child_empty_modules():
+    # Construct a deeper chain with empty intermediate modules that should collapse
+    schema_nodes = [
+        _sn("Deep", "a.b.c.d", "Deep"),
+        _sn("Peer", "a.b.x", "Peer"),
+    ]
+    top_modules = build_module_tree(schema_nodes)
+
+    # 'a' should have one child path 'b', but due to branching at x, only a.b collapses into a.b
+    # and below it, 'c.d' should collapse to 'c.d'. Final structure:
+    # a
+    #  └── b
+    #       ├── c.d (holds Deep)
+    #       └── x (holds Peer)
+    a = _find_top(top_modules, "a")
+    assert a is not None
+    assert a.schema_nodes == []
+    # b remains as child of a
+    b = _find_child(a, "b")
+    assert b is not None
+    assert b.schema_nodes == []
+    # collapsed node under b is named "c.d"
+    cd = _find_child(b, "c.d")
+    assert cd is not None
+    assert [sn.name for sn in cd.schema_nodes] == ["Deep"]
+    # sibling x remains
+    x = _find_child(b, "x")
+    assert x is not None
+    assert [sn.name for sn in x.schema_nodes] == ["Peer"]

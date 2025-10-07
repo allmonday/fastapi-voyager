@@ -41,4 +41,24 @@ def build_module_tree(schema_nodes: list[SchemaNode]) -> list[ModuleNode]:
     result = list(top_modules.values())
     if root_level_nodes:
         result.append(ModuleNode(name="__root__", fullname="__root__", schema_nodes=root_level_nodes, modules=[]))
+
+    # Collapse pass: if a module has exactly one child module and no schema_nodes,
+    # merge it upward (A + B -> A.B). Repeat until fixed point.
+    def collapse(node: ModuleNode):
+        # Collapse chains at current node
+        while len(node.modules) == 1 and len(node.schema_nodes) == 0:
+            child = node.modules[0]
+            # Merge child's identity into current node
+            node.name = f"{node.name}.{child.name}"
+            # Prefer child's fullname which already reflects full path
+            node.fullname = child.fullname
+            node.schema_nodes = child.schema_nodes
+            node.modules = child.modules
+        # Recurse into children
+        for m in node.modules:
+            collapse(m)
+
+    for top in result:
+        collapse(top)
+
     return result
