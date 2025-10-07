@@ -274,7 +274,7 @@ class Analytics:
             if link.type == 'tag_route':
                 return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid", minlen=3];'''
             elif link.type == 'route_to_schema':
-                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:{PK} [style = "solid", minlen=3];'''
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:{PK} [style = "solid", dir="back", arrowtail="odot", minlen=3];'''
             elif link.type == 'schema':
                 return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid", label = "", dir="back", minlen=3, arrowtail="odot"];'''
             elif link.type == 'parent':
