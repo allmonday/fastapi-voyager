@@ -12,7 +12,7 @@ from fastapi_voyager.type_helper import (
     update_forward_refs
 )
 from pydantic import BaseModel
-from fastapi_voyager.type import Route, SchemaNode, Link, Tag, ModuleNode
+from fastapi_voyager.type import Route, SchemaNode, Link, Tag, ModuleNode, LinkType
 from fastapi_voyager.module import build_module_tree
 from fastapi_voyager.filter import filter_graph
 
@@ -156,7 +156,8 @@ class Analytics:
             source_origin: str,
             target: str, 
             target_origin: str,
-            type: Literal['child', 'parent', 'subset']):
+            type: LinkType
+        ) -> bool:
         """
         1. add link to link_set
         2. if duplicated, do nothing, else insert
@@ -263,9 +264,7 @@ class Analytics:
     def generate_dot(self):
 
         def get_link_attributes(link: Link):
-            if link.type == 'child':
-                return 'style = "dashed", label = "", minlen=3'
-            elif link.type == 'parent':
+            if link.type == 'parent':
                 return 'style = "solid", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"'
             elif link.type == 'entry':
                 return 'style = "solid", label = "", minlen=3'

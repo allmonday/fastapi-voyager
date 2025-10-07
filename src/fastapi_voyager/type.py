@@ -37,10 +37,22 @@ class ModuleNode:
     schema_nodes: list[SchemaNode]
     modules: list['ModuleNode']
 
+LinkType = Literal['internal', 'parent', 'entry', 'subset']
+
 @dataclass
 class Link:
+    """
+    type: 
+        - entry: tag -> route, route -> response model
+        - subset: schema -> schema (subset)
+        - parent: schema -> schema (inheritance)
+        - internal: schema -> schema (field reference)
+    """
+    # node + field level links
     source: str
-    source_origin: str  # internal relationship
     target: str
+
+    # node level links
+    source_origin: str
     target_origin: str
-    type: Literal['child', 'parent', 'entry', 'subset']
+    type: LinkType
