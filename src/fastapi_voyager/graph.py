@@ -296,7 +296,7 @@ class Analytics:
                 style="rounded"
                 label = "  {mod.name}"
                 labeljust = "l"
-                {(f'pencolor = "{color}"' if color else 'pencolor=""')}
+                {(f'pencolor = "{color}"' if color else 'pencolor="#ccc"')}
                 {(f'penwidth = 3' if color else 'penwidth=""')}
                 {inner_nodes_str}
                 {child_str}
