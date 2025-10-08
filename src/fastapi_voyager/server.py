@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional
 from fastapi import FastAPI
 from starlette.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi_voyager.graph import Analytics
+from fastapi_voyager.voyager import Voyager
 from fastapi_voyager.type import Tag, FieldInfo
 
 
@@ -50,9 +50,9 @@ def create_app_with_fastapi(
 
 	@app.get("/dot", response_model=OptionParam)
 	def get_dot() -> str:
-		analytics = Analytics(module_color=module_color, load_meta=True)
+		analytics = Voyager(module_color=module_color, load_meta=True)
 		analytics.analysis(target_app)
-		dot = analytics.generate_dot()
+		dot = analytics.render_dot()
 
 		# include tags and their routes
 		tags = analytics.tags
@@ -72,7 +72,7 @@ def create_app_with_fastapi(
 
 	@app.post("/dot", response_class=PlainTextResponse)
 	def get_filtered_dot(payload: Payload) -> str:
-		analytics = Analytics(
+		analytics = Voyager(
 			include_tags=payload.tags,
 			schema=payload.schema_name,
 			schema_field=payload.schema_field,
@@ -82,7 +82,7 @@ def create_app_with_fastapi(
 			load_meta=False,
 		)
 		analytics.analysis(target_app)
-		return analytics.generate_dot()
+		return analytics.render_dot()
 
 	@app.get("/", response_class=HTMLResponse)
 	def index():

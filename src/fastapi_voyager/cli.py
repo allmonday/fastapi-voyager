@@ -7,7 +7,7 @@ import os
 from typing import Optional
 
 from fastapi import FastAPI
-from fastapi_voyager.graph import Analytics
+from fastapi_voyager.voyager import Voyager
 from fastapi_voyager.version import __version__
 from fastapi_voyager import server as viz_server
 
@@ -95,7 +95,7 @@ def generate_visualization(
 ):
 
     """Generate DOT file for FastAPI router visualization."""
-    analytics = Analytics(
+    analytics = Voyager(
         include_tags=tags,
         schema=schema,
         show_fields=show_fields,
@@ -105,7 +105,7 @@ def generate_visualization(
 
     analytics.analysis(app)
 
-    dot_content = analytics.generate_dot()
+    dot_content = analytics.render_dot()
     
     # Optionally write to file
     with open(output_file, 'w', encoding='utf-8') as f:

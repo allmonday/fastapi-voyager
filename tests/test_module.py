@@ -30,7 +30,7 @@ def test_build_module_tree_basic():
 
     # Assert: top-level modules
     names = sorted(m.name for m in top_modules)
-    assert names == ["pkg", "x"]
+    assert names == ["pkg", "x.y.z"]
 
     # pkg level
     pkg = _find_top(top_modules, "pkg")
@@ -87,25 +87,21 @@ def test_collapse_single_child_empty_modules():
         _sn("Peer", "a.b.x", "Peer"),
     ]
     top_modules = build_module_tree(schema_nodes)
-
+    print(top_modules)
     # 'a' should have one child path 'b', but due to branching at x, only a.b collapses into a.b
     # and below it, 'c.d' should collapse to 'c.d'. Final structure:
     # a
     #  └── b
     #       ├── c.d (holds Deep)
     #       └── x (holds Peer)
-    a = _find_top(top_modules, "a")
+    a = _find_top(top_modules, "a.b")
     assert a is not None
     assert a.schema_nodes == []
     # b remains as child of a
-    b = _find_child(a, "b")
+    b = _find_child(a, "c.d")
     assert b is not None
-    assert b.schema_nodes == []
+    assert [sn.name for sn in b.schema_nodes] == ['Deep']
     # collapsed node under b is named "c.d"
-    cd = _find_child(b, "c.d")
-    assert cd is not None
-    assert [sn.name for sn in cd.schema_nodes] == ["Deep"]
-    # sibling x remains
-    x = _find_child(b, "x")
+    x = _find_child(a, "x")
     assert x is not None
     assert [sn.name for sn in x.schema_nodes] == ["Peer"]

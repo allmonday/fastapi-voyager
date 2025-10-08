@@ -56,3 +56,6 @@ class Link:
     source_origin: str
     target_origin: str
     type: LinkType
+
+FieldType = Literal['single', 'object', 'all']
+PK = "PK"

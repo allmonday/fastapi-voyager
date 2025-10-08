@@ -1,4 +1,4 @@
-from fastapi_voyager.graph import Analytics
+from fastapi_voyager.voyager import Voyager
 from pydantic import BaseModel
 from fastapi import FastAPI
 from typing import Optional
@@ -30,7 +30,7 @@ def test_analysis():
     def home2():
         return None
 
-    analytics = Analytics()
+    analytics = Voyager()
     analytics.analysis(app)
     assert len(analytics.nodes) == 3
     assert len(analytics.links) == 6
