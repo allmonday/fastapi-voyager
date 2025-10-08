@@ -75,6 +75,7 @@ class Renderer:
         child_str = '\n'.join(self.render_module(m) for m in mod.modules)
         return f'''
             subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
+                tooltip="{mod.fullname}"
                 color = "#666"
                 style="rounded"
                 label = "  {mod.name}"
