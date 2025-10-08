@@ -49,7 +49,7 @@ def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optio
 def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Optional[FastAPI]:
     """Load FastAPI app from a Python module name."""
     try:
-        # 临时将当前工作目录添加到 Python 路径中
+        # Temporarily add the current working directory to sys.path
         current_dir = os.getcwd()
         if current_dir not in sys.path:
             sys.path.insert(0, current_dir)
@@ -73,7 +73,7 @@ def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Opt
                 print(f"Error: No attribute '{app_name}' found in module '{module_name}'")
                 return None
         finally:
-            # 清理：如果我们添加了路径，则移除它
+            # Cleanup: if we added the path, remove it
             if path_added and current_dir in sys.path:
                 sys.path.remove(current_dir)
             
