@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from fastapi import FastAPI
-from typing import Optional
+from typing import Optional, Generic, TypeVar
 from pydantic_resolve import ensure_subset, Resolver
 from tests.service.schema import Story, Task
 import tests.service.schema as serv
@@ -56,10 +56,19 @@ async def get_page_info():
     page_overall = PageOverallWrap(content="Page Overall Content", sprints=[]) # focus on schema only
     return await Resolver().resolve(page_overall)
 
-
 class PageStories(BaseModel):
     stories: list[PageStory] 
 
 @app.get("/page_info/", tags=['for-page'], response_model=PageStories)
 def get_page_stories():
+    return {} # no implementation
+
+
+T = TypeVar('T')
+class DataModel(BaseModel, Generic[T]):
+    data: T
+    id: int
+
+@app.get("/page_test_1/", tags=['for-page'], response_model=DataModel[PageStory])
+def get_page_test_1():
     return {} # no implementation
