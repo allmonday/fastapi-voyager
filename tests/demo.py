@@ -48,10 +48,12 @@ class PageSprint(serv.Sprint):
 class PageOverall(BaseModel):
     sprints: list[PageSprint]
 
+class PageOverallWrap(PageOverall):
+    content: str
 
-@app.get("/page_overall", tags=['for-page'], response_model=PageOverall)
+@app.get("/page_overall", tags=['for-page'], response_model=PageOverallWrap)
 async def get_page_info():
-    page_overall = PageOverall(sprints=[]) # focus on schema only
+    page_overall = PageOverallWrap(content="Page Overall Content", sprints=[]) # focus on schema only
     return await Resolver().resolve(page_overall)
 
 

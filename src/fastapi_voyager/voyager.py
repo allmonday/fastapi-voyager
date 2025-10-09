@@ -182,6 +182,8 @@ class Voyager:
         update_forward_refs(schema)
         self.add_to_node_set(schema)
 
+        base_fields = set()
+
         # handle schema inside ensure_subset(schema)
         if subset_reference := getattr(schema,  const.ENSURE_SUBSET_REFERENCE, None):
             if is_inheritance_of_pydantic_base(subset_reference):
@@ -198,6 +200,12 @@ class Voyager:
         # handle bases
         for base_class in schema.__bases__:
             if is_inheritance_of_pydantic_base(base_class):
+                # collect base class field names to avoid duplicating inherited fields
+                try:
+                    base_fields.update(getattr(base_class, 'model_fields', {}).keys())
+                except Exception:
+                    # be defensive in case of unconventional BaseModel subclasses
+                    pass
                 self.add_to_node_set(base_class)
                 self.add_to_link_set(
                     source=self.generate_node_head(full_class_name(schema)),
@@ -209,6 +217,9 @@ class Voyager:
 
         # handle fields
         for k, v in schema.model_fields.items():
+            # skip fields inherited from base classes
+            if k in base_fields:
+                continue
             annos = get_core_types(v.annotation)
             for anno in annos:
                 if anno and is_inheritance_of_pydantic_base(anno):

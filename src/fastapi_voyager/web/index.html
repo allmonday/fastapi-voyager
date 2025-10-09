@@ -250,7 +250,7 @@
 
       <!-- Render Graph Dialog (from imported core data) -->
       <q-dialog v-model="showRenderGraph" :maximized="true" :persistent="false">
-        <render-graph :dot="renderDotString" @close="showRenderGraph = false" />
+        <render-graph :core-data="renderCoreData" @close="showRenderGraph = false" />
       </q-dialog>
 
       <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>

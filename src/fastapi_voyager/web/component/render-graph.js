@@ -1,48 +1,69 @@
 import { GraphUI } from "../graph-ui.js";
-const { defineComponent, ref, onMounted, watch, nextTick } = window.Vue;
+const { defineComponent, ref, onMounted, nextTick } = window.Vue;
 
-// Simple dialog-embeddable component that renders a DOT graph.
-// Props:
-//  - dot: String (required) the DOT source to render
-// Emits:
-//  - close: when the close button is clicked
 export default defineComponent({
 	name: "RenderGraph",
 	props: {
-		dot: { type: String, required: true },
+		coreData: { type: [Object, Array], required: false, default: null },
 	},
 	emits: ["close"],
 	setup(props, { emit }) {
 		const containerId = `graph-render-${Math.random().toString(36).slice(2, 9)}`;
 		const hasRendered = ref(false);
+		const loading = ref(false);
 		let graphInstance = null;
 
-		async function renderDot() {
-			if (!props.dot) return;
+		async function ensureGraph() {
 			await nextTick();
 			if (!graphInstance) {
 				graphInstance = new GraphUI(`#${containerId}`);
 			}
-			await graphInstance.render(props.dot);
+		}
+
+		async function renderFromDot(dotText) {
+			if (!dotText) return;
+			await ensureGraph();
+			await graphInstance.render(dotText);
 			hasRendered.value = true;
 		}
 
-		onMounted(async () => {
-			await renderDot();
-		});
-
-		watch(
-			() => props.dot,
-			async () => {
-				await renderDot();
+		async function renderFromCoreData() {
+			if (!props.coreData) return;
+			loading.value = true;
+			try {
+				const res = await fetch("/dot-render-core-data", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(props.coreData),
+				});
+				const dotText = await res.text();
+				await renderFromDot(dotText);
+				if (window.Quasar?.Notify) {
+					window.Quasar.Notify.create({ type: "positive", message: "Rendered" });
+				}
+			} catch (e) {
+				console.error("Render from core data failed", e);
+				if (window.Quasar?.Notify) {
+					window.Quasar.Notify.create({ type: "negative", message: "Render failed" });
+				}
+			} finally {
+				loading.value = false;
 			}
-		);
+		}
+
+		async function reload() {
+			await renderFromCoreData();
+		}
+
+		onMounted(async () => {
+			await reload();
+		});
 
 		function close() {
 			emit("close");
 		}
 
-		return { containerId, close, hasRendered };
+		return { containerId, close, hasRendered, reload, loading };
 	},
 	template: `
 		<div style="height:100%; position:relative; background:#fff;">
@@ -51,6 +72,13 @@ export default defineComponent({
 				aria-label="Close"
 				@click="close"
 				style="position:absolute; top:6px; right:6px; z-index:11; background:rgba(255,255,255,0.85);"
+			/>
+			<q-btn
+				flat dense round icon="refresh"
+				aria-label="Reload"
+				:loading="loading"
+				@click="reload"
+				style="position:absolute; top:6px; right:46px; z-index:11; background:rgba(255,255,255,0.85);"
 			/>
 			<div :id="containerId" style="width:100%; height:100%; overflow:auto; background:#fafafa"></div>
 		</div>

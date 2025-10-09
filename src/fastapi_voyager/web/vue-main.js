@@ -37,8 +37,8 @@ const app = createApp({
     const dumpJson = ref("");
     const showImportDialog = ref(false);
     const importJsonText = ref("");
-    const showRenderGraph = ref(false);
-    const renderDotString = ref("");
+  const showRenderGraph = ref(false);
+  const renderCoreData = ref(null);
     const schemaName = ref(""); // used by detail dialog
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
     const schemaCodeName = ref("");
@@ -222,19 +222,10 @@ const app = createApp({
         }
         return;
       }
-      try {
-        const res = await fetch("/dot-render-core-data", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payloadObj),
-        });
-        const dotText = await res.text();
-        renderDotString.value = dotText;
-        showRenderGraph.value = true;
-        showImportDialog.value = false;
-      } catch (e) {
-        console.error("Import render failed", e);
-      }
+      // Move the request into RenderGraph component: pass the parsed object and let the component call /dot-render-core-data
+      renderCoreData.value = payloadObj;
+      showRenderGraph.value = true;
+      showImportDialog.value = false;
     }
 
     function showDialog() {
@@ -290,7 +281,7 @@ const app = createApp({
       onImportConfirm,
       // render graph dialog
       showRenderGraph,
-      renderDotString,
+      renderCoreData,
     };
   },
 });
