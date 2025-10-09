@@ -156,6 +156,13 @@ features
     - [ ] abstract render module
 - [ ] export voyager core data into json (for better debugging)
     - [ ] add api to rebuild core data from json, and render it
+- [ ] fix Generic case
+
+```python
+    class Paged(BaseModel, Generic[T]):
+    total: int
+    items: List[T]
+```
 
 bugs:
 - [ ] fix duplicated link from class and parent class, it also break clicking highlight
