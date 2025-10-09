@@ -51,7 +51,7 @@ class Renderer:
         if link.type == 'tag_route':
             return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid", minlen=3];"""
         elif link.type == 'route_to_schema':
-            return f"""{h(link.source)}:e -> {h(link.target)}:{PK} [style = "solid", dir="back", arrowtail="odot", minlen=3];"""
+            return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid", dir="back", arrowtail="odot", minlen=3];"""
         elif link.type == 'schema':
             return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid", label = "", dir="back", minlen=3, arrowtail="odot"];"""
         elif link.type == 'parent':
