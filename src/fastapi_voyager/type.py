@@ -1,5 +1,6 @@
-from dataclasses import dataclass, field
-from typing import Literal
+from dataclasses import field
+from pydantic.dataclasses import dataclass
+from typing import Literal, Optional
 
 @dataclass
 class NodeBase:
@@ -59,3 +60,13 @@ class Link:
 
 FieldType = Literal['single', 'object', 'all']
 PK = "PK"
+
+@dataclass
+class CoreData:
+    tags: list[Tag]
+    routes: list[Route]
+    nodes: list[SchemaNode]
+    links: list[Link]
+    show_fields: FieldType
+    module_color: Optional[dict[str, str]] = None
+    schema: Optional[str] = None

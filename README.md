@@ -142,6 +142,7 @@ features
 - [ ] support dataclass
 - [ ] click field to highlight links
 - [ ] user can generate nodes/edges manually and connect to generated ones
+    - [ ] add owner
 - [ ] ui optimization
     - [ ] fixed left/right bar show field information
 - [ ] display standard ER diagram
@@ -153,6 +154,8 @@ features
 - [ ] add tests
 - [ ] refactor
     - [ ] abstract render module
+- [ ] export voyager core data into json (for better debugging)
+    - [ ] add api to rebuild core data from json, and render it
 
 bugs:
 - [ ] fix duplicated link from class and parent class, it also break clicking highlight

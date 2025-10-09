@@ -1,6 +1,7 @@
 import SchemaFieldFilter from "./component/schema-field-filter.js";
 import SchemaCodeDisplay from "./component/schema-code-display.js";
 import RouteCodeDisplay from "./component/route-code-display.js";
+import RenderGraph from "./component/render-graph.js";
 import { GraphUI } from "./graph-ui.js";
 const { createApp, reactive, onMounted, watch, ref } = window.Vue;
 
@@ -25,16 +26,23 @@ const app = createApp({
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: [], // [{ name, fullname }]
       rawSchemasFull: [], // full objects with source_code & fields
-  initializing: true,
+      initializing: true,
     });
     const showDetail = ref(false);
     const showSchemaFieldFilter = ref(false);
-  const showSchemaCode = ref(false);
-  const showRouteCode = ref(false);
+    const showSchemaCode = ref(false);
+    const showRouteCode = ref(false);
+    // Dump/Import dialogs and rendered graph dialog
+    const showDumpDialog = ref(false);
+    const dumpJson = ref("");
+    const showImportDialog = ref(false);
+    const importJsonText = ref("");
+    const showRenderGraph = ref(false);
+    const renderDotString = ref("");
     const schemaName = ref(""); // used by detail dialog
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
-  const schemaCodeName = ref("");
-  const routeCodeId = ref("");
+    const schemaCodeName = ref("");
+    const routeCodeId = ref("");
     function openDetail() {
       showDetail.value = true;
     }
@@ -94,10 +102,13 @@ const app = createApp({
           name: s.name,
           fullname: s.fullname,
         }));
-        state.routeItems = data.tags.map((t) => t.routes).flat().reduce((acc, r) => {
-          acc[r.id] = r;
-          return acc;
-        }, {});
+        state.routeItems = data.tags
+          .map((t) => t.routes)
+          .flat()
+          .reduce((acc, r) => {
+            acc[r.id] = r;
+            return acc;
+          }, {});
 
         state.tagOptions = state.rawTags.map((t) => t.name);
         state.schemaOptions = state.rawSchemas.map((s) => ({
@@ -161,6 +172,71 @@ const app = createApp({
       }
     }
 
+    async function onDumpData() {
+      try {
+        const payload = {
+          tags: state.tag ? [state.tag] : null,
+          schema_name: state.schemaFullname || null,
+          route_name: state.routeId || null,
+          show_fields: state.showFields,
+        };
+        const res = await fetch("/dot-core-data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        dumpJson.value = JSON.stringify(json, null, 2);
+        showDumpDialog.value = true;
+      } catch (e) {
+        console.error("Dump data failed", e);
+      }
+    }
+
+    async function copyDumpJson() {
+      try {
+        await navigator.clipboard.writeText(dumpJson.value || "");
+        if (window.Quasar?.Notify) {
+          window.Quasar.Notify.create({ type: "positive", message: "Copied" });
+        }
+      } catch (e) {
+        console.error("Copy failed", e);
+      }
+    }
+
+    function openImportDialog() {
+      importJsonText.value = "";
+      showImportDialog.value = true;
+    }
+
+    async function onImportConfirm() {
+      let payloadObj = null;
+      try {
+        payloadObj = JSON.parse(importJsonText.value || "{}");
+      } catch (e) {
+        if (window.Quasar?.Notify) {
+          window.Quasar.Notify.create({
+            type: "negative",
+            message: "Invalid JSON",
+          });
+        }
+        return;
+      }
+      try {
+        const res = await fetch("/dot-render-core-data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadObj),
+        });
+        const dotText = await res.text();
+        renderDotString.value = dotText;
+        showRenderGraph.value = true;
+        showImportDialog.value = false;
+      } catch (e) {
+        console.error("Import render failed", e);
+      }
+    }
+
     function showDialog() {
       schemaFieldFilterSchema.value = null;
       showSchemaFieldFilter.value = true;
@@ -203,6 +279,18 @@ const app = createApp({
       showRouteCode,
       schemaCodeName,
       routeCodeId,
+      // dump/import
+      showDumpDialog,
+      dumpJson,
+      copyDumpJson,
+      onDumpData,
+      showImportDialog,
+      importJsonText,
+      openImportDialog,
+      onImportConfirm,
+      // render graph dialog
+      showRenderGraph,
+      renderDotString,
     };
   },
 });
@@ -210,4 +298,5 @@ app.use(window.Quasar);
 app.component("schema-field-filter", SchemaFieldFilter);
 app.component("schema-code-display", SchemaCodeDisplay);
 app.component("route-code-display", RouteCodeDisplay);
+app.component("render-graph", RenderGraph);
 app.mount("#q-app");

@@ -1,5 +1,4 @@
 import inspect
-from typing import Literal
 from fastapi import FastAPI, routing
 from fastapi_voyager.type_helper import (
     get_core_types,
@@ -12,7 +11,7 @@ from fastapi_voyager.type_helper import (
     update_forward_refs
 )
 from pydantic import BaseModel
-from fastapi_voyager.type import Route, SchemaNode, Link, Tag, LinkType, FieldType, PK
+from fastapi_voyager.type import Route, SchemaNode, Link, Tag, LinkType, FieldType, PK, CoreData
 from fastapi_voyager.filter import filter_graph
 from fastapi_voyager.render import Renderer
 import pydantic_resolve.constant as const
@@ -92,8 +91,8 @@ class Voyager:
             route_obj = Route(
                 id=route_id,
                 name=route_name,
-                vscode_link=get_vscode_link(route.endpoint) if self.load_meta else None,
-                source_code=inspect.getsource(route.endpoint) if self.load_meta else None
+                vscode_link=get_vscode_link(route.endpoint) if self.load_meta else '',
+                source_code=inspect.getsource(route.endpoint) if self.load_meta else ''
             )
 
             self.routes.append(route_obj)
@@ -141,8 +140,8 @@ class Voyager:
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
-                source_code=get_source(schema) if self.load_meta else None,
-                vscode_link=get_vscode_link(schema) if self.load_meta else None,
+                source_code=get_source(schema) if self.load_meta else '',
+                vscode_link=get_vscode_link(schema) if self.load_meta else '',
                 fields=get_pydantic_fields(schema, bases_fields)
             )
         return full_name
@@ -228,6 +227,25 @@ class Voyager:
     def generate_node_head(self, link_name: str):
         return f'{link_name}::{PK}'
 
+    def dump_core_data(self):
+        _tags, _routes, _nodes, _links = filter_graph(
+            schema=self.schema,
+            schema_field=self.schema_field,
+            tags=self.tags,
+            routes=self.routes,
+            nodes=self.nodes,
+            links=self.links,
+            node_set=self.node_set,
+        )
+        return CoreData(
+            tags=_tags,
+            routes=_routes,
+            nodes=_nodes,
+            links=_links,
+            show_fields=self.show_fields,
+            module_color=self.module_color,
+            schema=self.schema
+        )
 
     def render_dot(self):
         _tags, _routes, _nodes, _links = filter_graph(

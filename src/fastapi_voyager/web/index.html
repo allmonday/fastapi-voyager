@@ -110,13 +110,23 @@
           </div>
 
           <div class="col-auto">
-            <q-btn
+            <q-btn-dropdown
               class="q-ml-md"
+              split
               :loading="state.generating"
               @click="onGenerate"
               label="Generate"
               outline
-            />
+            >
+              <q-list>
+                <q-item clickable v-close-popup @click="onDumpData">
+                  <q-item-section>Dump data</q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="openImportDialog">
+                  <q-item-section>Import data</q-item-section>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
           </div>
           <div class="col-auto">
             <q-btn flat @click="onReset" label="Reset" />
@@ -202,6 +212,45 @@
           :model-value="showRouteCode" 
           :routes="state.routeItems"
           @close="showRouteCode = false" />
+      </q-dialog>
+
+      <!-- Dump Core Data Dialog -->
+      <q-dialog v-model="showDumpDialog" :maximized="true" :persistent="false">
+        <div style="height:100%; position:relative; background:#fff;">
+          <q-btn
+            flat dense round icon="content_copy"
+            aria-label="Copy"
+            @click="copyDumpJson"
+            style="position:absolute; top:6px; right:62px; z-index:11; background:rgba(255,255,255,0.85);"
+          ></q-btn>
+          <q-btn
+            flat dense round icon="close"
+            aria-label="Close"
+            @click="showDumpDialog = false"
+            style="position:absolute; top:6px; right:6px; z-index:11; background:rgba(255,255,255,0.85);"
+          ></q-btn>
+          <div>
+            <pre style="padding:20px; overflow: auto;"><code>{{ dumpJson }}</code></pre>
+          </div>
+        </div>
+      </q-dialog>
+
+      <!-- Import Core Data Dialog -->
+      <q-dialog v-model="showImportDialog" :persistent="true">
+        <q-card style="min-width:70vw; max-width:90vw;">
+          <q-card-section class="text-h6">Import core data JSON</q-card-section>
+          <q-card-section >
+            <q-btn color="primary" label="Render" @click="onImportConfirm" />
+          </q-card-section>
+          <q-card-section>
+            <q-input v-model="importJsonText" type="textarea" autogrow filled label="Paste JSON here" />
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+
+      <!-- Render Graph Dialog (from imported core data) -->
+      <q-dialog v-model="showRenderGraph" :maximized="true" :persistent="false">
+        <render-graph :dot="renderDotString" @close="showRenderGraph = false" />
       </q-dialog>
 
       <div id="graph" style="width: 100%; flex: 1 1 auto; overflow: auto"></div>
