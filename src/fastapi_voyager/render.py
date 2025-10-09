@@ -1,5 +1,5 @@
-from fastapi_voyager.type import SchemaNode, ModuleNode, Link, Tag, Route, FieldType, PK
-from fastapi_voyager.module import build_module_tree
+from fastapi_voyager.type import SchemaNode, ModuleNode, Link, Tag, Route, FieldType, PK, ModuleRoute
+from fastapi_voyager.module import build_module_schema_tree, build_module_route_tree
 
 
 class Renderer:
@@ -61,7 +61,7 @@ class Renderer:
         else:
             raise ValueError(f'Unknown link type: {link.type}')
 
-    def render_module(self, mod: ModuleNode) -> str:
+    def render_module_schema(self, mod: ModuleNode) -> str:
         color = self.module_color.get(mod.fullname)
         inner_nodes = [
             f'''
@@ -72,7 +72,7 @@ class Renderer:
                 ];''' for node in mod.schema_nodes
         ]
         inner_nodes_str = '\n'.join(inner_nodes)
-        child_str = '\n'.join(self.render_module(m) for m in mod.modules)
+        child_str = '\n'.join(self.render_module_schema(m) for m in mod.modules)
         return f'''
             subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
                 tooltip="{mod.fullname}"
@@ -85,9 +85,36 @@ class Renderer:
                 {inner_nodes_str}
                 {child_str}
             }}'''
+    
+    def render_module_route(self, mod: ModuleRoute) -> str:
+        color = self.module_color.get(mod.fullname)
+        # Inner route nodes, same style as flat route_str
+        inner_nodes = [
+            f'''
+            "{r.id}" [
+                label = "    {r.name}    "
+                margin="0.5,0.1"
+                shape = "record"
+            ];''' for r in mod.routes
+        ]
+        inner_nodes_str = '\n'.join(inner_nodes)
+        child_str = '\n'.join(self.render_module_route(m) for m in mod.modules)
+        return f'''
+            subgraph cluster_route_module_{mod.fullname.replace('.', '_')} {{
+                tooltip="{mod.fullname}"
+                color = "#666"
+                style="rounded"
+                label = "  {mod.name}"
+                labeljust = "l"
+                {(f'pencolor = "{color}"' if color else 'pencolor="#ccc"')}
+                {(f'penwidth = 3' if color else 'penwidth=""')}
+                {inner_nodes_str}
+                {child_str}
+            }}'''
 
     def render_dot(self, tags: list[Tag], routes: list[Route], nodes: list[SchemaNode], links: list[Link]) -> str:
-        modules = build_module_tree(nodes)
+        module_schemas = build_module_schema_tree(nodes)
+        module_routes = build_module_route_tree(routes)
 
         tag_str = '\n'.join([
             f'''
@@ -98,16 +125,9 @@ class Renderer:
             ];''' for t in tags
         ])
 
-        route_str = '\n'.join([
-            f'''
-            "{r.id}" [
-                label = "    {r.name}    "
-                margin="0.5,0.1"
-                shape = "record"
-            ];''' for r in routes
-        ])
 
-        modules_str = '\n'.join(self.render_module(m) for m in modules)
+        module_schemas_str = '\n'.join(self.render_module_schema(m) for m in module_schemas)
+        module_routes_str = '\n'.join(self.render_module_route(m) for m in module_routes)
         link_str = '\n'.join(self.render_link(link) for link in links)
 
         dot_str = f'''
@@ -144,7 +164,7 @@ class Renderer:
                 label = "  Routes"
                 labeljust = "l"
                 fontsize = "20"
-                {route_str}
+                {module_routes_str}
             }}
 
             subgraph cluster_schema {{
@@ -154,7 +174,7 @@ class Renderer:
                 label="  Schema"
                 labeljust="l"
                 fontsize="20"
-                    {modules_str}
+                    {module_schemas_str}
             }}
 
             {link_str}

@@ -1,4 +1,4 @@
-from fastapi_voyager.module import build_module_tree
+from fastapi_voyager.module import build_module_schema_tree
 from fastapi_voyager.type import SchemaNode
 
 
@@ -24,7 +24,7 @@ def test_build_module_tree_basic():
     ]
 
     # Act
-    top_modules = build_module_tree(schema_nodes)
+    top_modules = build_module_schema_tree(schema_nodes)
     from pprint import pprint
     pprint(top_modules)
 
@@ -58,7 +58,7 @@ def test_build_module_tree_basic():
 
 
 def test_build_module_tree_empty_input():
-    top_modules = build_module_tree([])
+    top_modules = build_module_schema_tree([])
     assert top_modules == []
 
 
@@ -70,7 +70,7 @@ def test_build_module_tree_root_level_nodes():
         _sn("PkgA", "pkg", "PkgA"),
     ]
 
-    top_modules = build_module_tree(schema_nodes)
+    top_modules = build_module_schema_tree(schema_nodes)
     names = sorted(m.name for m in top_modules)
     assert names == ["__root__", "pkg"]
     root = _find_top(top_modules, "__root__")
@@ -86,7 +86,7 @@ def test_collapse_single_child_empty_modules():
         _sn("Deep", "a.b.c.d", "Deep"),
         _sn("Peer", "a.b.x", "Peer"),
     ]
-    top_modules = build_module_tree(schema_nodes)
+    top_modules = build_module_schema_tree(schema_nodes)
     print(top_modules)
     # 'a' should have one child path 'b', but due to branching at x, only a.b collapses into a.b
     # and below it, 'c.d' should collapse to 'c.d'. Final structure:

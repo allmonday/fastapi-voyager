@@ -1,4 +1,5 @@
 import inspect
+from typing import Literal
 from fastapi import FastAPI, routing
 from fastapi_voyager.type_helper import (
     get_core_types,
@@ -11,18 +12,20 @@ from fastapi_voyager.type_helper import (
     update_forward_refs
 )
 from pydantic import BaseModel
-from fastapi_voyager.type import Route, SchemaNode, Link, Tag, LinkType, FieldType, PK, CoreData
+from fastapi_voyager.type import Route, SchemaNode, Link, Tag, ModuleNode, LinkType
+from fastapi_voyager.module import build_module_schema_tree
 from fastapi_voyager.filter import filter_graph
-from fastapi_voyager.render import Renderer
-import pydantic_resolve.constant as const
 
+# support pydantic-resolve's ensure_subset
+ENSURE_SUBSET_REFERENCE = '__pydantic_resolve_ensure_subset_reference__'
+PK = "PK"
 
 class Voyager:
     def __init__(
             self, 
             schema: str | None = None, 
             schema_field: str | None = None,
-            show_fields: FieldType = 'single',
+            show_fields: Literal['single', 'object', 'all'] = 'single',
             include_tags: list[str] | None = None,
             module_color: dict[str, str] | None = None,
             route_name: str | None = None,
@@ -83,7 +86,6 @@ class Voyager:
             # add route and create links
             route_id = f'{route.endpoint.__name__}_{route.path.replace("/", "_")}'
             route_name = route.endpoint.__name__
-            route_module = route.endpoint.__module__
 
             # filter by route_name (route.id) if provided
             if self.route_name is not None and route_id != self.route_name:
@@ -92,9 +94,8 @@ class Voyager:
             route_obj = Route(
                 id=route_id,
                 name=route_name,
-                module=route_module,
-                vscode_link=get_vscode_link(route.endpoint) if self.load_meta else '',
-                source_code=inspect.getsource(route.endpoint) if self.load_meta else ''
+                vscode_link=get_vscode_link(route.endpoint) if self.load_meta else None,
+                source_code=inspect.getsource(route.endpoint) if self.load_meta else None
             )
 
             self.routes.append(route_obj)
@@ -142,8 +143,8 @@ class Voyager:
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
-                source_code=get_source(schema) if self.load_meta else '',
-                vscode_link=get_vscode_link(schema) if self.load_meta else '',
+                source_code=get_source(schema) if self.load_meta else None,
+                vscode_link=get_vscode_link(schema) if self.load_meta else None,
                 fields=get_pydantic_fields(schema, bases_fields)
             )
         return full_name
@@ -184,10 +185,8 @@ class Voyager:
         update_forward_refs(schema)
         self.add_to_node_set(schema)
 
-        base_fields = set()
-
         # handle schema inside ensure_subset(schema)
-        if subset_reference := getattr(schema,  const.ENSURE_SUBSET_REFERENCE, None):
+        if subset_reference := getattr(schema, ENSURE_SUBSET_REFERENCE, None):
             if is_inheritance_of_pydantic_base(subset_reference):
 
                 self.add_to_node_set(subset_reference)
@@ -202,12 +201,6 @@ class Voyager:
         # handle bases
         for base_class in schema.__bases__:
             if is_inheritance_of_pydantic_base(base_class):
-                # collect base class field names to avoid duplicating inherited fields
-                try:
-                    base_fields.update(getattr(base_class, 'model_fields', {}).keys())
-                except Exception:
-                    # be defensive in case of unconventional BaseModel subclasses
-                    pass
                 self.add_to_node_set(base_class)
                 self.add_to_link_set(
                     source=self.generate_node_head(full_class_name(schema)),
@@ -219,9 +212,6 @@ class Voyager:
 
         # handle fields
         for k, v in schema.model_fields.items():
-            # skip fields inherited from base classes
-            if k in base_fields:
-                continue
             annos = get_core_types(v.annotation)
             for anno in annos:
                 if anno and is_inheritance_of_pydantic_base(anno):
@@ -240,27 +230,90 @@ class Voyager:
     def generate_node_head(self, link_name: str):
         return f'{link_name}::{PK}'
 
-    def dump_core_data(self):
-        _tags, _routes, _nodes, _links = filter_graph(
-            schema=self.schema,
-            schema_field=self.schema_field,
-            tags=self.tags,
-            routes=self.routes,
-            nodes=self.nodes,
-            links=self.links,
-            node_set=self.node_set,
-        )
-        return CoreData(
-            tags=_tags,
-            routes=_routes,
-            nodes=_nodes,
-            links=_links,
-            show_fields=self.show_fields,
-            module_color=self.module_color,
-            schema=self.schema
-        )
+
+    def generate_node_label(self, node: SchemaNode):
+        has_base_fields = any(f.from_base for f in node.fields)
+
+        fields = [n for n in node.fields if n.from_base is False]
+
+        name = node.name
+        fields_parts: list[str] = []
+
+        if self.show_fields == 'all':
+            _fields = fields
+            if has_base_fields:
+                fields_parts.append('<tr><td align="left" cellpadding="8"><font color="#999">  Inherited Fields ... </font></td></tr>')
+        elif self.show_fields == 'object':
+            _fields = [f for f in fields if f.is_object is True]
+            
+        else:  # 'single'
+            _fields = []
+
+        for field in _fields:
+            type_name = field.type_name[:25] + '..' if len(field.type_name) > 25 else field.type_name
+            display_xml = f'<s align="left">{field.name}: {type_name}</s>' if field.is_exclude else f'{field.name}: {type_name}'
+            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>  {display_xml}    </font></td></tr>""" 
+            fields_parts.append(field_str)
+        
+        header_color = 'tomato' if node.id == self.schema else '#009485'
+        header = f"""<tr><td cellpadding="1.5" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">    {name}    </font> </td> </tr>"""
+        field_content = ''.join(fields_parts) if fields_parts else ''
+
+        return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content}   </table>>"""
 
     def render_dot(self):
+
+        def handle_schema(source: str):
+            if '::' in source:
+                a, b = source.split('::', 1)
+                return f'"{a}":{b}'
+            return f'"{source}"'
+
+
+        def generate_link(link: Link):
+            if link.type == 'tag_route':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid", minlen=3];'''
+            elif link.type == 'route_to_schema':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:{PK} [style = "solid", dir="back", arrowtail="odot", minlen=3];'''
+            elif link.type == 'schema':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid", label = "", dir="back", minlen=3, arrowtail="odot"];'''
+            elif link.type == 'parent':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid, dashed", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"];'''
+            elif link.type == 'subset':
+                return f'''{handle_schema(link.source)}:e -> {handle_schema(link.target)}:w [style = "solid, dashed", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"];'''
+            else:
+                raise ValueError(f'Unknown link type: {link.type}')
+
+
+        def render_module(mod: ModuleNode):
+            color = self.module_color.get(mod.fullname)
+            # render schema nodes inside this module
+            inner_nodes = [
+                f'''
+                "{node.id}" [
+                    label = {self.generate_node_label(node)}
+                    shape = "plain"
+                    margin="0.5,0.1"
+                ];''' for node in mod.schema_nodes
+            ]
+            inner_nodes_str = '\n'.join(inner_nodes)
+
+            # render child modules recursively
+            child_str = '\n'.join(render_module(m) for m in mod.modules)
+
+            return f'''
+            subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
+                color = "#666"
+                style="rounded"
+                label = "  {mod.name}"
+                labeljust = "l"
+                {(f'pencolor = "{color}"' if color else 'pencolor="#ccc"')}
+                {(f'penwidth = 3' if color else 'penwidth=""')}
+                {inner_nodes_str}
+                {child_str}
+            }}'''
+
+
         _tags, _routes, _nodes, _links = filter_graph(
             schema=self.schema,
             schema_field=self.schema_field,
@@ -270,5 +323,79 @@ class Voyager:
             links=self.links,
             node_set=self.node_set,
         )
-        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema)
-        return renderer.render_dot(_tags, _routes, _nodes, _links)
+        _modules = build_module_schema_tree(_nodes)
+
+        tags = [
+            f'''
+            "{t.id}" [
+                label = "    {t.name}    "
+                shape = "record"
+                margin="0.5,0.1"
+            ];''' for t in _tags]
+        tag_str = '\n'.join(tags)
+
+        routes = [
+            f'''
+            "{r.id}" [
+                label = "    {r.name}    "
+                margin="0.5,0.1"
+                shape = "record"
+            ];''' for r in _routes]
+        route_str = '\n'.join(routes)
+
+        modules_str = '\n'.join(render_module(m) for m in _modules)
+
+        links = [ generate_link(link) for link in _links ]
+        link_str = '\n'.join(links)
+
+        template = f'''
+        digraph world {{
+            pad="0.5"
+            nodesep=0.8
+            fontname="Helvetica,Arial,sans-serif"
+            node [fontname="Helvetica,Arial,sans-serif"]
+            edge [
+                fontname="Helvetica,Arial,sans-serif"
+                color="gray"
+            ]
+            graph [
+                rankdir = "LR"
+            ];
+            node [
+                fontsize = "16"
+            ];
+
+            subgraph cluster_tags {{ 
+                color = "#aaa"
+                margin=18
+                style="dashed"
+                label = "  Tags"
+                labeljust = "l"
+                fontsize = "20"
+                {tag_str}
+            }}
+
+            subgraph cluster_router {{
+                color = "#aaa"
+                margin=18
+                style="dashed"
+                label = "  Routes"
+                labeljust = "l"
+                fontsize = "20"
+                {route_str}
+            }}
+
+            subgraph cluster_schema {{
+                color = "#aaa"
+                margin=18
+                style="dashed"
+                label="  Schema"
+                labeljust="l"
+                fontsize="20"
+                    {modules_str}
+            }}
+
+            {link_str}
+            }}
+        '''
+        return template

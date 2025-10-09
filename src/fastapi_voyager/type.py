@@ -21,8 +21,16 @@ class Tag(NodeBase):
 
 @dataclass
 class Route(NodeBase):
+    module: str
     source_code: str = ''
     vscode_link: str = ''  # optional vscode deep link
+
+@dataclass
+class ModuleRoute:
+    name: str
+    fullname: str
+    routes: list[Route]
+    modules: list['ModuleRoute']
 
 @dataclass
 class SchemaNode(NodeBase):
