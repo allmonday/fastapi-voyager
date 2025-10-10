@@ -142,7 +142,7 @@ def get_type_name(anno):
 
 
 def is_inheritance_of_pydantic_base(cls):
-    return issubclass(cls, BaseModel) and cls is not BaseModel
+    return safe_issubclass(cls, BaseModel) and cls is not BaseModel
 
 
 def get_bases_fields(schemas: list[type[BaseModel]]) -> set[str]:
@@ -228,6 +228,7 @@ def safe_issubclass(kls, classinfo):
     try:
         return issubclass(kls, classinfo)
     except TypeError:
+        print(kls.__name__, 'is not a class')
         return False
 
 

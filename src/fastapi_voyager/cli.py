@@ -169,6 +169,12 @@ Examples:
         default=8000,
         help="Port for the preview server when --server is used (default: 8000)"
     )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="Host/IP for the preview server when --server is used (default: 127.0.0.1). Use 0.0.0.0 to listen on all interfaces."
+    )
     
     parser.add_argument(
         "--version", "-v",
@@ -267,8 +273,8 @@ Examples:
                 print("Error: uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
                 sys.exit(1)
             app_server = viz_server.create_app_with_fastapi(app, module_color=module_color)
-            print(f"Starting preview server at http://127.0.0.1:{args.port} ... (Ctrl+C to stop)")
-            uvicorn.run(app_server, host="127.0.0.1", port=args.port)
+            print(f"Starting preview server at http://{args.host}:{args.port} ... (Ctrl+C to stop)")
+            uvicorn.run(app_server, host=args.host, port=args.port)
         else:
             # Generate and write dot file locally
             generate_visualization(
