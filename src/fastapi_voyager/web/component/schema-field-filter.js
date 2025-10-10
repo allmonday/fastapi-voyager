@@ -81,7 +81,7 @@ export default defineComponent({
           schema_field: state.fieldName || null,
           show_fields: state.showFields,
         };
-        const res = await fetch("/dot", {
+        const res = await fetch("dot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

@@ -31,7 +31,7 @@ export default defineComponent({
 			if (!props.coreData) return;
 			loading.value = true;
 			try {
-				const res = await fetch("/dot-render-core-data", {
+				const res = await fetch("dot-render-core-data", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify(props.coreData),

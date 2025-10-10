@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from starlette.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
@@ -33,23 +33,13 @@ class Payload(BaseModel):
 	show_fields: str = 'object'
 	show_meta: bool = False
 
-def create_app_with_fastapi(
+def create_route(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
-	gzip_minimum_size: int | None = 500,
-) -> FastAPI:
-	"""Create a FastAPI server that serves DOT computed via Analytics.
+):
+	router = APIRouter(tags=['fastapi-voyager'])
 
-	This avoids module-level globals by keeping state in closures.
-	"""
-
-	app = FastAPI(title="fastapi-voyager demo server")
-
-	# Enable gzip compression for larger responses (e.g. DOT / schemas payload)
-	if gzip_minimum_size is not None and gzip_minimum_size >= 0:
-		app.add_middleware(GZipMiddleware, minimum_size=gzip_minimum_size)
-
-	@app.get("/dot", response_model=OptionParam)
+	@router.get("/dot", response_model=OptionParam)
 	def get_dot() -> str:
 		voyager = Voyager(module_color=module_color, load_meta=True)
 		voyager.analysis(target_app)
@@ -71,7 +61,7 @@ def create_app_with_fastapi(
 
 		return OptionParam(tags=tags, schemas=schemas, dot=dot)
 
-	@app.post("/dot", response_class=PlainTextResponse)
+	@router.post("/dot", response_class=PlainTextResponse)
 	def get_filtered_dot(payload: Payload) -> str:
 		voyager = Voyager(
 			include_tags=payload.tags,
@@ -85,7 +75,7 @@ def create_app_with_fastapi(
 		voyager.analysis(target_app)
 		return voyager.render_dot()
 
-	@app.post("/dot-core-data", response_model=CoreData)
+	@router.post("/dot-core-data", response_model=CoreData)
 	def get_filtered_dot_core_data(payload: Payload) -> str:
 		voyager = Voyager(
 			include_tags=payload.tags,
@@ -98,13 +88,13 @@ def create_app_with_fastapi(
 		)
 		voyager.analysis(target_app)
 		return voyager.dump_core_data()
-	
-	@app.post('/dot-render-core-data', response_class=PlainTextResponse)
+
+	@router.post('/dot-render-core-data', response_class=PlainTextResponse)
 	def render_dot_from_core_data(core_data: CoreData) -> str:
 		renderer = Renderer(show_fields=core_data.show_fields, module_color=core_data.module_color, schema=core_data.schema)
 		return renderer.render_dot(core_data.tags, core_data.routes, core_data.nodes, core_data.links)
 
-	@app.get("/", response_class=HTMLResponse)
+	@router.get("/", response_class=HTMLResponse)
 	def index():
 		index_file = WEB_DIR / "index.html"
 		if index_file.exists():
@@ -120,8 +110,22 @@ def create_app_with_fastapi(
 		</html>
 		"""
 
-	# Serve static files under /static
-	app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
+	return router
+
+
+def create_app_with_fastapi(
+	target_app: FastAPI,
+	module_color: dict[str, str] | None = None,
+	gzip_minimum_size: int | None = 500,
+) -> FastAPI:
+	router = create_route(target_app, module_color=module_color)
+
+	app = FastAPI(title="fastapi-voyager demo server")
+	if gzip_minimum_size is not None and gzip_minimum_size >= 0:
+		app.add_middleware(GZipMiddleware, minimum_size=gzip_minimum_size)
+
+	app.mount("/fastapi-voyager-static", StaticFiles(directory=str(WEB_DIR)), name="static")
+	app.include_router(router)
 
 	return app
 

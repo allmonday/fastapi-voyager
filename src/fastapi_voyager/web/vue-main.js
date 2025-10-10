@@ -37,8 +37,8 @@ const app = createApp({
     const dumpJson = ref("");
     const showImportDialog = ref(false);
     const importJsonText = ref("");
-  const showRenderGraph = ref(false);
-  const renderCoreData = ref(null);
+    const showRenderGraph = ref(false);
+    const renderCoreData = ref(null);
     const schemaName = ref(""); // used by detail dialog
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
     const schemaCodeName = ref("");
@@ -94,7 +94,7 @@ const app = createApp({
     async function loadInitial() {
       state.initializing = true;
       try {
-        const res = await fetch("/dot");
+        const res = await fetch("dot");
         const data = await res.json();
         state.rawTags = Array.isArray(data.tags) ? data.tags : [];
         state.rawSchemasFull = Array.isArray(data.schemas) ? data.schemas : [];
@@ -134,7 +134,7 @@ const app = createApp({
           show_fields: state.showFields,
         };
 
-        const res = await fetch("/dot", {
+        const res = await fetch("dot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -180,7 +180,7 @@ const app = createApp({
           route_name: state.routeId || null,
           show_fields: state.showFields,
         };
-        const res = await fetch("/dot-core-data", {
+        const res = await fetch("dot-core-data", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
