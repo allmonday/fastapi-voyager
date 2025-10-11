@@ -172,3 +172,9 @@ TODO: ...
 
 - https://apis.guru/graphql-voyager/, for inspiration.
 - https://github.com/tintinweb/vscode-interactive-graphviz, for web visualization.
+
+
+## Changelog
+
+- 0.6.2: 
+    - fix generic related issue
