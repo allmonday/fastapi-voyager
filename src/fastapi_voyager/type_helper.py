@@ -1,7 +1,7 @@
 import inspect
 import os
 from pydantic import BaseModel
-from typing import get_origin, get_args, Union, Annotated, Any, Type
+from typing import get_origin, get_args, Union, Annotated, Any, Type, Generic
 from fastapi_voyager.type import FieldInfo
 from types import UnionType
 import pydantic_resolve.constant as const
@@ -255,6 +255,27 @@ def update_forward_refs(kls):
             continue
         if safe_issubclass(shelled_type, BaseModel):
             update_pydantic_forward_refs(shelled_type)
+
+
+def is_generic_container(cls):
+    """
+    T = TypeVar('T')
+    class DataModel(BaseModel, Generic[T]):
+        data: T
+        id: int
+
+    type DataModelPageStory = DataModel[PageStory]
+
+    is_generic_container(DataModel) -> True
+    is_generic_container(DataModel[PageStory]) -> False
+
+    DataModel.__parameters__ == (T,)
+    DataModelPageStory.__parameters__ == (,)
+    """
+    try:
+        return (hasattr(cls, '__bases__') and Generic in cls.__bases__ and (hasattr(cls, '__parameters__') and bool(cls.__parameters__)))
+    except (TypeError, AttributeError):
+        return False
 
 if __name__ == "__main__":
     from tests.demo_anno import PageSprint, PageOverall

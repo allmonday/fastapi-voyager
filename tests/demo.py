@@ -69,6 +69,8 @@ class DataModel(BaseModel, Generic[T]):
     data: T
     id: int
 
-@app.get("/page_test_1/", tags=['for-page'], response_model=DataModel[PageStory])
+type DataModelPageStory = DataModel[PageStory]
+
+@app.get("/page_test_1/", tags=['for-page'], response_model=DataModelPageStory)
 def get_page_test_1():
     return {} # no implementation
