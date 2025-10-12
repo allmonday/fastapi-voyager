@@ -23,3 +23,10 @@ class Member(BaseModel):
     first_name: str
     last_name: str
 
+
+class B(BaseModel):
+    id: int
+
+class A(BaseModel):
+    id: int
+    b: B

@@ -183,6 +183,13 @@ def filter_subgraph(
                 if next_node not in visited:
                     queue.append(next_node)
 
-    filtered_links = tag_route_links + merged_links
+    module_prefix_links = [
+        lk
+        for lk in links
+        if (lk.source_origin or "").startswith(module_prefix)
+        and (lk.target_origin or "").startswith(module_prefix)
+    ]
+
+    filtered_links = tag_route_links + merged_links + module_prefix_links
 
     return tags, routes, filtered_nodes, filtered_links

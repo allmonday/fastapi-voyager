@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from fastapi import FastAPI
 from typing import Optional, Generic, TypeVar
 from pydantic_resolve import ensure_subset, Resolver
-from tests.service.schema import Story, Task
+from tests.service.schema import Story, Task, A
 import tests.service.schema as serv
 
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
@@ -74,3 +74,7 @@ type DataModelPageStory = DataModel[PageStory]
 @app.get("/page_test_1/", tags=['for-page'], response_model=DataModelPageStory)
 def get_page_test_1():
     return {} # no implementation
+
+@app.get("/page_test_2/", tags=['for-page'], response_model=A)
+def get_page_test_2():
+    return {}
