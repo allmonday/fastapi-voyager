@@ -177,6 +177,8 @@ TODO: ...
 ## Changelog
 
 - 0.7:
+    - 0.7.3
+        - fix `module_color` failure
     - 0.7.2
         - keep links inside filtered nodes.
     - 0.7.1

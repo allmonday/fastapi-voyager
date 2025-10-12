@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi_voyager.type import SchemaNode, ModuleNode, Link, Tag, Route, FieldType, PK, ModuleRoute
 from fastapi_voyager.module import build_module_schema_tree, build_module_route_tree
 
@@ -61,33 +62,44 @@ class Renderer:
         else:
             raise ValueError(f'Unknown link type: {link.type}')
 
-    def render_module_schema(self, mod: ModuleNode) -> str:
-        color = self.module_color.get(mod.fullname)
-        inner_nodes = [
-            f'''
-                "{node.id}" [
-                    label = {self.render_schema_label(node)}
-                    shape = "plain"
-                    margin="0.5,0.1"
-                ];''' for node in mod.schema_nodes
-        ]
-        inner_nodes_str = '\n'.join(inner_nodes)
-        child_str = '\n'.join(self.render_module_schema(m) for m in mod.modules)
-        return f'''
-            subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
-                tooltip="{mod.fullname}"
-                color = "#666"
-                style="rounded"
-                label = "  {mod.name}"
-                labeljust = "l"
-                {(f'pencolor = "{color}"' if color else 'pencolor="#ccc"')}
-                {(f'penwidth = 3' if color else 'penwidth=""')}
-                {inner_nodes_str}
-                {child_str}
-            }}'''
+    def render_module_schema_wrapper(self, mods: list[ModuleNode]) -> str:
+        module_color_flag = set(self.module_color.keys())
+        print(module_color_flag)
+
+        def render_module_schema(mod: ModuleNode) -> str:
+            color: Optional[str] = None
+
+            for k in module_color_flag:
+                if mod.fullname.startswith(k):
+                    module_color_flag.remove(k)
+                    color = self.module_color[k]
+                    break
+
+            inner_nodes = [
+                f'''
+                    "{node.id}" [
+                        label = {self.render_schema_label(node)}
+                        shape = "plain"
+                        margin="0.5,0.1"
+                    ];''' for node in mod.schema_nodes
+            ]
+            inner_nodes_str = '\n'.join(inner_nodes)
+            child_str = '\n'.join(render_module_schema(m) for m in mod.modules)
+            return f'''
+                subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
+                    tooltip="{mod.fullname}"
+                    color = "#666"
+                    style="rounded"
+                    label = "  {mod.name}"
+                    labeljust = "l"
+                    {(f'pencolor = "{color}"' if color else 'pencolor="#ccc"')}
+                    {(f'penwidth = 3' if color else 'penwidth=""')}
+                    {inner_nodes_str}
+                    {child_str}
+                }}'''
+        return '\n'.join(render_module_schema(m) for m in mods)
     
     def render_module_route(self, mod: ModuleRoute) -> str:
-        color = self.module_color.get(mod.fullname)
         # Inner route nodes, same style as flat route_str
         inner_nodes = [
             f'''
@@ -106,8 +118,6 @@ class Renderer:
                 style="rounded"
                 label = "  {mod.name}"
                 labeljust = "l"
-                {(f'pencolor = "{color}"' if color else 'pencolor="#ccc"')}
-                {(f'penwidth = 3' if color else 'penwidth=""')}
                 {inner_nodes_str}
                 {child_str}
             }}'''
@@ -126,7 +136,7 @@ class Renderer:
         ])
 
 
-        module_schemas_str = '\n'.join(self.render_module_schema(m) for m in module_schemas)
+        module_schemas_str = self.render_module_schema_wrapper(module_schemas)
         module_routes_str = '\n'.join(self.render_module_route(m) for m in module_routes)
         link_str = '\n'.join(self.render_link(link) for link in links)
 
