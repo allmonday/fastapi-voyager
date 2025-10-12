@@ -22,6 +22,7 @@ const app = createApp({
         { label: "Object fields", value: "object" },
         { label: "All fields", value: "all" },
       ],
+      brief: false,
       generating: false,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: [], // [{ name, fullname }]
@@ -132,6 +133,7 @@ const app = createApp({
           schema_name: state.schemaFullname || null,
           route_name: state.routeId || null,
           show_fields: state.showFields,
+          brief: state.brief,
         };
 
         const res = await fetch("dot", {
@@ -179,6 +181,7 @@ const app = createApp({
           schema_name: state.schemaFullname || null,
           route_name: state.routeId || null,
           show_fields: state.showFields,
+          brief: state.brief,
         };
         const res = await fetch("dot-core-data", {
           method: "POST",
@@ -238,6 +241,7 @@ const app = createApp({
       state.routeId = "";
       state.schemaFullname = null;
       state.showFields = "object";
+      state.brief = false;
       await loadInitial();
     }
 

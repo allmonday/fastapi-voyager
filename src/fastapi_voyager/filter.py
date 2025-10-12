@@ -1,6 +1,7 @@
 from __future__ import annotations
+from collections import deque
 from typing import Tuple
-from fastapi_voyager.type import Tag, Route, SchemaNode, Link
+from fastapi_voyager.type import Tag, Route, SchemaNode, Link, PK
 
 
 def filter_graph(
@@ -103,3 +104,85 @@ def filter_graph(
     _routes = [r for r in routes if r.id in included_ids]
 
     return _tags, _routes, _nodes, _links
+
+
+def filter_subgraph(
+    *,
+    tags: list[Tag],
+    routes: list[Route],
+    links: list[Link],
+    nodes: list[SchemaNode],
+    module_prefix: str
+) -> Tuple[list[Tag], list[Route], list[SchemaNode], list[Link]]:
+    """Collapse schema graph so routes link directly to nodes whose module matches ``module_prefix``.
+
+    The routine keeps tag→route links untouched, prunes schema nodes whose module does not start
+    with ``module_prefix``, and merges the remaining schema relationships so each route connects
+    directly to the surviving schema nodes. Traversal stops once a qualifying node is reached and
+    guards against cycles in the schema graph.
+    """
+
+    if not module_prefix:
+        # empty prefix keeps existing graph structure, so simply reuse incoming data
+        return tags, routes, nodes, [lk for lk in links if lk.type in ("tag_route", "route_to_schema")]
+
+    route_links = [lk for lk in links if lk.type == "route_to_schema"]
+    schema_links = [lk for lk in links if lk.type in {"schema", "parent", "subset"}]
+    tag_route_links = [lk for lk in links if lk.type == "tag_route"]
+
+    node_lookup: dict[str, SchemaNode] = {node.id: node for node in nodes}
+
+    filtered_nodes = [node for node in nodes if node_lookup[node.id].module.startswith(module_prefix)]
+    filtered_node_ids = {node.id for node in filtered_nodes}
+
+    adjacency: dict[str, list[str]] = {}
+    for link in schema_links:
+        if link.source_origin not in node_lookup or link.target_origin not in node_lookup:
+            continue
+        adjacency.setdefault(link.source_origin, [])
+        if link.target_origin not in adjacency[link.source_origin]:
+            adjacency[link.source_origin].append(link.target_origin)
+
+    merged_links: list[Link] = []
+    seen_pairs: set[tuple[str, str]] = set()
+
+    for link in route_links:
+        route_id = link.source_origin
+        start_node_id = link.target_origin
+        if route_id is None or start_node_id is None:
+            continue
+        if start_node_id not in node_lookup:
+            continue
+
+        visited: set[str] = set()
+        queue: deque[str] = deque([start_node_id])
+
+        while queue:
+            current = queue.popleft()
+            if current in visited:
+                continue
+            visited.add(current)
+
+            if current in filtered_node_ids:
+                key = (route_id, current)
+                if key not in seen_pairs:
+                    seen_pairs.add(key)
+                    merged_links.append(
+                        Link(
+                            source=link.source,
+                            source_origin=route_id,
+                            target=f"{current}::{PK}",
+                            target_origin=current,
+                            type="route_to_schema",
+                        )
+                    )
+                # stop traversing past a qualifying node
+                continue
+
+            for next_node in adjacency.get(current, () ):
+                if next_node not in visited:
+                    queue.append(next_node)
+
+    filtered_links = tag_route_links + merged_links
+
+    return tags, routes, filtered_nodes, filtered_links

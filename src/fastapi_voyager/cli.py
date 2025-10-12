@@ -175,6 +175,12 @@ Examples:
         default="127.0.0.1",
         help="Host/IP for the preview server when --server is used (default: 127.0.0.1). Use 0.0.0.0 to listen on all interfaces."
     )
+    parser.add_argument(
+        "--module_prefix",
+        type=str,
+        default=None,
+        help="Prefix routes with module name when rendering brief view (only valid with --server)"
+    )
     
     parser.add_argument(
         "--version", "-v",
@@ -233,6 +239,9 @@ Examples:
             if not any(mc.startswith(key + ":") for mc in existing):
                 args.module_color = (args.module_color or []) + [d]
 
+    if args.module_prefix and not args.server:
+        parser.error("--module_prefix can only be used together with --server")
+
     # Validate required target if not demo
     if not args.demo and not (args.module_name or args.module):
         parser.error("You must provide a module file, -m module name, or use --demo")
@@ -272,7 +281,11 @@ Examples:
             except ImportError:
                 print("Error: uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
                 sys.exit(1)
-            app_server = viz_server.create_app_with_fastapi(app, module_color=module_color)
+            app_server = viz_server.create_app_with_fastapi(
+                app,
+                module_color=module_color,
+                module_prefix=args.module_prefix,
+            )
             print(f"Starting preview server at http://{args.host}:{args.port} ... (Ctrl+C to stop)")
             uvicorn.run(app_server, host=args.host, port=args.port)
         else:

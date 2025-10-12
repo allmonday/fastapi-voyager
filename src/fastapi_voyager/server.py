@@ -32,10 +32,12 @@ class Payload(BaseModel):
 	route_name: Optional[str] = None
 	show_fields: str = 'object'
 	show_meta: bool = False
+	brief: bool = False
 
 def create_route(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
+	module_prefix: Optional[str] = None,
 ):
 	router = APIRouter(tags=['fastapi-voyager'])
 
@@ -73,7 +75,10 @@ def create_route(
 			load_meta=False,
 		)
 		voyager.analysis(target_app)
-		return voyager.render_dot()
+		if payload.brief:
+			return voyager.render_brief_dot(module_prefix=module_prefix)
+		else:
+			return voyager.render_dot()
 
 	@router.post("/dot-core-data", response_model=CoreData)
 	def get_filtered_dot_core_data(payload: Payload) -> str:
@@ -117,8 +122,9 @@ def create_app_with_fastapi(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
 	gzip_minimum_size: int | None = 500,
+	module_prefix: Optional[str] = None,
 ) -> FastAPI:
-	router = create_route(target_app, module_color=module_color)
+	router = create_route(target_app, module_color=module_color, module_prefix=module_prefix)
 
 	app = FastAPI(title="fastapi-voyager demo server")
 	if gzip_minimum_size is not None and gzip_minimum_size >= 0:

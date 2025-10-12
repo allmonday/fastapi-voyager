@@ -176,5 +176,7 @@ TODO: ...
 
 ## Changelog
 
+- 0.7.1:
+    - support brief mode, you can use `--module_prefix tests.service` to show links between routes and filtered schemas, to make the graph less complicated.
 - 0.6.2: 
     - fix generic related issue
