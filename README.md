@@ -177,6 +177,9 @@ TODO: ...
 ## Changelog
 
 - 0.7:
+    - 0.7.4
+        - optimize tag/route, move to left. 
+        - fresh on change, no need to click generate any more.
     - 0.7.3
         - fix `module_color` failure
     - 0.7.2

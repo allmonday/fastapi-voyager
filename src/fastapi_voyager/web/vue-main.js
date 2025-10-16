@@ -51,6 +51,8 @@ const app = createApp({
       showDetail.value = false;
     }
 
+    const skipNextRouteGenerate = ref(false);
+
     function applyRoutesForTag(tagName) {
       const tag = state.rawTags.find((t) => t.name === tagName);
       state.routeOptions = [];
@@ -59,6 +61,7 @@ const app = createApp({
           ...tag.routes.map((r) => ({ label: r.name, value: r.id }))
         );
       }
+      skipNextRouteGenerate.value = true;
       state.routeId = "";
     }
 
@@ -242,7 +245,19 @@ const app = createApp({
       state.schemaFullname = null;
       state.showFields = "object";
       state.brief = false;
-      await loadInitial();
+      onGenerate()
+      // await loadInitial();
+    }
+
+    function toggleTag(tagName, expanded = null) {
+      if (expanded === true) {
+        state.tag = tagName;
+        return;
+      }
+    }
+
+    function selectRoute(routeId) {
+      state.routeId = state.routeId === routeId ? "" : routeId;
     }
 
     // react to tag changes to rebuild routes
@@ -250,6 +265,40 @@ const app = createApp({
       () => state.tag,
       (val) => {
         applyRoutesForTag(val);
+        if (!state.initializing) {
+          onGenerate();
+        }
+      }
+    );
+
+    watch(
+      () => state.routeId,
+      () => {
+        if (skipNextRouteGenerate.value) {
+          skipNextRouteGenerate.value = false;
+          return;
+        }
+        if (!state.initializing) {
+          onGenerate();
+        }
+      }
+    );
+
+    watch(
+      () => state.showFields,
+      () => {
+        if (!state.initializing) {
+          onGenerate();
+        }
+      }
+    )
+
+    watch(
+      () => state.brief,
+      () => {
+        if (!state.initializing) {
+          onGenerate();
+        }
       }
     );
 
@@ -259,6 +308,8 @@ const app = createApp({
 
     return {
       state,
+      toggleTag,
+      selectRoute,
       onFilterTags,
       onFilterSchemas,
       onGenerate,
