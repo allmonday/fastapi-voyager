@@ -177,6 +177,8 @@ TODO: ...
 ## Changelog
 
 - 0.7:
+    - 0.7.5
+        - fix show all display issue
     - 0.7.4
         - optimize tag/route, move to left. 
         - fresh on change, no need to click generate any more.
