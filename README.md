@@ -172,6 +172,7 @@ features:
     - [x] add api to rebuild core data from json, and render it
 - [x] fix Generic case  `test_generic.py`
 - [ ] show tips for routes not return pydantic type.
+- [ ] add http method for route
 
 bugs & non feature:
 - [x] fix duplicated link from class and parent class, it also break clicking highlight
