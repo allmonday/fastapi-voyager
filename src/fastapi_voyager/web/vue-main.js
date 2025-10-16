@@ -51,20 +51,6 @@ const app = createApp({
       showDetail.value = false;
     }
 
-    const skipNextRouteGenerate = ref(false);
-
-    function applyRoutesForTag(tagName) {
-      const tag = state.rawTags.find((t) => t.name === tagName);
-      state.routeOptions = [];
-      if (tag && Array.isArray(tag.routes)) {
-        state.routeOptions.push(
-          ...tag.routes.map((r) => ({ label: r.name, value: r.id }))
-        );
-      }
-      skipNextRouteGenerate.value = true;
-      state.routeId = "";
-    }
-
     function onFilterTags(val, update) {
       const normalized = (val || "").toLowerCase();
       update(() => {
@@ -257,28 +243,16 @@ const app = createApp({
     }
 
     function selectRoute(routeId) {
-      state.routeId = state.routeId === routeId ? "" : routeId;
+      state.routeId = routeId
+      onGenerate()
     }
 
     // react to tag changes to rebuild routes
     watch(
       () => state.tag,
       (val) => {
-        applyRoutesForTag(val);
         if (!state.initializing) {
-          onGenerate();
-        }
-      }
-    );
-
-    watch(
-      () => state.routeId,
-      () => {
-        if (skipNextRouteGenerate.value) {
-          skipNextRouteGenerate.value = false;
-          return;
-        }
-        if (!state.initializing) {
+          state.routeId = ''
           onGenerate();
         }
       }

@@ -89,6 +89,9 @@
       >
         <div class="row items-center q-col-gutter-md">
           <div class="col-auto">
+            <div style="width: 282px; margin-left: 8px;" class="text-h6">FastAPI Voyager</div>
+          </div>
+          <div class="col-auto">
             <div class="column">
               <q-option-group
                 v-model="state.showFields"
@@ -102,7 +105,7 @@
           </div>
 
           <div class="col-auto">
-            <q-toggle v-model="state.brief" label="Brief" dense />
+            <q-toggle class="q-ml-md" v-model="state.brief" label="Brief Mode" title="config module_prefix to enable it" dense />
           </div>
 
           <!-- <div class="col-auto">
@@ -184,15 +187,14 @@
                 v-for="tag in state.rawTags"
                 :key="tag.name"
                 expand-separator
-                switch-toggle-side
                 :model-value="state.tag === tag.name"
                 @update:model-value="(val) => toggleTag(tag.name, val)"
-                :header-class="state.tag === tag.name ? 'bg-primary text-white text-weight-medium' : 'text-weight-medium'"
+                :header-class="state.tag === tag.name ? 'text-primary text-bold' : ''"
                 content-class="q-pa-none"
               >
                 <template #header>
-                  <div class="row items-center no-wrap" style="width: 100%">
-                    <div class="col text-body2">{{ tag.name }}</div>
+                  <div class="row items-center" style="width: 100%">
+                    <div class="">{{ tag.name }}</div>
                   </div>
                 </template>
 
@@ -206,7 +208,9 @@
                     active-class=""
                     @click="selectRoute(route.id)"
                   >
-                    <q-item-section>{{ route.name }}</q-item-section>
+                    <q-item-section>
+                      <span class="q-ml-sm"> {{ route.name }} </span>
+                      </q-item-section>
                   </q-item>
                   <q-item v-if="!tag.routes || tag.routes.length === 0" dense>
                     <q-item-section class="text-grey-6">No routes</q-item-section>

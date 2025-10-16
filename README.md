@@ -17,6 +17,9 @@ pip install fastapi-voyager
 uv add fastapi-voyager
 ```
 
+```shell
+voyager -m path.to.your.app.module --server
+```
 
 ## Dependencies
 
@@ -70,6 +73,18 @@ click a node to highlight it's upperstream and downstream nodes. figure out the 
 
 <img width="882" height="445" alt="image" src="https://github.com/user-attachments/assets/158560ef-63ca-4991-9b7d-587be4fa04e4" />
 
+
+## Mount to target project
+
+```python
+from fastapi import FastAPI
+from fastapi_voyager.server import create_app_with_fastapi
+from tests.demo import app
+
+app.mount('/voyager', create_app_with_fastapi(app))
+```
+
+more about [sub application](https://fastapi.tiangolo.com/advanced/sub-applications/?h=sub)
 
 
 ## Command Line Usage
@@ -143,9 +158,11 @@ features:
 - [ ] click field to highlight links
 - [ ] user can generate nodes/edges manually and connect to generated ones
     - [ ] add owner
+    - [ ] add extra info for schema
 - [ ] ui optimization
     - [ ] fixed left/right bar show field information
-- [ ] display standard ER diagram `difficult`
+    - [x] fixed left bar show tag/ route
+- [ ] display standard ER diagram `difference`
     - [ ] display potential invalid links
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
@@ -158,8 +175,8 @@ features:
 bugs & non feature:
 - [x] fix duplicated link from class and parent class, it also break clicking highlight
 - [ ] add tests
-- [ ] refactor
-    - [ ] abstract render module
+- [x] refactor
+    - [x] abstract render module
 
 ## Using with pydantic-resolve
 
