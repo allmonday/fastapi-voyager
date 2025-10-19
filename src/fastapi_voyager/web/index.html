@@ -209,8 +209,8 @@
                     @click="selectRoute(route.id)"
                   >
                     <q-item-section>
-                      <span class="q-ml-sm"> {{ route.name }} </span>
-                      </q-item-section>
+                      <span class="q-ml-sm"> <span style="font-weight: bold;">⋅</span> &nbsp; {{ route.name }}</span>
+                    </q-item-section>
                   </q-item>
                   <q-item v-if="!tag.routes || tag.routes.length === 0" dense>
                     <q-item-section class="text-grey-6">No routes</q-item-section>

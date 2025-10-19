@@ -243,7 +243,11 @@ const app = createApp({
     }
 
     function selectRoute(routeId) {
-      state.routeId = routeId
+      if (state.routeId === routeId) {
+        state.routeId = ''
+      } else {
+        state.routeId = routeId
+      }
       onGenerate()
     }
 
