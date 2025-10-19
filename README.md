@@ -190,6 +190,11 @@ bugs & non feature:
 ### plan:
 
 #### 0.9
+- [ ] refactor: server.py
+    - rename create_app_with_fastapi -> create_voyager
+    - add doc for parameters
+- [ ] open route in swagger
+    - config docs path
 - [ ] improve initialization time cost
     - [ ] query route / schema info through realtime api
 
@@ -201,11 +206,13 @@ bugs & non feature:
     - [ ] show hint for resolve, post fields
     - [ ] display loader as edges
 
+
 ## Using with pydantic-resolve
+
+WIP: ...
 
 pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `source class` in safe.
 
-TODO: ...
 
 
 ## Credits
