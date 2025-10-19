@@ -32,7 +32,8 @@ class Payload(BaseModel):
 	route_name: Optional[str] = None
 	show_fields: str = 'object'
 	show_meta: bool = False
-	brief: bool = False
+	brief: bool = False,
+	hide_primitive_route: bool = False,
 
 def create_route(
 	target_app: FastAPI,
@@ -73,6 +74,7 @@ def create_route(
 			module_color=module_color,
 			route_name=payload.route_name,
 			load_meta=False,
+			hide_primitive_route=payload.hide_primitive_route,
 		)
 		voyager.analysis(target_app)
 		if payload.brief:

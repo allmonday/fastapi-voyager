@@ -23,6 +23,7 @@ const app = createApp({
         { label: "All fields", value: "all" },
       ],
       brief: false,
+      hidePrimitiveRoute: false,
       generating: false,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: [], // [{ name, fullname }]
@@ -123,6 +124,7 @@ const app = createApp({
           route_name: state.routeId || null,
           show_fields: state.showFields,
           brief: state.brief,
+          hide_primitive_route: state.hidePrimitiveRoute
         };
 
         const res = await fetch("dot", {
@@ -273,6 +275,15 @@ const app = createApp({
 
     watch(
       () => state.brief,
+      () => {
+        if (!state.initializing) {
+          onGenerate();
+        }
+      }
+    );
+
+    watch(
+      () => state.hidePrimitiveRoute,
       () => {
         if (!state.initializing) {
           onGenerate();

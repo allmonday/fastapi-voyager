@@ -104,7 +104,7 @@ class Renderer:
         inner_nodes = [
             f'''
             "{r.id}" [
-                label = "    {r.name}    "
+                label = "    {r.name}: {r.response_schema}    "
                 margin="0.5,0.1"
                 shape = "record"
             ];''' for r in mod.routes

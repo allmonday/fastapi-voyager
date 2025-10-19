@@ -276,6 +276,12 @@ def is_generic_container(cls):
         return (hasattr(cls, '__bases__') and Generic in cls.__bases__ and (hasattr(cls, '__parameters__') and bool(cls.__parameters__)))
     except (TypeError, AttributeError):
         return False
+    
+def is_non_pydantic_type(tp):
+    for schema in get_core_types(tp):
+        if schema and issubclass(schema, BaseModel):
+            return False
+    return True
 
 if __name__ == "__main__":
     from tests.demo_anno import PageSprint, PageOverall

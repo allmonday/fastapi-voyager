@@ -198,6 +198,9 @@ TODO: ...
 
 ## Changelog
 
+- 0.8:
+    - 0.8.1
+        - add feature: hide primitive routes
 - 0.7:
     - 0.7.5
         - fix show all display issue

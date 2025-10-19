@@ -8,7 +8,9 @@ from fastapi_voyager.type_helper import (
     get_pydantic_fields,
     get_vscode_link,
     get_source,
-    update_forward_refs
+    get_type_name,
+    update_forward_refs,
+    is_non_pydantic_type
 )
 from pydantic import BaseModel
 from fastapi_voyager.type import Route, SchemaNode, Link, Tag, LinkType, FieldType, PK, CoreData
@@ -26,6 +28,7 @@ class Voyager:
             include_tags: list[str] | None = None,
             module_color: dict[str, str] | None = None,
             route_name: str | None = None,
+            hide_primitive_route: bool = False,
             load_meta: bool = False
         ):
 
@@ -48,6 +51,7 @@ class Voyager:
         self.module_color = module_color or {}
         self.route_name = route_name
         self.load_meta = load_meta
+        self.hide_primitive_route = hide_primitive_route
     
 
     def _get_available_route(self, app: FastAPI):
@@ -88,18 +92,12 @@ class Voyager:
             # filter by route_name (route.id) if provided
             if self.route_name is not None and route_id != self.route_name:
                 continue
+            is_primitive_response = is_non_pydantic_type(route.response_model)
+            
+            # filter primitive route if needed
+            if self.hide_primitive_route and is_primitive_response:
+                continue
 
-            route_obj = Route(
-                id=route_id,
-                name=route_name,
-                module=route_module,
-                vscode_link=get_vscode_link(route.endpoint) if self.load_meta else '',
-                source_code=inspect.getsource(route.endpoint) if self.load_meta else ''
-            )
-
-            self.routes.append(route_obj)
-            # add route into current tag
-            self.tag_set[tag_id].routes.append(route_obj)
             self.links.append(Link(
                 source=tag_id,
                 source_origin=tag_id,
@@ -108,9 +106,23 @@ class Voyager:
                 type='tag_route'
             ))
 
+            route_obj = Route(
+                id=route_id,
+                name=route_name,
+                module=route_module,
+                vscode_link=get_vscode_link(route.endpoint) if self.load_meta else '',
+                source_code=inspect.getsource(route.endpoint) if self.load_meta else '',
+                response_schema=get_type_name(route.response_model),
+                is_primitive=is_primitive_response
+            )
+            self.routes.append(route_obj)
+            # add route into current tag
+            self.tag_set[tag_id].routes.append(route_obj)
+
             # add response_models and create links from route -> response_model
             for schema in get_core_types(route.response_model):
                 if schema and issubclass(schema, BaseModel):
+                    is_primitive_response = False
                     target_name = full_class_name(schema)
                     self.links.append(Link(
                         source=route_id,

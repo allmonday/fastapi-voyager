@@ -78,3 +78,7 @@ def get_page_test_1():
 @app.get("/page_test_2/", tags=['for-page'], response_model=A)
 def get_page_test_2():
     return {}
+
+@app.get("/page_test_3/", tags=['for-page'], response_model=bool)
+def get_page_test_3():
+    return True

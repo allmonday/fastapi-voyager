@@ -24,6 +24,8 @@ class Route(NodeBase):
     module: str
     source_code: str = ''
     vscode_link: str = ''  # optional vscode deep link
+    response_schema: str = ''
+    is_primitive: bool = True
 
 @dataclass
 class ModuleRoute:
