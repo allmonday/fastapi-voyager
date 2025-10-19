@@ -141,7 +141,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 ## Plan before v1.0
 
-features:
+### features:
 - [x] group schemas by module hierarchy
 - [x] module-based coloring via Analytics(module_color={...})
 - [x] view in web browser
@@ -160,32 +160,46 @@ features:
 - [x] add tooltips
 - [x] route
     - [x] group routes by module hierarchy
-    - [ ] add response_model in route
-- [ ] support dataclass (pending)
-- [ ] click field to highlight links
-- [ ] user can generate nodes/edges manually and connect to generated ones
-    - [ ] add owner
-    - [ ] add extra info for schema
-- [ ] ui optimization
-    - [ ] fixed left/right bar show field information
-    - [x] fixed left bar show tag/ route
-- [ ] display standard ER diagram `hard`
-    - [ ] display potential invalid links
-- [ ] integration with pydantic-resolve
-    - [ ] show difference between resolve, post fields
-    - [x] strikethrough for excluded fields
-    - [ ] display loader as edges
+    - [x] add response_model in route
+- [x] fixed left bar show tag/ route
 - [x] export voyager core data into json (for better debugging)
     - [x] add api to rebuild core data from json, and render it
 - [x] fix Generic case  `test_generic.py`
 - [x] show tips for routes not return pydantic type.
-- [ ] add http method for route
+- [x] fix duplicated link from class and parent class, it also break clicking highlight
+- [x] refactor: abstract render module
+
+### backlog
+- [ ] user can generate nodes/edges manually and connect to generated ones
+    - [ ] add owner
+    - [ ] add extra info for schema
+- [ ] fixed left/right bar show field information
+- [ ] display standard ER diagram `hard`
+    - [ ] display potential invalid links
 
 bugs & non feature:
-- [x] fix duplicated link from class and parent class, it also break clicking highlight
 - [ ] add tests
-- [x] refactor
-    - [x] abstract render module
+- [ ] support dataclass (pending)
+
+### in analysis
+- [ ] click field to highlight links
+- [ ] animation effect for edges
+- [ ] customrized right click panel
+    - [ ] show own dependencies
+
+### plan:
+
+#### 0.9
+- [ ] improve initialization time cost
+    - [ ] query route / schema info through realtime api
+
+#### 0.10
+- [ ] add http method for route
+
+#### 0.11
+- [ ] integration with pydantic-resolve
+    - [ ] show hint for resolve, post fields
+    - [ ] display loader as edges
 
 ## Using with pydantic-resolve
 
