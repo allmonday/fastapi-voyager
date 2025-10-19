@@ -199,6 +199,8 @@ TODO: ...
 ## Changelog
 
 - 0.8:
+    - 0.8.2
+        - fix silly typo.
     - 0.8.1
         - add feature: hide primitive routes
 - 0.7:
