@@ -3,6 +3,10 @@
 
 <p align="center"><img src="./voyager.jpg" alt="" /></p>
 
+
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/PGlbQq1M-n8/0.jpg)](https://www.youtube.com/watch?v=PGlbQq1M-n8 "FastAPI Voyager")
+
+
 > This repo is still in early stage, currently it supports pydantic v2 only, previous name: fastapi-router-viz
 
 Inspect your API interactively
