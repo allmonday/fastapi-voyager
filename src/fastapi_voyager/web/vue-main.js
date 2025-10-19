@@ -29,6 +29,8 @@ const app = createApp({
       rawSchemas: [], // [{ name, fullname }]
       rawSchemasFull: [], // full objects with source_code & fields
       initializing: true,
+      // Splitter size (left panel width in px)
+      splitter: 300,
     });
     const showDetail = ref(false);
     const showSchemaFieldFilter = ref(false);
@@ -115,7 +117,7 @@ const app = createApp({
       }
     }
 
-    async function onGenerate() {
+    async function onGenerate(resetZoom=true) {
       state.generating = true;
       try {
         const payload = {
@@ -157,7 +159,7 @@ const app = createApp({
           },
         });
 
-        await graphUI.render(dotText);
+        await graphUI.render(dotText, resetZoom);
       } catch (e) {
         console.error("Generate failed", e);
       } finally {
@@ -231,15 +233,16 @@ const app = createApp({
       state.tag = null;
       state.routeId = "";
       state.schemaFullname = null;
-      state.showFields = "object";
+      // state.showFields = "object";
       state.brief = false;
       onGenerate()
-      // await loadInitial();
     }
 
     function toggleTag(tagName, expanded = null) {
       if (expanded === true) {
         state.tag = tagName;
+        state.routeId = ''
+        onGenerate();
         return;
       }
     }
@@ -253,43 +256,20 @@ const app = createApp({
       onGenerate()
     }
 
-    // react to tag changes to rebuild routes
-    watch(
-      () => state.tag,
-      (val) => {
-        if (!state.initializing) {
-          state.routeId = ''
-          onGenerate();
-        }
-      }
-    );
+    function toggleShowField(field) {
+      state.showFields = field;
+      onGenerate(false)
+    }
 
-    watch(
-      () => state.showFields,
-      () => {
-        if (!state.initializing) {
-          onGenerate();
-        }
-      }
-    )
-
-    watch(
-      () => state.brief,
-      () => {
-        if (!state.initializing) {
-          onGenerate();
-        }
-      }
-    );
-
-    watch(
-      () => state.hidePrimitiveRoute,
-      () => {
-        if (!state.initializing) {
-          onGenerate();
-        }
-      }
-    );
+    function toggleBrief(val) {
+      state.brief = val;
+      onGenerate()
+    }
+    
+    function toggleHidePrimitiveRoute(val) {
+      state.hidePrimitiveRoute = val;
+      onGenerate(false)
+    }
 
     onMounted(async () => {
       await loadInitial();
@@ -298,6 +278,8 @@ const app = createApp({
     return {
       state,
       toggleTag,
+      toggleBrief,
+      toggleHidePrimitiveRoute,
       selectRoute,
       onFilterTags,
       onFilterSchemas,
@@ -326,10 +308,15 @@ const app = createApp({
       // render graph dialog
       showRenderGraph,
       renderCoreData,
+      toggleShowField
     };
   },
 });
 app.use(window.Quasar);
+// Set Quasar primary theme color to green
+if (window.Quasar && typeof window.Quasar.setCssVar === 'function') {
+  window.Quasar.setCssVar('primary', '#009485');
+}
 app.component("schema-field-filter", SchemaFieldFilter);
 app.component("schema-code-display", SchemaCodeDisplay);
 app.component("route-code-display", RouteCodeDisplay);

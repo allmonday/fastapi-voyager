@@ -110,7 +110,7 @@ export class GraphUI {
     });
   }
 
-  async render(dotSrc) {
+  async render(dotSrc, resetZoom = true) {
     const height = this.options.height || "100%";
     return new Promise((resolve, reject) => {
       try {
@@ -126,7 +126,7 @@ export class GraphUI {
           .renderDot(dotSrc)
           .on("end", () => {
             $(this.selector).data("graphviz.svg").setup();
-            this.graphviz.resetZoom();
+            if (resetZoom) this.graphviz.resetZoom();
             resolve();
           });
       } catch (err) {

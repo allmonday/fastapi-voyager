@@ -80,5 +80,5 @@ def get_page_test_2():
     return {}
 
 @app.get("/page_test_3/", tags=['for-page'], response_model=bool)
-def get_page_test_3():
+def get_page_test_3_long_long_long_name():
     return True
