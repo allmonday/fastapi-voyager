@@ -165,7 +165,7 @@ features:
 - [ ] ui optimization
     - [ ] fixed left/right bar show field information
     - [x] fixed left bar show tag/ route
-- [ ] display standard ER diagram `difference`
+- [ ] display standard ER diagram `hard`
     - [ ] display potential invalid links
 - [ ] integration with pydantic-resolve
     - [ ] show difference between resolve, post fields
@@ -174,7 +174,7 @@ features:
 - [x] export voyager core data into json (for better debugging)
     - [x] add api to rebuild core data from json, and render it
 - [x] fix Generic case  `test_generic.py`
-- [ ] show tips for routes not return pydantic type.
+- [x] show tips for routes not return pydantic type.
 - [ ] add http method for route
 
 bugs & non feature:
@@ -199,6 +199,8 @@ TODO: ...
 ## Changelog
 
 - 0.8:
+    - 0.8.3
+        - upgrade theme
     - 0.8.2
         - fix silly typo.
     - 0.8.1
