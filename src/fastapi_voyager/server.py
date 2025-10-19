@@ -32,8 +32,8 @@ class Payload(BaseModel):
 	route_name: Optional[str] = None
 	show_fields: str = 'object'
 	show_meta: bool = False
-	brief: bool = False,
-	hide_primitive_route: bool = False,
+	brief: bool = False
+	hide_primitive_route: bool = False
 
 def create_route(
 	target_app: FastAPI,
@@ -66,6 +66,7 @@ def create_route(
 
 	@router.post("/dot", response_class=PlainTextResponse)
 	def get_filtered_dot(payload: Payload) -> str:
+		print(payload)
 		voyager = Voyager(
 			include_tags=payload.tags,
 			schema=payload.schema_name,

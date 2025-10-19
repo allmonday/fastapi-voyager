@@ -92,8 +92,8 @@ class Voyager:
             # filter by route_name (route.id) if provided
             if self.route_name is not None and route_id != self.route_name:
                 continue
+
             is_primitive_response = is_non_pydantic_type(route.response_model)
-            
             # filter primitive route if needed
             if self.hide_primitive_route and is_primitive_response:
                 continue
@@ -286,7 +286,6 @@ class Voyager:
         return renderer.render_dot(_tags, _routes, _nodes, _links)
     
     def render_brief_dot(self, module_prefix: str | None = None):
-        print(module_prefix)
         _tags, _routes, _nodes, _links = filter_subgraph(
             module_prefix=module_prefix,
             tags=self.tags,
