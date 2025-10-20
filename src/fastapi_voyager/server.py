@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_voyager.voyager import Voyager
 from fastapi_voyager.type import Tag, FieldInfo, CoreData
 from fastapi_voyager.render import Renderer
+from fastapi_voyager.type_helper import get_source
 
 
 WEB_DIR = Path(__file__).parent / "web"
@@ -121,7 +122,45 @@ def create_route(
 		</body>
 		</html>
 		"""
-
+	
+	@router.get("/source/{schema_name}")
+	def get_object_by_module_name(schema_name: str):
+		"""
+		input: __module__ + __name__, eg: tests.demo.PageStories
+		output: source code of the object
+		"""
+		try:
+			components = schema_name.split('.')
+			if len(components) < 2:
+				return JSONResponse(
+					status_code=400, 
+					content={"error": "Invalid schema name format. Expected format: module.ClassName"}
+				)
+			
+			module_name = '.'.join(components[:-1])
+			class_name = components[-1]
+			
+			mod = __import__(module_name, fromlist=[class_name])
+			obj = getattr(mod, class_name)
+			source_code = get_source(obj)
+			
+			return JSONResponse(content={"source_code": source_code})
+		except ImportError as e:
+			return JSONResponse(
+				status_code=404,
+				content={"error": f"Module not found: {e}"}
+			)
+		except AttributeError as e:
+			return JSONResponse(
+				status_code=404,
+				content={"error": f"Class not found: {e}"}
+			)
+		except Exception as e:
+			return JSONResponse(
+				status_code=500,
+				content={"error": f"Internal error: {str(e)}"}
+			)
+        
 	return router
 
 
