@@ -196,7 +196,8 @@ bugs & non feature:
 - [ ] open route in swagger
     - config docs path
 - [ ] improve initialization time cost
-    - [ ] query route / schema info through realtime api
+    - [x] query route / schema info through realtime api
+    - [ ] adjust fe
 
 #### 0.10
 - [ ] add http method for route
