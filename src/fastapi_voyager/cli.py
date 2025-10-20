@@ -281,7 +281,7 @@ Examples:
             except ImportError:
                 print("Error: uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
                 sys.exit(1)
-            app_server = viz_server.create_app_with_fastapi(
+            app_server = viz_server.create_voyager(
                 app,
                 module_color=module_color,
                 module_prefix=args.module_prefix,

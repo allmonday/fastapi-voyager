@@ -190,9 +190,9 @@ bugs & non feature:
 ### plan:
 
 #### 0.9
-- [ ] refactor: server.py
-    - rename create_app_with_fastapi -> create_voyager
-    - add doc for parameters
+- [x] refactor: server.py
+    - [x] rename create_app_with_fastapi -> create_voyager
+    - [x] add doc for parameters
 - [ ] open route in swagger
     - config docs path
 - [ ] improve initialization time cost

@@ -40,6 +40,10 @@ def create_route(
 	module_color: dict[str, str] | None = None,
 	module_prefix: Optional[str] = None,
 ):
+	"""
+	module_color: dict mapping module name to color string, e.g. {'models': 'lightblue'}
+	module_prefix: prefix string to define schemas show in brief mode
+	"""
 	router = APIRouter(tags=['fastapi-voyager'])
 
 	@router.get("/dot", response_model=OptionParam)
@@ -121,7 +125,7 @@ def create_route(
 	return router
 
 
-def create_app_with_fastapi(
+def create_voyager(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
 	gzip_minimum_size: int | None = 500,
