@@ -131,7 +131,25 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 ## Plan before v1.0
 
-### features:
+
+### backlog
+- [ ] user can generate nodes/edges manually and connect to generated ones
+    - [ ] add owner
+    - [ ] add extra info for schema
+- [ ] fixed left/right bar show field information
+- [ ] display standard ER diagram `hard`
+    - [ ] display potential invalid links
+- [ ] support dataclass (pending)
+
+### in analysis
+- [ ] click field to highlight links
+- [ ] animation effect for edges
+- [ ] customrized right click panel
+    - [ ] show own dependencies
+- [ ] clean up fe code
+
+### plan:
+### <0.9:
 - [x] group schemas by module hierarchy
 - [x] module-based coloring via Analytics(module_color={...})
 - [x] view in web browser
@@ -158,24 +176,6 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [x] show tips for routes not return pydantic type.
 - [x] fix duplicated link from class and parent class, it also break clicking highlight
 - [x] refactor: abstract render module
-
-### backlog
-- [ ] user can generate nodes/edges manually and connect to generated ones
-    - [ ] add owner
-    - [ ] add extra info for schema
-- [ ] fixed left/right bar show field information
-- [ ] display standard ER diagram `hard`
-    - [ ] display potential invalid links
-- [ ] support dataclass (pending)
-
-### in analysis
-- [ ] click field to highlight links
-- [ ] animation effect for edges
-- [ ] customrized right click panel
-    - [ ] show own dependencies
-- [ ] clean up fe code
-
-### plan:
 
 #### 0.9
 - [x] refactor: server.py
