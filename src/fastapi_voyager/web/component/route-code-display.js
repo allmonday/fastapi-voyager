@@ -16,7 +16,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const loading = ref(false);
     const code = ref("");
-    const error = ref(null);
+    const error = ref("");
     const link = ref("");
 
     function close() {
@@ -52,8 +52,8 @@ export default defineComponent({
       link.value = "";
 
       // try to fetch from server: POST /source with { schema_name: routeId }
+      const payload = { schema_name: props.routeId };
       try {
-        const payload = { schema_name: props.routeId };
         const resp = await fetch(`source`, {
           method: "POST",
           headers: {
@@ -63,16 +63,8 @@ export default defineComponent({
           body: JSON.stringify(payload),
         });
 
-        if (resp.status === 400) {
-          const errData = await resp.json().catch(() => null);
-          const msg =
-            (errData && (errData.error || errData.message)) ||
-            "Invalid request payload";
-          throw new Error(msg);
-        }
-
         const data = await resp.json().catch(() => ({}));
-        if (resp.ok && data && typeof data.source_code === "string") {
+        if (resp.ok) {
           code.value = data.source_code || "// no source code available";
         } else {
           error.value = (data && data.error) || "Failed to load source";
@@ -83,13 +75,26 @@ export default defineComponent({
         loading.value = false;
       }
 
-      // enrich vscode link from provided routes meta if available
       try {
-        const item = props.routes[props.routeId];
-        if (item) {
-          link.value = item.vscode_link || "";
+        const resp = await fetch(`vscode-link`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok) {
+          link.value = data.link || "// no source code available";
+        } else {
+          error.value += (data && data.error) || "Failed to load vscode link";
         }
-      } catch {}
+      } catch (e) {
+      } finally {
+        loading.value = false;
+      }
 
       if (!error.value) {
         highlightLater();

@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_voyager.voyager import Voyager
 from fastapi_voyager.type import Tag, FieldInfo, CoreData, SchemaNode
 from fastapi_voyager.render import Renderer
-from fastapi_voyager.type_helper import get_source
+from fastapi_voyager.type_helper import get_source, get_vscode_link
 
 
 WEB_DIR = Path(__file__).parent / "web"
@@ -43,7 +43,7 @@ def create_route(
 
 	@router.get("/dot", response_model=OptionParam)
 	def get_dot() -> str:
-		voyager = Voyager(module_color=module_color, load_meta=True)
+		voyager = Voyager(module_color=module_color)
 		voyager.analysis(target_app)
 		dot = voyager.render_dot()
 
@@ -65,7 +65,6 @@ def create_route(
 			show_fields=payload.show_fields,
 			module_color=module_color,
 			route_name=payload.route_name,
-			load_meta=False,
 			hide_primitive_route=payload.hide_primitive_route,
 		)
 		voyager.analysis(target_app)
@@ -83,7 +82,6 @@ def create_route(
 			show_fields=payload.show_fields,
 			module_color=module_color,
 			route_name=payload.route_name,
-			load_meta=False,
 		)
 		voyager.analysis(target_app)
 		return voyager.dump_core_data()
@@ -134,6 +132,44 @@ def create_route(
 			source_code = get_source(obj)
 			
 			return JSONResponse(content={"source_code": source_code})
+		except ImportError as e:
+			return JSONResponse(
+				status_code=404,
+				content={"error": f"Module not found: {e}"}
+			)
+		except AttributeError as e:
+			return JSONResponse(
+				status_code=404,
+				content={"error": f"Class not found: {e}"}
+			)
+		except Exception as e:
+			return JSONResponse(
+				status_code=500,
+				content={"error": f"Internal error: {str(e)}"}
+			)
+
+	@router.post("/vscode-link")
+	def get_vscode_link_by_module_name(payload: SourcePayload):
+		"""
+		input: __module__ + __name__, eg: tests.demo.PageStories
+		output: source path of the object
+		"""
+		try:
+			components = payload.schema_name.split('.')
+			if len(components) < 2:
+				return JSONResponse(
+					status_code=400, 
+					content={"error": "Invalid schema name format. Expected format: module.ClassName"}
+				)
+			
+			module_name = '.'.join(components[:-1])
+			class_name = components[-1]
+			
+			mod = __import__(module_name, fromlist=[class_name])
+			obj = getattr(mod, class_name)
+			link = get_vscode_link(obj)
+			
+			return JSONResponse(content={"link": link})
 		except ImportError as e:
 			return JSONResponse(
 				status_code=404,

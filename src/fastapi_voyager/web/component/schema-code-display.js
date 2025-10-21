@@ -21,7 +21,7 @@ export default defineComponent({
     const loading = ref(false);
     const code = ref("");
     const link = ref("");
-    const error = ref(null);
+    const error = ref("");
     const fields = ref([]); // schema fields list
     const tab = ref("source");
 
@@ -56,9 +56,9 @@ export default defineComponent({
       link.value = "";
 
       // try to fetch from server: /source/{schema_name}
+      const payload = { schema_name: props.schemaName };
       try {
         // validate input: ensure we have a non-empty schemaName
-        const payload = { schema_name: props.schemaName };
         const resp = await fetch(`source`, {
           method: "POST",
           headers: {
@@ -68,15 +68,8 @@ export default defineComponent({
           body: JSON.stringify(payload),
         });
         // surface server-side validation message for bad request
-        if (resp.status === 400) {
-          const errData = await resp.json().catch(() => null);
-          const msg =
-            (errData && (errData.error || errData.message)) ||
-            "Input should be a valid dictionary or object to extract fields from";
-          throw new Error(msg);
-        }
         const data = await resp.json().catch(() => ({}));
-        if (resp.ok && data && typeof data.source_code === "string") {
+        if (resp.ok) {
           code.value = data.source_code || "// no source code available";
         } else {
           error.value = (data && data.error) || "Failed to load source";
@@ -87,14 +80,27 @@ export default defineComponent({
         loading.value = false;
       }
 
-      // enrich link and fields from provided schemas meta if available
       try {
-        const item = props.schemas.find((s) => s.id === props.schemaName);
-        if (item) {
-          link.value = item.vscode_link || "";
-          fields.value = Array.isArray(item.fields) ? item.fields : [];
+        const resp = await fetch(`vscode-link`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        // surface server-side validation message for bad request
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok) {
+          link.value = data.link || "// no vscode link available";
+        } else {
+          error.value += (data && data.error) || "Failed to load source";
         }
-      } catch {}
+      } catch (e) {
+        error.value = "Failed to load source";
+      } finally {
+        loading.value = false;
+      }
 
       if (!error.value && tab.value === "source") {
         highlightLater();

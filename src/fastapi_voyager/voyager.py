@@ -29,7 +29,6 @@ class Voyager:
             module_color: dict[str, str] | None = None,
             route_name: str | None = None,
             hide_primitive_route: bool = False,
-            load_meta: bool = False
         ):
 
         self.routes: list[Route] = []
@@ -50,7 +49,6 @@ class Voyager:
         self.show_fields = show_fields if show_fields in ('single','object','all') else 'object'
         self.module_color = module_color or {}
         self.route_name = route_name
-        self.load_meta = load_meta
         self.hide_primitive_route = hide_primitive_route
     
 
@@ -110,7 +108,6 @@ class Voyager:
                 id=route_id,
                 name=route_name,
                 module=route_module,
-                vscode_link=get_vscode_link(route.endpoint) if self.load_meta else '',
                 response_schema=get_type_name(route.response_model),
                 is_primitive=is_primitive_response
             )
@@ -153,7 +150,6 @@ class Voyager:
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
-                vscode_link=get_vscode_link(schema) if self.load_meta else '',
                 fields=get_pydantic_fields(schema, bases_fields)
             )
         return full_name

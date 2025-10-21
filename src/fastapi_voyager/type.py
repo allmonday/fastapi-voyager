@@ -22,8 +22,6 @@ class Tag(NodeBase):
 @dataclass
 class Route(NodeBase):
     module: str
-    source_code: str = ''
-    vscode_link: str = ''  # optional vscode deep link
     response_schema: str = ''
     is_primitive: bool = True
 
@@ -37,8 +35,6 @@ class ModuleRoute:
 @dataclass
 class SchemaNode(NodeBase):
     module: str
-    # source_code: str = ''  # optional for tests / backward compatibility
-    vscode_link: str = ''  # optional vscode deep link
     fields: list[FieldInfo] = field(default_factory=list)
 
 @dataclass

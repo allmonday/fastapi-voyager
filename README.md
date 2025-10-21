@@ -82,10 +82,10 @@ click a node to highlight it's upperstream and downstream nodes. figure out the 
 
 ```python
 from fastapi import FastAPI
-from fastapi_voyager.server import create_app_with_fastapi
+from fastapi_voyager import create_voyager
 from tests.demo import app
 
-app.mount('/voyager', create_app_with_fastapi(
+app.mount('/voyager', create_voyager(
     app, 
     module_color={"tests.service": "red"}, 
     module_prefix="tests.service"))
@@ -193,13 +193,14 @@ bugs & non feature:
 - [x] refactor: server.py
     - [x] rename create_app_with_fastapi -> create_voyager
     - [x] add doc for parameters
-- [ ] open route in swagger
-    - config docs path
-- [ ] improve initialization time cost
+- [x] improve initialization time cost
     - [x] query route / schema info through realtime api
-    - [ ] adjust fe
+    - [x] adjust fe
 
 #### 0.10
+- [ ] logging information
+- [ ] open route in swagger
+    - config docs path
 - [ ] add http method for route
 - [ ] enable/disable module cluster  (may save space)
 
@@ -225,6 +226,10 @@ pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `sour
 
 ## Changelog
 
+- 0.9:
+    - 0.9.1:
+        - api change: from `create_app_with_fastapi` to `create_voyager`, and expose as `from fastapi_voyager import create_voyager`
+        - optimization: lazy load vscode link and source code, speed up the initialization.
 - 0.8:
     - 0.8.3
         - upgrade theme
