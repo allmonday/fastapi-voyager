@@ -1,17 +1,12 @@
 [![pypi](https://img.shields.io/pypi/v/fastapi-voyager.svg)](https://pypi.python.org/pypi/fastapi-voyager)
 ![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-voyager)
 
-<p align="center"><img src="./voyager.jpg" alt="" /></p>
-
-
-<p align="center"><a target="_blank" rel="" href="https://www.youtube.com/watch?v=PGlbQq1M-n8"><img src="http://img.youtube.com/vi/PGlbQq1M-n8/0.jpg" alt="" style="max-width: 100%;"></a></p>
-
-
 > This repo is still in early stage, it supports pydantic v2 only
 
 Inspect your API interactively!
 
-<img width="1480" height="648" alt="image" src="https://github.com/user-attachments/assets/a6ccc9f1-cf06-493a-b99b-eb07767564bd" />
+<p align="center"><img src="./voyager.jpg" alt="" /></p>
+<p align="center"><a target="_blank" rel="" href="https://www.youtube.com/watch?v=PGlbQq1M-n8"><img src="http://img.youtube.com/vi/PGlbQq1M-n8/0.jpg" alt="" style="max-width: 100%;"></a></p>
 
 ## Installation
 
@@ -24,12 +19,6 @@ uv add fastapi-voyager
 ```shell
 voyager -m path.to.your.app.module --server
 ```
-
-## Dependencies
-
-- FastAPI
-- [pydantic-resolve](https://github.com/allmonday/pydantic-resolve)
-- Quasar
 
 
 ## Feature
@@ -53,9 +42,9 @@ voyager -m tests.demo
 ```
 
 ### generate the graph
-after initialization, pick tag, rotue (optional) and click `generate`.
+after initialization, pick tag, rotue to render graph
 
-<img width="1919" height="898" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/05e321d0-49f3-4af6-a7c7-f4c9c6b1dbfd" />
+<img width="1628" height="765" alt="image" src="https://github.com/user-attachments/assets/b4712f82-e754-453b-aa69-24c932b8f48f" />
 
 ### highlight
 click a node to highlight it's upperstream and downstream nodes. figure out the related models of one page, or homw many pages are related with one model.
@@ -63,9 +52,9 @@ click a node to highlight it's upperstream and downstream nodes. figure out the 
 <img width="1485" height="616" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/70c4095f-86c7-45da-a6f0-fd41ac645813" />
 
 ### filter related nodes
-`shift` click a node to check related node, pick a field to narrow the result.
+`shift` click a node to check related node, pick a field to narrow the result, picked node is marked as red.
 
-<img width="1917" height="800" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/e770dc70-f293-49e1-bcd7-d8dffa15d9ea" />
+<img width="1423" height="552" alt="image" src="https://github.com/user-attachments/assets/468a058d-afa1-4601-a7c5-c6aad6a8a557" />
 
 ### view source code
 `alt` click a node to show source code or open file in vscode.
@@ -224,6 +213,13 @@ pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `sour
 
 - https://apis.guru/graphql-voyager/, thanks for inspiration.
 - https://github.com/tintinweb/vscode-interactive-graphviz, thanks for web visualization.
+
+
+## Dependencies
+
+- FastAPI
+- [pydantic-resolve](https://github.com/allmonday/pydantic-resolve)
+- Quasar
 
 
 ## Changelog
