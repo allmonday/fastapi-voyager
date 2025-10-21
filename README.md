@@ -4,12 +4,12 @@
 <p align="center"><img src="./voyager.jpg" alt="" /></p>
 
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/PGlbQq1M-n8/0.jpg)](https://www.youtube.com/watch?v=PGlbQq1M-n8 "FastAPI Voyager")
+<p align="center"><a target="_blank" rel="" href="https://www.youtube.com/watch?v=PGlbQq1M-n8"><img src="http://img.youtube.com/vi/PGlbQq1M-n8/0.jpg" alt="" style="max-width: 100%;"></a></p>
 
 
-> This repo is still in early stage, currently it supports pydantic v2 only, previous name: fastapi-router-viz
+> This repo is still in early stage, it supports pydantic v2 only
 
-Inspect your API interactively
+Inspect your API interactively!
 
 <img width="1480" height="648" alt="image" src="https://github.com/user-attachments/assets/a6ccc9f1-cf06-493a-b99b-eb07767564bd" />
 
@@ -29,6 +29,7 @@ voyager -m path.to.your.app.module --server
 
 - FastAPI
 - [pydantic-resolve](https://github.com/allmonday/pydantic-resolve)
+- Quasar
 
 
 ## Feature
@@ -221,8 +222,8 @@ pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `sour
 
 ## Credits
 
-- https://apis.guru/graphql-voyager/, for inspiration.
-- https://github.com/tintinweb/vscode-interactive-graphviz, for web visualization.
+- https://apis.guru/graphql-voyager/, thanks for inspiration.
+- https://github.com/tintinweb/vscode-interactive-graphviz, thanks for web visualization.
 
 
 ## Changelog
