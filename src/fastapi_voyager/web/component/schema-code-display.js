@@ -58,7 +58,7 @@ export default defineComponent({
       loading.value = true;
       error.value = null;
       try {
-        const item = props.schemas.find((s) => s.fullname === props.schemaName);
+        const item = props.schemas.find((s) => s.id === props.schemaName);
         if (item) {
           link.value = item.vscode_link || "";
           code.value = item.source_code || "// no source code available";

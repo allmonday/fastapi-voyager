@@ -43,8 +43,8 @@ export default defineComponent({
       state.error = null;
       state.schemas = Array.isArray(props.schemas) ? props.schemas : [];
       state.schemaOptions = state.schemas.map((s) => ({
-        label: `${s.name} (${s.fullname})`,
-        value: s.fullname,
+        label: `${s.name} (${s.id})`,
+        value: s.id,
       }));
       // Maintain compatibility: loadingSchemas flag toggled quickly (no async work)
       state.loadingSchemas = false;
@@ -54,8 +54,8 @@ export default defineComponent({
       const needle = (val || "").toLowerCase();
       update(() => {
         let opts = state.schemas.map((s) => ({
-          label: `${s.name} (${s.fullname})`,
-          value: s.fullname,
+          label: `${s.name} (${s.id})`,
+          value: s.id,
         }));
         if (needle) {
           opts = opts.filter((o) => o.label.toLowerCase().includes(needle));
@@ -67,7 +67,7 @@ export default defineComponent({
     function onSchemaChange(val) {
       state.schemaFullname = val;
       state.fieldName = null;
-      const schema = state.schemas.find((s) => s.fullname === val);
+      const schema = state.schemas.find((s) => s.id === val);
       state.fieldOptions = schema ? schema.fields.map((f) => f.name) : [];
     }
 
@@ -106,9 +106,9 @@ export default defineComponent({
     function applyExternalSchema(name) {
       if (!name || !state.schemas.length) return;
       if (lastAppliedExternal === name) return; // avoid duplicate
-      const schema = state.schemas.find((s) => s.fullname === name);
+      const schema = state.schemas.find((s) => s.id === name);
       if (!schema) return;
-      state.schemaFullname = schema.fullname;
+      state.schemaFullname = schema.id;
       state.fieldOptions = schema.fields.map((f) => f.name);
       state.fieldName = null; // reset field for external injection
       lastAppliedExternal = name;

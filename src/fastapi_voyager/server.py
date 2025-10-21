@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_voyager.voyager import Voyager
-from fastapi_voyager.type import Tag, FieldInfo, CoreData
+from fastapi_voyager.type import Tag, FieldInfo, CoreData, SchemaNode
 from fastapi_voyager.render import Renderer
 from fastapi_voyager.type_helper import get_source
 
@@ -14,16 +14,10 @@ from fastapi_voyager.type_helper import get_source
 WEB_DIR = Path(__file__).parent / "web"
 WEB_DIR.mkdir(exist_ok=True)
 
-class SchemaType(BaseModel):
-	name: str
-	fullname: str
-	source_code: str
-	vscode_link: str
-	fields: list[FieldInfo]
 
 class OptionParam(BaseModel):
 	tags: list[Tag]
-	schemas: list[SchemaType]
+	schemas: list[SchemaNode]
 	dot: str
 
 class Payload(BaseModel):
@@ -56,15 +50,7 @@ def create_route(
 		# include tags and their routes
 		tags = voyager.tags
 
-		schemas = [
-			SchemaType(
-				name=s.name,
-				fullname=s.id,
-				fields=s.fields,
-				source_code=s.source_code,
-				vscode_link=s.vscode_link
-			) for s in voyager.nodes
-		]
+		schemas = voyager.nodes[:]
 		schemas.sort(key=lambda s: s.name)
 
 		return OptionParam(tags=tags, schemas=schemas, dot=dot)

@@ -13,7 +13,7 @@ const app = createApp({
       tagOptions: [], // array of strings
       routeId: null,
       routeOptions: [], // [{ label, value }]
-      schemaFullname: null,
+      schemaId: null,
       schemaOptions: [], // [{ label, value }]
       routeItems: {}, // { id: { label, value } }
       showFields: "object",
@@ -26,7 +26,7 @@ const app = createApp({
       hidePrimitiveRoute: false,
       generating: false,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
-      rawSchemas: [], // [{ name, fullname }]
+      rawSchemas: [], // [{ name, id }]
       rawSchemasFull: [], // full objects with source_code & fields
       initializing: true,
       // Splitter size (left panel width in px)
@@ -70,10 +70,10 @@ const app = createApp({
     function onFilterSchemas(val, update) {
       const normalized = (val || "").toLowerCase();
       update(() => {
-        const makeLabel = (s) => `${s.name} (${s.fullname})`;
+        const makeLabel = (s) => `${s.name} (${s.id})`;
         let list = state.rawSchemas.map((s) => ({
           label: makeLabel(s),
-          value: s.fullname,
+          value: s.id,
         }));
         if (normalized) {
           list = list.filter((opt) =>
@@ -93,7 +93,7 @@ const app = createApp({
         state.rawSchemasFull = Array.isArray(data.schemas) ? data.schemas : [];
         state.rawSchemas = state.rawSchemasFull.map((s) => ({
           name: s.name,
-          fullname: s.fullname,
+          id: s.id,
         }));
         state.routeItems = data.tags
           .map((t) => t.routes)
@@ -105,8 +105,8 @@ const app = createApp({
 
         state.tagOptions = state.rawTags.map((t) => t.name);
         state.schemaOptions = state.rawSchemas.map((s) => ({
-          label: `${s.name} (${s.fullname})`,
-          value: s.fullname,
+          label: `${s.name} (${s.id})`,
+          value: s.id,
         }));
         // default route options placeholder
         state.routeOptions = [];
@@ -122,7 +122,7 @@ const app = createApp({
       try {
         const payload = {
           tags: state.tag ? [state.tag] : null,
-          schema_name: state.schemaFullname || null,
+          schema_name: state.schemaId || null,
           route_name: state.routeId || null,
           show_fields: state.showFields,
           brief: state.brief,
@@ -138,21 +138,21 @@ const app = createApp({
 
         // create graph instance once
         const graphUI = new GraphUI("#graph", {
-          onSchemaClick: (name) => {
-            if (state.rawSchemas.find((s) => s.fullname === name)) {
-              schemaFieldFilterSchema.value = name;
+          onSchemaClick: (id) => {
+            if (state.rawSchemas.find((s) => s.id === id)) {
+              schemaFieldFilterSchema.value = id;
               showSchemaFieldFilter.value = true;
             }
           },
-          onSchemaAltClick: (name) => {
-            // priority: schema full name; else route id
-            if (state.rawSchemas.find((s) => s.fullname === name)) {
-              schemaCodeName.value = name;
+          onSchemaAltClick: (id) => {
+            // priority: schema id; else route id
+            if (state.rawSchemas.find((s) => s.id === id)) {
+              schemaCodeName.value = id;
               showSchemaCode.value = true;
               return;
             }
-            if (name in state.routeItems) {
-              routeCodeId.value = name;
+            if (id in state.routeItems) {
+              routeCodeId.value = id;
               showRouteCode.value = true;
               return;
             }
@@ -171,7 +171,7 @@ const app = createApp({
       try {
         const payload = {
           tags: state.tag ? [state.tag] : null,
-          schema_name: state.schemaFullname || null,
+          schema_name: state.schemaId || null,
           route_name: state.routeId || null,
           show_fields: state.showFields,
           brief: state.brief,
@@ -232,7 +232,7 @@ const app = createApp({
     async function onReset() {
       state.tag = null;
       state.routeId = "";
-      state.schemaFullname = null;
+      state.schemaId = null;
       // state.showFields = "object";
       state.brief = false;
       onGenerate()
