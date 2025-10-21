@@ -47,6 +47,7 @@ const app = createApp({
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
     const schemaCodeName = ref("");
     const routeCodeId = ref("");
+
     function openDetail() {
       showDetail.value = true;
     }
@@ -117,7 +118,7 @@ const app = createApp({
       }
     }
 
-    async function onGenerate(resetZoom=true) {
+    async function onGenerate(resetZoom = true) {
       state.generating = true;
       try {
         const payload = {
@@ -126,7 +127,7 @@ const app = createApp({
           route_name: state.routeId || null,
           show_fields: state.showFields,
           brief: state.brief,
-          hide_primitive_route: state.hidePrimitiveRoute
+          hide_primitive_route: state.hidePrimitiveRoute,
         };
 
         const res = await fetch("dot", {
@@ -235,13 +236,13 @@ const app = createApp({
       state.schemaId = null;
       // state.showFields = "object";
       state.brief = false;
-      onGenerate()
+      onGenerate();
     }
 
     function toggleTag(tagName, expanded = null) {
       if (expanded === true) {
         state.tag = tagName;
-        state.routeId = ''
+        state.routeId = "";
         onGenerate();
         return;
       }
@@ -249,26 +250,26 @@ const app = createApp({
 
     function selectRoute(routeId) {
       if (state.routeId === routeId) {
-        state.routeId = ''
+        state.routeId = "";
       } else {
-        state.routeId = routeId
+        state.routeId = routeId;
       }
-      onGenerate()
+      onGenerate();
     }
 
     function toggleShowField(field) {
       state.showFields = field;
-      onGenerate(false)
+      onGenerate(false);
     }
 
     function toggleBrief(val) {
       state.brief = val;
-      onGenerate()
+      onGenerate();
     }
-    
+
     function toggleHidePrimitiveRoute(val) {
       state.hidePrimitiveRoute = val;
-      onGenerate(false)
+      onGenerate(false);
     }
 
     onMounted(async () => {
@@ -308,14 +309,14 @@ const app = createApp({
       // render graph dialog
       showRenderGraph,
       renderCoreData,
-      toggleShowField
+      toggleShowField,
     };
   },
 });
 app.use(window.Quasar);
 // Set Quasar primary theme color to green
-if (window.Quasar && typeof window.Quasar.setCssVar === 'function') {
-  window.Quasar.setCssVar('primary', '#009485');
+if (window.Quasar && typeof window.Quasar.setCssVar === "function") {
+  window.Quasar.setCssVar("primary", "#009485");
 }
 app.component("schema-field-filter", SchemaFieldFilter);
 app.component("schema-code-display", SchemaCodeDisplay);

@@ -14,7 +14,6 @@ export default defineComponent({
   props: {
     schemaName: { type: String, required: true },
     modelValue: { type: Boolean, default: false },
-    source: { type: String, default: null },
     schemas: { type: Array, default: () => [] },
   },
   emits: ["close"],
@@ -24,7 +23,7 @@ export default defineComponent({
     const link = ref("");
     const error = ref(null);
     const fields = ref([]); // schema fields list
-    const tab = ref('source');
+    const tab = ref("source");
 
     function close() {
       emit("close");
@@ -48,30 +47,57 @@ export default defineComponent({
       });
     }
 
-    function loadSource() {
+    async function loadSource() {
       if (!props.schemaName) return;
-      if (props.source) {
-        code.value = props.source;
-        highlightLater();
-        return;
-      }
+
       loading.value = true;
       error.value = null;
+      code.value = "";
+      link.value = "";
+
+      // try to fetch from server: /source/{schema_name}
       try {
-        const item = props.schemas.find((s) => s.id === props.schemaName);
-        if (item) {
-          link.value = item.vscode_link || "";
-          code.value = item.source_code || "// no source code available";
-          // capture fields if provided
-          fields.value = Array.isArray(item.fields) ? item.fields : [];
-          highlightLater();
+        // validate input: ensure we have a non-empty schemaName
+        const payload = { schema_name: props.schemaName };
+        const resp = await fetch(`source`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        // surface server-side validation message for bad request
+        if (resp.status === 400) {
+          const errData = await resp.json().catch(() => null);
+          const msg =
+            (errData && (errData.error || errData.message)) ||
+            "Input should be a valid dictionary or object to extract fields from";
+          throw new Error(msg);
+        }
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && data && typeof data.source_code === "string") {
+          code.value = data.source_code || "// no source code available";
         } else {
-          error.value = "Schema not found";
+          error.value = (data && data.error) || "Failed to load source";
         }
       } catch (e) {
         error.value = "Failed to load source";
       } finally {
         loading.value = false;
+      }
+
+      // enrich link and fields from provided schemas meta if available
+      try {
+        const item = props.schemas.find((s) => s.id === props.schemaName);
+        if (item) {
+          link.value = item.vscode_link || "";
+          fields.value = Array.isArray(item.fields) ? item.fields : [];
+        }
+      } catch {}
+
+      if (!error.value && tab.value === "source") {
+        highlightLater();
       }
     }
 
@@ -79,7 +105,7 @@ export default defineComponent({
     watch(
       () => tab.value,
       (val) => {
-        if (val === 'source') {
+        if (val === "source") {
           highlightLater();
         }
       }

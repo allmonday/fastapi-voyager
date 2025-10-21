@@ -109,14 +109,17 @@ def create_route(
 		</html>
 		"""
 	
-	@router.get("/source/{schema_name}")
-	def get_object_by_module_name(schema_name: str):
+	class SourcePayload(BaseModel):
+		schema_name: str
+
+	@router.post("/source")
+	def get_object_by_module_name(payload: SourcePayload):
 		"""
 		input: __module__ + __name__, eg: tests.demo.PageStories
 		output: source code of the object
 		"""
 		try:
-			components = schema_name.split('.')
+			components = payload.schema_name.split('.')
 			if len(components) < 2:
 				return JSONResponse(
 					status_code=400, 

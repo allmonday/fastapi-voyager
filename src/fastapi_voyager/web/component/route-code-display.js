@@ -6,58 +6,114 @@ const { defineComponent, ref, watch, onMounted } = window.Vue;
 //   modelValue: dialog visibility
 //   routes: object map { id: { id, name, source_code } }
 export default defineComponent({
-  name: 'RouteCodeDisplay',
+  name: "RouteCodeDisplay",
   props: {
     routeId: { type: String, required: true },
     modelValue: { type: Boolean, default: false },
     routes: { type: Object, default: () => ({}) },
   },
-  emits: ['close'],
+  emits: ["close"],
   setup(props, { emit }) {
-    const code = ref('');
+    const loading = ref(false);
+    const code = ref("");
     const error = ref(null);
-    const link = ref('');
+    const link = ref("");
 
-    function close() { emit('close'); }
+    function close() {
+      emit("close");
+    }
 
     function highlightLater() {
       requestAnimationFrame(() => {
         try {
           if (window.hljs) {
-            const block = document.querySelector('.frv-route-code-display pre code.language-python');
+            const block = document.querySelector(
+              ".frv-route-code-display pre code.language-python"
+            );
             if (block) {
               window.hljs.highlightElement(block);
             }
           }
         } catch (e) {
-          console.warn('highlight failed', e);
+          console.warn("highlight failed", e);
         }
       });
     }
 
-    function load() {
+    async function load() {
+      if (!props.routeId) {
+        code.value = "";
+        return;
+      }
+
+      loading.value = true;
       error.value = null;
-      if (!props.routeId) { code.value=''; return; }
-      const item = props.routes[props.routeId];
-      if (item && item.source_code) {
-        code.value = item.source_code;
-        link.value = item.vscode_link || '';
+      code.value = "";
+      link.value = "";
+
+      // try to fetch from server: POST /source with { schema_name: routeId }
+      try {
+        const payload = { schema_name: props.routeId };
+        const resp = await fetch(`source`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (resp.status === 400) {
+          const errData = await resp.json().catch(() => null);
+          const msg =
+            (errData && (errData.error || errData.message)) ||
+            "Invalid request payload";
+          throw new Error(msg);
+        }
+
+        const data = await resp.json().catch(() => ({}));
+        if (resp.ok && data && typeof data.source_code === "string") {
+          code.value = data.source_code || "// no source code available";
+        } else {
+          error.value = (data && data.error) || "Failed to load source";
+        }
+      } catch (e) {
+        error.value = e && e.message ? e.message : "Failed to load source";
+      } finally {
+        loading.value = false;
+      }
+
+      // enrich vscode link from provided routes meta if available
+      try {
+        const item = props.routes[props.routeId];
+        if (item) {
+          link.value = item.vscode_link || "";
+        }
+      } catch {}
+
+      if (!error.value) {
         highlightLater();
-      } else if (item) {
-        code.value = '// no source code available';
-        link.value = item.vscode_link || '';
-      } else {
-        error.value = 'Route not found';
-        link.value = '';
       }
     }
 
-    watch(() => props.modelValue, (v) => { if (v) load(); });
-    watch(() => props.routeId, () => { if (props.modelValue) load(); });
+    watch(
+      () => props.modelValue,
+      (v) => {
+        if (v) load();
+      }
+    );
+    watch(
+      () => props.routeId,
+      () => {
+        if (props.modelValue) load();
+      }
+    );
 
-    onMounted(() => { if (props.modelValue) load(); });
+    onMounted(() => {
+      if (props.modelValue) load();
+    });
 
-    return { code, error, close, link };
+    return { loading, code, error, close, link };
   },
   template: `
   <div class="frv-route-code-display" style="border:1px solid #ccc; position:relative; width:50vw; max-width:50vw; height:100%; background:#fff;">
@@ -66,8 +122,9 @@ export default defineComponent({
       <a :href="link" target="_blank" rel="noopener" style="font-size:12px; color:#3b82f6;">Open in VSCode</a>
     </div>
     <div style="padding:40px 16px 16px 16px; height:100%; box-sizing:border-box; overflow:auto;">
-      <div v-if="error" style="color:#c10015; font-family:Menlo, monospace; font-size:12px;">{{ error }}</div>
+      <div v-if="loading" style="font-family:Menlo, monospace; font-size:12px;">Loading source...</div>
+      <div v-else-if="error" style="color:#c10015; font-family:Menlo, monospace; font-size:12px;">{{ error }}</div>
       <pre v-else style="margin:0;"><code class="language-python">{{ code }}</code></pre>
     </div>
-  </div>`
+  </div>`,
 });

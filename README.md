@@ -201,6 +201,7 @@ bugs & non feature:
 
 #### 0.10
 - [ ] add http method for route
+- [ ] enable/disable module cluster  (may save space)
 
 #### 0.11
 - [ ] integration with pydantic-resolve

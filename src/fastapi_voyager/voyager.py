@@ -85,7 +85,7 @@ class Voyager:
                 self.tags.append(tag_obj)
 
             # add route and create links
-            route_id = f'{route.endpoint.__name__}_{route.path.replace("/", "_")}'
+            route_id = full_class_name(route.endpoint)
             route_name = route.endpoint.__name__
             route_module = route.endpoint.__module__
 
@@ -111,7 +111,6 @@ class Voyager:
                 name=route_name,
                 module=route_module,
                 vscode_link=get_vscode_link(route.endpoint) if self.load_meta else '',
-                source_code=inspect.getsource(route.endpoint) if self.load_meta else '',
                 response_schema=get_type_name(route.response_model),
                 is_primitive=is_primitive_response
             )
@@ -154,7 +153,6 @@ class Voyager:
                 id=full_name, 
                 module=schema.__module__,
                 name=schema.__name__,
-                source_code=get_source(schema) if self.load_meta else '',
                 vscode_link=get_vscode_link(schema) if self.load_meta else '',
                 fields=get_pydantic_fields(schema, bases_fields)
             )
