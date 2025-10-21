@@ -149,7 +149,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] clean up fe code
 
 ### plan:
-### <0.9:
+#### <0.9:
 - [x] group schemas by module hierarchy
 - [x] module-based coloring via Analytics(module_color={...})
 - [x] view in web browser
