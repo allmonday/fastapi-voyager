@@ -176,9 +176,6 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] fixed left/right bar show field information
 - [ ] display standard ER diagram `hard`
     - [ ] display potential invalid links
-
-bugs & non feature:
-- [ ] add tests
 - [ ] support dataclass (pending)
 
 ### in analysis
@@ -186,6 +183,7 @@ bugs & non feature:
 - [ ] animation effect for edges
 - [ ] customrized right click panel
     - [ ] show own dependencies
+- [ ] clean up fe code
 
 ### plan:
 
@@ -198,11 +196,14 @@ bugs & non feature:
     - [x] adjust fe
 
 #### 0.10
-- [ ] logging information
-- [ ] open route in swagger
+- [ ] support opening route in swagger
     - config docs path
 - [ ] add http method for route
 - [ ] enable/disable module cluster  (may save space)
+- [ ] logging information
+- [ ] add tests
+- [ ] hide brief mode if not configured
+- [ ] optimize static resource
 
 #### 0.11
 - [ ] integration with pydantic-resolve
