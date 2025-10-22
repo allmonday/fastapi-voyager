@@ -235,6 +235,9 @@ pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `sour
 ## Changelog
 
 - 0.9:
+    - 0.9.2:
+        - fix: missing fields in schema detail panel
+        - optimization: clean up fe codes.
     - 0.9.1:
         - api change: from `create_app_with_fastapi` to `create_voyager`, and expose as `from fastapi_voyager import create_voyager`
         - optimization: lazy load vscode link and source code, speed up the initialization.
