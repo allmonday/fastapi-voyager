@@ -4,13 +4,11 @@ const { defineComponent, ref, watch, onMounted } = window.Vue;
 // Props:
 //   routeId: route id key in routeItems
 //   modelValue: dialog visibility
-//   routes: object map { id: { id, name, source_code } }
 export default defineComponent({
   name: "RouteCodeDisplay",
   props: {
     routeId: { type: String, required: true },
     modelValue: { type: Boolean, default: false },
-    routes: { type: Object, default: () => ({}) },
   },
   emits: ["close"],
   setup(props, { emit }) {

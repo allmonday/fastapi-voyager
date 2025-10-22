@@ -9,13 +9,9 @@ const app = createApp({
   setup() {
     const state = reactive({
       // options and selections
-      tag: null,
-      tagOptions: [], // array of strings
-      routeId: null,
-      routeOptions: [], // [{ label, value }]
-      schemaId: null,
-      schemaOptions: [], // [{ label, value }]
-      routeItems: {}, // { id: { label, value } }
+      tag: null, // picked tag
+      routeId: null, // picked route
+      schemaId: null, // picked schema
       showFields: "object",
       fieldOptions: [
         { label: "No fields", value: "single" },
@@ -26,17 +22,17 @@ const app = createApp({
       hidePrimitiveRoute: false,
       generating: false,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
-      rawSchemas: [], // [{ name, id }]
+      rawSchemas: new Set(), // [{ name, id }]
       rawSchemasFull: [], // full objects with source_code & fields
       initializing: true,
       // Splitter size (left panel width in px)
       splitter: 300,
     });
+
     const showDetail = ref(false);
     const showSchemaFieldFilter = ref(false);
     const showSchemaCode = ref(false);
     const showRouteCode = ref(false);
-    // Dump/Import dialogs and rendered graph dialog
     const showDumpDialog = ref(false);
     const dumpJson = ref("");
     const showImportDialog = ref(false);
@@ -55,36 +51,6 @@ const app = createApp({
       showDetail.value = false;
     }
 
-    function onFilterTags(val, update) {
-      const normalized = (val || "").toLowerCase();
-      update(() => {
-        if (!normalized) {
-          state.tagOptions = state.rawTags.map((t) => t.name);
-          return;
-        }
-        state.tagOptions = state.rawTags
-          .map((t) => t.name)
-          .filter((n) => n.toLowerCase().includes(normalized));
-      });
-    }
-
-    function onFilterSchemas(val, update) {
-      const normalized = (val || "").toLowerCase();
-      update(() => {
-        const makeLabel = (s) => `${s.name} (${s.id})`;
-        let list = state.rawSchemas.map((s) => ({
-          label: makeLabel(s),
-          value: s.id,
-        }));
-        if (normalized) {
-          list = list.filter((opt) =>
-            opt.label.toLowerCase().includes(normalized)
-          );
-        }
-        state.schemaOptions = list;
-      });
-    }
-
     async function loadInitial() {
       state.initializing = true;
       try {
@@ -92,10 +58,7 @@ const app = createApp({
         const data = await res.json();
         state.rawTags = Array.isArray(data.tags) ? data.tags : [];
         state.rawSchemasFull = Array.isArray(data.schemas) ? data.schemas : [];
-        state.rawSchemas = state.rawSchemasFull.map((s) => ({
-          name: s.name,
-          id: s.id,
-        }));
+        state.rawSchemas = new Set(state.rawSchemasFull.map((s) => s.id));
         state.routeItems = data.tags
           .map((t) => t.routes)
           .flat()
@@ -104,13 +67,7 @@ const app = createApp({
             return acc;
           }, {});
 
-        state.tagOptions = state.rawTags.map((t) => t.name);
-        state.schemaOptions = state.rawSchemas.map((s) => ({
-          label: `${s.name} (${s.id})`,
-          value: s.id,
-        }));
         // default route options placeholder
-        state.routeOptions = [];
       } catch (e) {
         console.error("Initial load failed", e);
       } finally {
@@ -140,14 +97,13 @@ const app = createApp({
         // create graph instance once
         const graphUI = new GraphUI("#graph", {
           onSchemaClick: (id) => {
-            if (state.rawSchemas.find((s) => s.id === id)) {
+            if (state.rawSchemas.has(id)) {
               schemaFieldFilterSchema.value = id;
               showSchemaFieldFilter.value = true;
             }
           },
           onSchemaAltClick: (id) => {
-            // priority: schema id; else route id
-            if (state.rawSchemas.find((s) => s.id === id)) {
+            if (state.rawSchemas.has(id)) {
               schemaCodeName.value = id;
               showSchemaCode.value = true;
               return;
@@ -282,8 +238,6 @@ const app = createApp({
       toggleBrief,
       toggleHidePrimitiveRoute,
       selectRoute,
-      onFilterTags,
-      onFilterSchemas,
       onGenerate,
       onReset,
       showDetail,
