@@ -1,5 +1,7 @@
 [![pypi](https://img.shields.io/pypi/v/fastapi-voyager.svg)](https://pypi.python.org/pypi/fastapi-voyager)
 ![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-voyager)
+[![PyPI Downloads](https://static.pepy.tech/badge/fastapi-voyager/month)](https://pepy.tech/projects/fastapi-voyager)
+
 
 > This repo is still in early stage, it supports pydantic v2 only
 
