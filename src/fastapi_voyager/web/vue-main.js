@@ -23,7 +23,7 @@ const app = createApp({
       generating: false,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: new Set(), // [{ name, id }]
-      rawSchemasFull: [], // full objects with source_code & fields
+      rawSchemasFull: {}, // full schemas dict: { [schema.id]: schema }
       initializing: true,
       // Splitter size (left panel width in px)
       splitter: 300,
@@ -57,8 +57,12 @@ const app = createApp({
         const res = await fetch("dot");
         const data = await res.json();
         state.rawTags = Array.isArray(data.tags) ? data.tags : [];
-        state.rawSchemasFull = Array.isArray(data.schemas) ? data.schemas : [];
-        state.rawSchemas = new Set(state.rawSchemasFull.map((s) => s.id));
+        const schemasArr = Array.isArray(data.schemas) ? data.schemas : [];
+        // Build dict keyed by id for faster lookups and simpler prop passing
+        state.rawSchemasFull = Object.fromEntries(
+          schemasArr.map((s) => [s.id, s])
+        );
+        state.rawSchemas = new Set(Object.keys(state.rawSchemasFull));
         state.routeItems = data.tags
           .map((t) => t.routes)
           .flat()

@@ -14,7 +14,8 @@ export default defineComponent({
   name: "SchemaFieldFilter",
   props: {
     schemaName: { type: String, default: null }, // external injection triggers auto-query
-    schemas: { type: Array, default: () => [] }, // externally provided schemas (state.rawSchemasFull or similar)
+    // externally provided schemas dict (state.rawSchemasFull): { [id]: schema }
+    schemas: { type: Object, default: () => ({}) },
   },
   emits: ["queried", "close"],
   setup(props, { emit }) {
@@ -39,9 +40,11 @@ export default defineComponent({
     let lastAppliedExternal = null;
 
     async function loadSchemas() {
-      // Refactored: use externally provided props.schemas directly; no network call.
+      // Use externally provided props.schemas dict directly; no network call.
       state.error = null;
-      state.schemas = Array.isArray(props.schemas) ? props.schemas : [];
+      const dict = props.schemas && typeof props.schemas === "object" ? props.schemas : {};
+      // Flatten to array for local operations
+      state.schemas = Object.values(dict);
       state.schemaOptions = state.schemas.map((s) => ({
         label: `${s.name} (${s.id})`,
         value: s.id,

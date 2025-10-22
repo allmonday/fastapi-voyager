@@ -14,7 +14,7 @@ export default defineComponent({
   props: {
     schemaName: { type: String, required: true },
     modelValue: { type: Boolean, default: false },
-    schemas: { type: Array, default: () => [] },
+    schemas: { type: Object, default: () => ({}) },
   },
   emits: ["close"],
   setup(props, { emit }) {
@@ -101,6 +101,8 @@ export default defineComponent({
       } finally {
         loading.value = false;
       }
+
+      fields.value = props.schemas[props.schemaName].fields || []
 
       if (!error.value && tab.value === "source") {
         highlightLater();
