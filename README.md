@@ -194,8 +194,16 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] add tests
 - [ ] hide brief mode if not configured
 - [ ] optimize static resource
+- [ ] show route count in tag expansion item
+- [ ] route list show have a max height to trigger scrollable
+- [ ] fix layout issue when rendering huge graph
 
 #### 0.11
+- [ ] improve user experience
+    - double click to show detail
+    - improve search dialog
+
+#### 0.12
 - [ ] integration with pydantic-resolve
     - [ ] show hint for resolve, post fields
     - [ ] display loader as edges
