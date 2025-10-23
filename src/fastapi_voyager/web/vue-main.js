@@ -14,7 +14,7 @@ const app = createApp({
       schemaId: null, // picked schema
       showFields: "object",
       fieldOptions: [
-        { label: "No fields", value: "single" },
+        { label: "No field", value: "single" },
         { label: "Object fields", value: "object" },
         { label: "All fields", value: "all" },
       ],
@@ -42,6 +42,7 @@ const app = createApp({
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
     const schemaCodeName = ref("");
     const routeCodeId = ref("");
+    const showRouteDetail = ref(false)
 
     function openDetail() {
       showDetail.value = true;
@@ -110,10 +111,10 @@ const app = createApp({
               schemaCodeName.value = id;
               state.detailDrawer = true
             }
-            // if (id in state.routeItems) {
-            //   routeCodeId.value = id;
-            //   rightDrawerContent.value = "route";
-            // }
+            if (id in state.routeItems) {
+              routeCodeId.value = id;
+              showRouteDetail.value = true
+            }
           },
         });
 
@@ -242,6 +243,7 @@ const app = createApp({
       onGenerate,
       onReset,
       showDetail,
+      showRouteDetail,
       openDetail,
       closeDetail,
       schemaName,

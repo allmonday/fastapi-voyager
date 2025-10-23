@@ -35,7 +35,7 @@ class PageStory(BaseModel):
 
     desc: str = ''
     def post_desc(self):
-        return self.title + ' (processed)'
+        return self.title + ' (processed ........................)'
 
     tasks: list[PageTask] = []
     owner: Optional[PageMember] = None
@@ -61,6 +61,21 @@ class PageStories(BaseModel):
 
 @app.get("/page_info/", tags=['for-page'], response_model=PageStories)
 def get_page_stories():
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
     return {} # no implementation
 
 

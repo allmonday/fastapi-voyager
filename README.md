@@ -185,11 +185,11 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [x] improve initialization time cost
     - [x] query route / schema info through realtime api
     - [x] adjust fe
+- [x] adjust layout (0.9.3)
+    - [x] show field detail in right panel
+    - [x] show route info in bottom
 
 #### 0.10
-- [ ] adjust layout
-    - [ ] show field detail in right panel
-    - [ ] show route info in bottom
 - [ ] support opening route in swagger
     - config docs path
 - [ ] add http method for route
@@ -240,6 +240,8 @@ pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `sour
 ## Changelog
 
 - 0.9:
+    - 0.9.3:
+        - enhancement: better UI 
     - 0.9.2:
         - fix: missing fields in schema detail panel
         - optimization: clean up fe codes.

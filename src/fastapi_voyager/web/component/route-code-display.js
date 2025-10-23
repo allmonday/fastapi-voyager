@@ -111,12 +111,12 @@ export default defineComponent({
     return { loading, code, error, close, link };
   },
   template: `
-  <div class="frv-route-code-display" style="border:1px solid #ccc; position:relative; width:50vw; max-width:50vw; height:100%; background:#fff;">
+  <div class="frv-route-code-display" style="border:1px solid #ccc; position:relative; background:#fff;">
     <q-btn dense flat round icon="close" @click="close" aria-label="Close" style="position:absolute; top:6px; right:6px; z-index:10; background:rgba(255,255,255,0.85)" />
     <div v-if="link" class="q-ml-md q-mt-md" style="padding-top:4px;">
       <a :href="link" target="_blank" rel="noopener" style="font-size:12px; color:#3b82f6;">Open in VSCode</a>
     </div>
-    <div style="padding:40px 16px 16px 16px; height:100%; box-sizing:border-box; overflow:auto;">
+    <div style="padding:40px 16px 16px 16px; box-sizing:border-box; overflow:auto;">
       <div v-if="loading" style="font-family:Menlo, monospace; font-size:12px;">Loading source...</div>
       <div v-else-if="error" style="color:#c10015; font-family:Menlo, monospace; font-size:12px;">{{ error }}</div>
       <pre v-else style="margin:0;"><code class="language-python">{{ code }}</code></pre>

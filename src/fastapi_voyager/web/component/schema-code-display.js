@@ -130,7 +130,7 @@ export default defineComponent({
   },
   template: `
   <div class="frv-code-display" style="border: 1px solid #ccc; border-left: none; position:relative; height:100%; background:#fff;">
-      <div class="q-ml-md q-mt-md">
+      <div class="q-ml-lg q-mt-md">
         <a :href="link" target="_blank" rel="noopener" style="font-size:12px; color:#3b82f6;">
           Open in VSCode
         </a>
