@@ -185,9 +185,15 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [x] improve initialization time cost
     - [x] query route / schema info through realtime api
     - [x] adjust fe
-- [x] adjust layout (0.9.3)
-    - [x] show field detail in right panel
-    - [x] show route info in bottom
+- 0.9.3
+    - [x] adjust layout 
+        - [x] show field detail in right panel
+        - [x] show route info in bottom
+- 0.9.4
+    - [ ] close schema sidebar when switch tag/route
+    - [ ] open route detail in side bar (click some icon)
+    - [ ] schema detail panel show fields by default
+    - [ ] adjust schema panel's height
 
 #### 0.10
 - [ ] support opening route in swagger
@@ -236,37 +242,3 @@ pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `sour
 - [pydantic-resolve](https://github.com/allmonday/pydantic-resolve)
 - Quasar
 
-
-## Changelog
-
-- 0.9:
-    - 0.9.3:
-        - enhancement: better UI 
-    - 0.9.2:
-        - fix: missing fields in schema detail panel
-        - optimization: clean up fe codes.
-    - 0.9.1:
-        - api change: from `create_app_with_fastapi` to `create_voyager`, and expose as `from fastapi_voyager import create_voyager`
-        - optimization: lazy load vscode link and source code, speed up the initialization.
-- 0.8:
-    - 0.8.3
-        - upgrade theme
-    - 0.8.2
-        - fix silly typo.
-    - 0.8.1
-        - add feature: hide primitive routes
-- 0.7:
-    - 0.7.5
-        - fix show all display issue
-    - 0.7.4
-        - optimize tag/route, move to left. 
-        - fresh on change, no need to click generate any more.
-    - 0.7.3
-        - fix `module_color` failure
-    - 0.7.2
-        - keep links inside filtered nodes.
-    - 0.7.1
-        - support brief mode, you can use `--module_prefix tests.service` to show links between routes and filtered schemas, to make the graph less complicated.
-- 0.6: 
-    - 0.6.2: 
-        - fix generic related issue
