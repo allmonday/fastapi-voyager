@@ -190,7 +190,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
         - [x] show field detail in right panel
         - [x] show route info in bottom
 - 0.9.4
-    - [ ] close schema sidebar when switch tag/route
+    - [x] close schema sidebar when switch tag/route
     - [ ] open route detail in side bar (click some icon)
     - [ ] schema detail panel show fields by default
     - [ ] adjust schema panel's height

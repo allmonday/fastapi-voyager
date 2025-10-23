@@ -27,7 +27,7 @@ const app = createApp({
       initializing: true,
       // Splitter size (left panel width in px)
       splitter: 300,
-      detailDrawer: false
+      detailDrawer: false,
     });
 
     const showDetail = ref(false);
@@ -42,7 +42,7 @@ const app = createApp({
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
     const schemaCodeName = ref("");
     const routeCodeId = ref("");
-    const showRouteDetail = ref(false)
+    const showRouteDetail = ref(false);
 
     function openDetail() {
       showDetail.value = true;
@@ -109,11 +109,11 @@ const app = createApp({
           onSchemaClick: (id) => {
             if (state.rawSchemas.has(id)) {
               schemaCodeName.value = id;
-              state.detailDrawer = true
+              state.detailDrawer = true;
             }
             if (id in state.routeItems) {
               routeCodeId.value = id;
-              showRouteDetail.value = true
+              showRouteDetail.value = true;
             }
           },
         });
@@ -202,8 +202,9 @@ const app = createApp({
         state.tag = tagName;
         state.routeId = "";
         onGenerate();
-        return;
       }
+      state.detailDrawer = false;
+      showRouteDetail.value = false;
     }
 
     function selectRoute(routeId) {
@@ -212,6 +213,8 @@ const app = createApp({
       } else {
         state.routeId = routeId;
       }
+      state.detailDrawer = false;
+      showRouteDetail.value = false;
       onGenerate();
     }
 

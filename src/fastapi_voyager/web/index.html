@@ -178,7 +178,6 @@
               icon="chevron_right"
             />
           </div>
-          <!-- move to bottom -->
           <schema-code-display
             :schema-name="schemaCodeName"
             :schemas="state.rawSchemasFull"
@@ -290,8 +289,8 @@
         />
       </q-dialog>
 
-      <q-dialog v-model="showRouteDetail" position="bottom">
-        <q-card style="width: 1100px; max-width: 1100px">
+      <q-dialog v-model="showRouteDetail" seamless position="bottom">
+        <q-card style="width: 1100px; max-width: 1100px; max-height: 40vh">
           <route-code-display :route-id="routeCodeId" @close="showRouteDetail=false" />
         </q-card>
       </q-dialog>

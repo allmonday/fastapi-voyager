@@ -20,7 +20,7 @@ export default defineComponent({
     const link = ref("");
     const error = ref("");
     const fields = ref([]); // schema fields list
-    const tab = ref("source");
+    const tab = ref("fields");
 
 
     async function highlightLater() {
@@ -138,17 +138,14 @@ export default defineComponent({
 
       <div style="padding:8px 12px 0 12px; box-sizing:border-box;">
         <q-tabs v-model="tab" align="left" dense active-color="primary" indicator-color="primary" class="text-grey-8">
-          <q-tab name="source" label="Source Code" />
           <q-tab name="fields" label="Fields" />
+          <q-tab name="source" label="Source Code" />
         </q-tabs>
       </div>
       <q-separator />
-      <div style="padding:8px 16px 16px 16px; height:75%; box-sizing:border-box; overflow:auto;">
+      <div style="padding:8px 16px 16px 16px; box-sizing:border-box; overflow:auto;">
         <div v-if="error" style="color:#c10015; font-family:Menlo, monospace; font-size:12px;">{{ error }}</div>
         <template v-else>
-          <div v-show="tab === 'source'">
-            <pre style="margin:0;"><code class="language-python">{{ code }}</code></pre>
-          </div>
           <div v-show="tab === 'fields'">
             <table style="border-collapse:collapse; width:100%; font-size:12px; font-family:Menlo, monospace;">
               <thead>
@@ -169,6 +166,9 @@ export default defineComponent({
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div v-show="tab === 'source'">
+            <pre style="margin:0;"><code class="language-python">{{ code }}</code></pre>
           </div>
         </template>
       </div>
