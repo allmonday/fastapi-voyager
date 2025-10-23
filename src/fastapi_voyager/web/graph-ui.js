@@ -105,6 +105,31 @@ export class GraphUI {
           self._highlight();
         });
 
+        // svg 背景点击高亮清空
+
+        $(document).off('click.graphui').on('click.graphui', function (evt) {
+          // 如果点击目标不在 graph 容器内，直接退出
+          const graphContainer = $(self.selector)[0];
+          if (!graphContainer || !evt.target || !graphContainer.contains(evt.target)) {
+            return;
+          }
+
+          let isNode = false;
+          const $nodes = self.gv.nodes();
+          const node = evt.target.parentNode;
+          $nodes.each(function () {
+            if (this === node) {
+              isNode = true;
+            }
+          });
+          if (!isNode && self.gv) {
+            self.gv.highlight();
+            if (self.options.resetCb) {
+              self.options.resetCb();
+            }
+          }
+        });
+
         $(document).on("keydown.graphui", function (evt) {
           if (evt.keyCode === 27 && self.gv) {
             self.gv.highlight();

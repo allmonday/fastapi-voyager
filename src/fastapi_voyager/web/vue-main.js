@@ -116,6 +116,10 @@ const app = createApp({
               showRouteDetail.value = true;
             }
           },
+          resetCb: () => {
+            state.detailDrawer = false;
+            showRouteDetail.value = false;
+          }
         });
 
         await graphUI.render(dotText, resetZoom);
