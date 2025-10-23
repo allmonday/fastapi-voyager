@@ -69,10 +69,20 @@ export class GraphUI {
           const set = $();
           set.push(this);
           const obj = { set, direction: "bidirectional" };
-          // Shift+Click to trigger schema detail callback (if provided)
+
+          const schemaName = event.currentTarget.dataset.name;
           if (event.shiftKey && self.options.onSchemaClick) {
             // try data-name or title text
-            const schemaName = event.currentTarget.dataset.name;
+            if (schemaName) {
+              try {
+                self.options.onSchemaShiftClick(schemaName);
+              } catch (e) {
+                console.warn("onSchemaShiftClick callback failed", e);
+              }
+            }
+          } else {
+            self.currentSelection = [obj];
+            self._highlight();
             if (schemaName) {
               try {
                 self.options.onSchemaClick(schemaName);
@@ -80,12 +90,6 @@ export class GraphUI {
                 console.warn("onSchemaClick callback failed", e);
               }
             }
-          } else if (event.altKey && self.options.onSchemaAltClick) {
-            const schemaName = event.currentTarget.dataset.name;
-            self.options.onSchemaAltClick(schemaName);
-          } else {
-            self.currentSelection = [obj];
-            self._highlight();
           }
         });
 

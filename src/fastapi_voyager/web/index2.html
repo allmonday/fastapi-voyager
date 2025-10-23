@@ -1,0 +1,436 @@
+<html>
+  <head>
+    <title>FastAPI Voyager</title>
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="stylesheet" href="fastapi-voyager-static/graphviz.svg.css" />
+    <link rel="stylesheet" href="fastapi-voyager-static/quasar.min.css" />
+    <!-- App Icons / Favicons -->
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="fastapi-voyager-static/icon/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="fastapi-voyager-static/icon/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="fastapi-voyager-static/icon/favicon-16x16.png"
+    />
+    <link
+      rel="icon"
+      href="fastapi-voyager-static/icon/favicon.ico"
+      sizes="any"
+    />
+    <link rel="manifest" href="fastapi-voyager-static/icon/site.webmanifest" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
+      rel="stylesheet"
+      type="text/css"
+    />
+  </head>
+
+  <style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    /* Quasar select menu max-height for scroll */
+    .select-popup {
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    #graph {
+      flex: 1 1 auto;
+      overflow: auto;
+    }
+  </style>
+  <body>
+    <div id="q-app" class="column" style="height: 100%">
+      <div
+        v-if="state.initializing"
+        style="
+          position: fixed;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          background: rgba(255, 255, 255, 0.85);
+          font-size: 18px;
+          font-family: Roboto, sans-serif;
+          color: #444;
+        "
+      >
+        <div style="text-align: center">
+          <div class="q-mb-sm">Initializing...</div>
+          <q-spinner color="primary" size="32px" />
+        </div>
+      </div>
+      <div
+        style="
+          padding: 8px;
+          background-color: #fff;
+          border-bottom: 1px solid #ccc;
+          color: #211d1d;
+          flex: 0 0 auto;
+        "
+      >
+        <div class="row items-center q-col-gutter-md">
+          <div class="col-auto">
+            <div
+              style="width: 282px; margin-left: 8px"
+              class="text-h6 text-primary"
+            >
+              <q-icon class="q-mr-sm" name="satellite_alt"></q-icon>
+              <span> FastAPI Voyager </span>
+            </div>
+          </div>
+          <div class="col-auto">
+            <div class="column">
+              <q-option-group
+                v-model="state.showFields"
+                :options="state.fieldOptions"
+                @update:model-value="(val) => toggleShowField(val)"
+                color="primary"
+                type="radio"
+                inline
+                dense
+              />
+            </div>
+          </div>
+
+          <!-- <div class="col-auto">
+            <q-btn-dropdown
+              class="q-ml-md"
+              split
+              :loading="state.generating"
+              @click="onGenerate"
+              label="Generate"
+              outline
+            >
+              <q-list>
+                <q-item clickable v-close-popup @click="onDumpData">
+                  <q-item-section>Dump data</q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="openImportDialog">
+                  <q-item-section>Import data</q-item-section>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
+          </div> -->
+
+          <div class="col-auto q-ml-auto">
+            <q-toggle
+              class="q-ml-md"
+              v-model="state.brief"
+              label="Brief Mode"
+              @update:model-value="(val) => toggleBrief(val)"
+              title="skip middle classes, config module_prefix to enable it"
+              dense
+            />
+          </div>
+          <div class="col-auto">
+            <q-toggle
+              v-model="state.hidePrimitiveRoute"
+              @update:model-value="(val) => toggleHidePrimitiveRoute(val)"
+              label="Hide Primitive"
+              title="hide routes return primitive"
+              dense
+            />
+          </div>
+          <div class="col-auto">
+            <q-btn
+              outline
+              @click="onReset"
+              title="may be very slow"
+              label="Show All"
+            />
+          </div>
+          <div class="col-auto">
+            <q-btn outline icon="search" label="Search" @click="showDialog()" />
+          </div>
+          <div class="col-auto">
+            <q-btn
+              dense
+              round
+              flat
+              icon="help_outline"
+              aria-label="Help"
+              class="q-mr-md"
+            >
+              <q-tooltip
+                anchor="bottom middle"
+                self="top middle"
+                :offset="[0,8]"
+              >
+                <div
+                  class="column items-start text-left"
+                  style="line-height: 1.4; font-size: 12px"
+                >
+                  <ul>
+                    <li>scroll to zoom in/out</li>
+                    <li>
+                      click node to check highlight related nodes on the chart,
+                      esc to unselect
+                    </li>
+                    <li>
+                      shift + click to see schema's dependencies without
+                      unrelated nodes
+                    </li>
+                    <li>alt + click to see schema details</li>
+                  </ul>
+                </div>
+              </q-tooltip>
+            </q-btn>
+          </div>
+        </div>
+      </div>
+      <div style="flex: 1 1 auto; min-height: 10px;">
+        <q-splitter
+          v-model="state.splitter"
+          unit="px"
+          :limits="[200, 800]"
+          class="fit"
+        >
+          <template #before>
+            <div
+              id="tag-navigator"
+              class="column no-wrap"
+              :style="{
+                borderRight: '1px solid #e0e0e0',
+                backgroundColor: '#fff',
+                minHeight: 0,
+                height: '100%'
+              }"
+            >
+              <q-scroll-area class="fit">
+                <q-list dense separator>
+                  <q-expansion-item
+                    v-for="tag in state.rawTags"
+                    :key="tag.name"
+                    expand-separator
+                    :model-value="state.tag === tag.name"
+                    @update:model-value="(val) => toggleTag(tag.name, val)"
+                    :header-class="state.tag === tag.name ? 'text-primary text-bold' : ''"
+                    content-class="q-pa-none"
+                  >
+                    <template #header>
+                      <div class="row items-center" style="width: 100%">
+                        <div class="row items-end">
+                          <q-icon
+                            class="q-mr-sm"
+                            :name="state.tag == tag.name ? 'folder' : 'folder_open'"
+                          ></q-icon>
+                          <span>{{ tag.name }}</span>
+                        </div>
+                      </div>
+                    </template>
+
+                    <q-list separator>
+                      <q-item
+                        v-for="route in (state.hidePrimitiveRoute ? tag.routes.filter(r => !r.is_primitive) :tag.routes || [])"
+                        :key="route.id"
+                        clickable
+                        v-ripple
+                        :active="state.routeId === route.id"
+                        active-class=""
+                        @click="selectRoute(route.id)"
+                      >
+                        <q-item-section>
+                          <span class="q-ml-lg" style="white-space: nowrap">
+                            <q-icon class="q-mr-sm" name="data_object"></q-icon>
+                            {{ route.name }}
+                          </span>
+                        </q-item-section>
+                      </q-item>
+                      <q-item v-if="!tag.routes || tag.routes.length === 0" dense>
+                        <q-item-section class="text-grey-6"
+                          >No routes</q-item-section
+                        >
+                      </q-item>
+                    </q-list>
+                  </q-expansion-item>
+                </q-list>
+              </q-scroll-area>
+            </div>
+          </template>
+
+          <template #after>
+            <div id="graph" class="fit"></div>
+          </template>
+        </q-splitter>
+      </div>
+
+      <!-- Detail Dialog -->
+      <q-dialog v-model="showDetail" :persistent="true" :maximized="true">
+        <detail-dialog
+          :schema-name="schemaName"
+          :show-fields="state.showFields"
+          :model-value="showDetail"
+          @close="closeDetail"
+        />
+      </q-dialog>
+
+      <!-- Schema Field Filter Dialog -->
+      <q-dialog
+        v-model="showSchemaFieldFilter"
+        :persistent="true"
+        :maximized="true"
+      >
+        <schema-field-filter
+          :schemas="state.rawSchemasFull"
+          :schema-name="schemaFieldFilterSchema"
+          @close="showSchemaFieldFilter = false"
+        />
+      </q-dialog>
+
+      <!-- Schema Source Code Dialog (Ctrl + Click) -->
+      <q-dialog
+        v-model="showSchemaCode"
+        :maximized="true"
+        :persistent="false"
+        position="left"
+        :seamless="false"
+      >
+        <schema-code-display
+          :schema-name="schemaCodeName"
+          :model-value="showSchemaCode"
+          :schemas="state.rawSchemasFull"
+          @close="showSchemaCode = false"
+        />
+      </q-dialog>
+
+      <!-- Route Source Code Dialog (Alt + Click on route) -->
+      <q-dialog
+        v-model="showRouteCode"
+        :maximized="true"
+        :persistent="false"
+        position="right"
+        :seamless="false"
+      >
+        <route-code-display
+          :route-id="routeCodeId"
+          :model-value="showRouteCode"
+          @close="showRouteCode = false"
+        />
+      </q-dialog>
+
+      <!-- Dump Core Data Dialog -->
+      <q-dialog v-model="showDumpDialog" :maximized="true" :persistent="false">
+        <div style="height: 100%; position: relative; background: #fff">
+          <q-btn
+            flat
+            dense
+            round
+            icon="content_copy"
+            aria-label="Copy"
+            @click="copyDumpJson"
+            style="
+              position: absolute;
+              top: 6px;
+              right: 62px;
+              z-index: 11;
+              background: rgba(255, 255, 255, 0.85);
+            "
+          ></q-btn>
+          <q-btn
+            flat
+            dense
+            round
+            icon="close"
+            aria-label="Close"
+            @click="showDumpDialog = false"
+            style="
+              position: absolute;
+              top: 6px;
+              right: 6px;
+              z-index: 11;
+              background: rgba(255, 255, 255, 0.85);
+            "
+          ></q-btn>
+          <div>
+            <pre
+              style="padding: 20px; overflow: auto"
+            ><code>{{ dumpJson }}</code></pre>
+          </div>
+        </div>
+      </q-dialog>
+
+      <!-- Import Core Data Dialog -->
+      <q-dialog v-model="showImportDialog" :persistent="true">
+        <q-card style="min-width: 70vw; max-width: 90vw">
+          <q-card-section class="text-h6">Import core data JSON</q-card-section>
+          <q-card-section>
+            <q-btn color="primary" label="Render" @click="onImportConfirm" />
+          </q-card-section>
+          <q-card-section>
+            <q-input
+              v-model="importJsonText"
+              type="textarea"
+              autogrow
+              filled
+              label="Paste JSON here"
+            />
+          </q-card-section>
+        </q-card>
+      </q-dialog>
+
+      <!-- Render Graph Dialog (from imported core data) -->
+      <q-dialog v-model="showRenderGraph" :maximized="true" :persistent="false">
+        <render-graph
+          :core-data="renderCoreData"
+          @close="showRenderGraph = false"
+        />
+      </q-dialog>
+    </div>
+
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/jquery-2.1.3.min.js"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"
+      integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://unpkg.com/@hpcc-js/wasm@2.20.0/dist/graphviz.umd.js"></script>
+    <script src="https://unpkg.com/d3-graphviz@5.6.0/build/d3-graphviz.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
+
+    <!-- Add the following at the end of your body tag -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.22/vue.global.prod.min.js"
+      integrity="sha512-Y9sKU0AwzWRxKSLd2i35LuDpUdHY/E9tJrKG0mxw0qYQ75VVgGYazIUQPwKhFK9vGO3jIgAtxLiSq8GQ7PDfUg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="fastapi-voyager-static/quasar.min.js"></script>
+    <script src="fastapi-voyager-static/graphviz.svg.js"></script>
+    <!-- highlight.js minimal ES module load (python only) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+    />
+    <script type="module">
+      import hljs from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js";
+      import python from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/python.min.js";
+      hljs.registerLanguage("python", python);
+      window.hljs = hljs;
+    </script>
+    <script type="module" src="fastapi-voyager-static/vue-main.js"></script>
+  </body>
+</html>

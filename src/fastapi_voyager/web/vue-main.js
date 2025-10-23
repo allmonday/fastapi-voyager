@@ -27,12 +27,11 @@ const app = createApp({
       initializing: true,
       // Splitter size (left panel width in px)
       splitter: 300,
+      detailDrawer: false
     });
 
     const showDetail = ref(false);
     const showSchemaFieldFilter = ref(false);
-    const showSchemaCode = ref(false);
-    const showRouteCode = ref(false);
     const showDumpDialog = ref(false);
     const dumpJson = ref("");
     const showImportDialog = ref(false);
@@ -100,23 +99,21 @@ const app = createApp({
 
         // create graph instance once
         const graphUI = new GraphUI("#graph", {
-          onSchemaClick: (id) => {
+          onSchemaShiftClick: (id) => {
             if (state.rawSchemas.has(id)) {
               schemaFieldFilterSchema.value = id;
               showSchemaFieldFilter.value = true;
             }
           },
-          onSchemaAltClick: (id) => {
+          onSchemaClick: (id) => {
             if (state.rawSchemas.has(id)) {
               schemaCodeName.value = id;
-              showSchemaCode.value = true;
-              return;
+              state.detailDrawer = true
             }
-            if (id in state.routeItems) {
-              routeCodeId.value = id;
-              showRouteCode.value = true;
-              return;
-            }
+            // if (id in state.routeItems) {
+            //   routeCodeId.value = id;
+            //   rightDrawerContent.value = "route";
+            // }
           },
         });
 
@@ -251,8 +248,6 @@ const app = createApp({
       showSchemaFieldFilter,
       schemaFieldFilterSchema,
       showDialog,
-      showSchemaCode,
-      showRouteCode,
       schemaCodeName,
       routeCodeId,
       // dump/import

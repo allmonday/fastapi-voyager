@@ -13,23 +13,17 @@ export default defineComponent({
   name: "SchemaCodeDisplay",
   props: {
     schemaName: { type: String, required: true },
-    modelValue: { type: Boolean, default: false },
     schemas: { type: Object, default: () => ({}) },
   },
-  emits: ["close"],
   setup(props, { emit }) {
-    const loading = ref(false);
     const code = ref("");
     const link = ref("");
     const error = ref("");
     const fields = ref([]); // schema fields list
     const tab = ref("source");
 
-    function close() {
-      emit("close");
-    }
 
-    function highlightLater() {
+    async function highlightLater() {
       // wait a tick for DOM update
       requestAnimationFrame(() => {
         try {
@@ -38,6 +32,10 @@ export default defineComponent({
               ".frv-code-display pre code.language-python"
             );
             if (block) {
+              // If already highlighted by highlight.js, remove the flag so it can be highlighted again
+              if (block.dataset && block.dataset.highlighted) {
+                block.removeAttribute("data-highlighted");
+              }
               window.hljs.highlightElement(block);
             }
           }
@@ -50,7 +48,6 @@ export default defineComponent({
     async function loadSource() {
       if (!props.schemaName) return;
 
-      loading.value = true;
       error.value = null;
       code.value = "";
       link.value = "";
@@ -77,7 +74,6 @@ export default defineComponent({
       } catch (e) {
         error.value = "Failed to load source";
       } finally {
-        loading.value = false;
       }
 
       try {
@@ -99,12 +95,12 @@ export default defineComponent({
       } catch (e) {
         error.value = "Failed to load source";
       } finally {
-        loading.value = false;
       }
 
-      fields.value = props.schemas[props.schemaName].fields || []
+      const schema = props.schemas && props.schemas[props.schemaName];
+      fields.value = Array.isArray(schema?.fields) ? schema.fields : [];
 
-      if (!error.value && tab.value === "source") {
+      if (tab.value === "source") {
         highlightLater();
       }
     }
@@ -120,25 +116,21 @@ export default defineComponent({
     );
 
     watch(
-      () => props.modelValue,
-      (val) => {
-        if (val) {
-          loadSource();
-        }
-      }
+      () => props.schemaName,
+      () => {
+        loadSource();
+      },
     );
 
     onMounted(() => {
-      if (props.modelValue) loadSource();
+      loadSource();
     });
 
-    return { loading, link, code, error, close, fields, tab };
+    return { link, code, error, fields, tab };
   },
   template: `
-  <div class="frv-code-display" style="border: 1px solid #ccc; border-left: none; position:relative; width:40vw; max-width:40vw; height:100%; background:#fff;">
-			<q-btn dense flat round icon="close" @click="close" aria-label="Close"
-				style="position:absolute; top:6px; right:6px; z-index:10; background:rgba(255,255,255,0.85)" />
-      <div v-if="link" class="q-ml-md q-mt-md">
+  <div class="frv-code-display" style="border: 1px solid #ccc; border-left: none; position:relative; height:100%; background:#fff;">
+      <div class="q-ml-md q-mt-md">
         <a :href="link" target="_blank" rel="noopener" style="font-size:12px; color:#3b82f6;">
           Open in VSCode
         </a>
@@ -152,8 +144,7 @@ export default defineComponent({
       </div>
       <q-separator />
       <div style="padding:8px 16px 16px 16px; height:75%; box-sizing:border-box; overflow:auto;">
-        <div v-if="loading" style="font-family:Menlo, monospace; font-size:12px;">Loading source...</div>
-        <div v-else-if="error" style="color:#c10015; font-family:Menlo, monospace; font-size:12px;">{{ error }}</div>
+        <div v-if="error" style="color:#c10015; font-family:Menlo, monospace; font-size:12px;">{{ error }}</div>
         <template v-else>
           <div v-show="tab === 'source'">
             <pre style="margin:0;"><code class="language-python">{{ code }}</code></pre>

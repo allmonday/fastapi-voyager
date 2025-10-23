@@ -3,12 +3,10 @@ const { defineComponent, ref, watch, onMounted } = window.Vue;
 // Component: RouteCodeDisplay
 // Props:
 //   routeId: route id key in routeItems
-//   modelValue: dialog visibility
 export default defineComponent({
   name: "RouteCodeDisplay",
   props: {
     routeId: { type: String, required: true },
-    modelValue: { type: Boolean, default: false },
   },
   emits: ["close"],
   setup(props, { emit }) {
@@ -100,20 +98,14 @@ export default defineComponent({
     }
 
     watch(
-      () => props.modelValue,
-      (v) => {
-        if (v) load();
-      }
-    );
-    watch(
       () => props.routeId,
       () => {
-        if (props.modelValue) load();
+        load();
       }
     );
 
     onMounted(() => {
-      if (props.modelValue) load();
+      load();
     });
 
     return { loading, code, error, close, link };

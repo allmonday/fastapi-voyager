@@ -138,7 +138,6 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] user can generate nodes/edges manually and connect to generated ones
     - [ ] add owner
     - [ ] add extra info for schema
-- [ ] fixed left/right bar show field information
 - [ ] display standard ER diagram `hard`
     - [ ] display potential invalid links
 - [ ] support dataclass (pending)
@@ -188,6 +187,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] adjust fe
 
 #### 0.10
+- [ ] adjust layout
+    - [ ] show field detail in right panel
+    - [ ] show route info in bottom
 - [ ] support opening route in swagger
     - config docs path
 - [ ] add http method for route
@@ -210,6 +212,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [ ] show hint for resolve, post fields
     - [ ] display loader as edges
 
+#### 0.13
+- [ ] config release pipeline
+- [ ]
 
 ## Using with pydantic-resolve
 
