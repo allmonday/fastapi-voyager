@@ -152,7 +152,7 @@ export default defineComponent({
                 <tr>
                   <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Field</th>
                   <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Type</th>
-                  <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">From Base</th>
+                  <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Inherited</th>
                 </tr>
               </thead>
               <tbody>

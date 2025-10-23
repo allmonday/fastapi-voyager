@@ -144,6 +144,11 @@ class Voyager:
         """
         full_name = full_class_name(schema)
         bases_fields = get_bases_fields([s for s in schema.__bases__ if is_inheritance_of_pydantic_base(s)])
+        
+        subset_reference = getattr(schema, const.ENSURE_SUBSET_REFERENCE, None)
+        if subset_reference and is_inheritance_of_pydantic_base(subset_reference):
+            bases_fields.update(get_bases_fields([subset_reference]))
+
         if full_name not in self.node_set:
             # skip meta info for normal queries
             self.node_set[full_name] = SchemaNode(
