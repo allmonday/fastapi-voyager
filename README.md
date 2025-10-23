@@ -194,6 +194,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [ ] open route detail in side bar (click some icon)
     - [ ] schema detail panel show fields by default
     - [ ] adjust schema panel's height
+    - [ ] show from base information in subset case
 
 #### 0.10
 - [ ] support opening route in swagger
