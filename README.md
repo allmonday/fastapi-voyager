@@ -136,7 +136,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 ### backlog
 - [ ] user can generate nodes/edges manually and connect to generated ones
-    - [ ] add owner
+    - [ ] eg: add owner
     - [ ] add extra info for schema
 - [ ] display standard ER diagram `hard`
     - [ ] display potential invalid links
@@ -194,8 +194,12 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] schema detail panel show fields by default
     - [x] adjust schema panel's height
     - [x] show from base information in subset case
+- 0.9.5
+    - [x] route list should have a max height 
 
 #### 0.10
+- [ ] perfomance: cache the origin data, refactor voyager.py
+- [ ] better edge for brief mode
 - [ ] support opening route in swagger
     - config docs path
 - [ ] add http method for route
@@ -203,15 +207,14 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] logging information
 - [ ] add tests
 - [ ] hide brief mode if not configured
-- [ ] optimize static resource
+- [ ] optimize static resource (allow manually config url)
 - [ ] show route count in tag expansion item
-- [ ] route list show have a max height to trigger scrollable
+- [ ] route list should have a max height to trigger scrollable
 - [ ] fix layout issue when rendering huge graph
+- [ ] fix missing route (tag has only one route which return primitive value)
 
 #### 0.11
-- [ ] improve user experience
-    - double click to show detail
-    - improve search dialog
+- [ ] improve search dialog
 
 #### 0.12
 - [ ] integration with pydantic-resolve
@@ -220,7 +223,6 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 #### 0.13
 - [ ] config release pipeline
-- [ ]
 
 ## Using with pydantic-resolve
 

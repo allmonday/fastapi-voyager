@@ -220,43 +220,42 @@
                               class="q-mr-sm"
                               :name="state.tag == tag.name ? 'folder' : 'folder_open'"
                             ></q-icon>
-                            <span>{{ tag.name }}</span>
+                            <span>{{ tag.name }} <q-chip class="q-ml-sm" dense>{{ tag.routes.length }}</q-chip></span>
                           </div>
                         </div>
                       </template>
-
-                      <q-list separator>
-                        <q-item
-                          v-for="route in (state.hidePrimitiveRoute ? tag.routes.filter(r => !r.is_primitive) :tag.routes || [])"
-                          :key="route.id"
-                          clickable
-                          v-ripple
-                          :active="state.routeId === route.id"
-                          active-class=""
-                          @click="selectRoute(route.id)"
-                        >
-                          <q-item-section>
-                            <span class="q-ml-lg" style="white-space: nowrap">
-                              <q-icon
-                                class="q-mr-sm"
-                                name="data_object"
-                              ></q-icon>
-                              {{ route.name }}
-                            </span>
-                          </q-item-section>
-                        </q-item>
-                        <q-item
-                          v-if="!tag.routes || tag.routes.length === 0"
-                          dense
-                        >
-                          <q-item-section class="text-grey-6"
-                            >No routes</q-item-section
+                        <q-list separator style="overflow: auto; max-height: 60vh;">
+                          <q-item
+                            v-for="route in (state.hidePrimitiveRoute ? tag.routes.filter(r => !r.is_primitive) :tag.routes || [])"
+                            :key="route.id"
+                            clickable
+                            v-ripple
+                            :active="state.routeId === route.id"
+                            active-class=""
+                            @click="selectRoute(route.id)"
                           >
-                        </q-item>
-                      </q-list>
+                            <q-item-section>
+                              <span class="q-ml-lg" style="white-space: nowrap">
+                                <q-icon
+                                  class="q-mr-sm"
+                                  name="data_object"
+                                ></q-icon>
+                                {{ route.name }}
+                              </span>
+                            </q-item-section>
+                          </q-item>
+                          <q-item
+                            v-if="!tag.routes || tag.routes.length === 0"
+                            dense
+                          >
+                            <q-item-section class="text-grey-6"
+                              >No routes</q-item-section
+                            >
+                          </q-item>
+                        </q-list>
+                      </q-scroll-area>
                     </q-expansion-item>
                   </q-list>
-                </q-scroll-area>
               </div>
             </template>
 
@@ -291,7 +290,10 @@
 
       <q-dialog v-model="showRouteDetail" seamless position="bottom">
         <q-card style="width: 1100px; max-width: 1100px; max-height: 40vh">
-          <route-code-display :route-id="routeCodeId" @close="showRouteDetail=false" />
+          <route-code-display
+            :route-id="routeCodeId"
+            @close="showRouteDetail=false"
+          />
         </q-card>
       </q-dialog>
 
