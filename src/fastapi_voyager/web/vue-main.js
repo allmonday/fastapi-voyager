@@ -10,6 +10,7 @@ const app = createApp({
     const state = reactive({
       // options and selections
       tag: null, // picked tag
+      _tag: null, // display tag
       routeId: null, // picked route
       schemaId: null, // picked schema
       showFields: "object",
@@ -204,10 +205,14 @@ const app = createApp({
 
     function toggleTag(tagName, expanded = null) {
       if (expanded === true) {
+        state._tag = tagName;
         state.tag = tagName;
         state.routeId = "";
         onGenerate();
+      } else {
+        state._tag = null
       }
+
       state.detailDrawer = false;
       showRouteDetail.value = false;
     }

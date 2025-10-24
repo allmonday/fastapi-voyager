@@ -165,6 +165,7 @@
           v-model="state.detailDrawer"
           :width="state.drawerWidth"
           side="right"
+          style="border-left: 1px solid #888;"
           overlay
           bordered
         >
@@ -224,7 +225,7 @@
                       v-for="tag in state.rawTags"
                       :key="tag.name"
                       expand-separator
-                      :model-value="state.tag === tag.name"
+                      :model-value="state._tag === tag.name"
                       @update:model-value="(val) => toggleTag(tag.name, val)"
                       :header-class="state.tag === tag.name ? 'text-primary text-bold' : ''"
                       content-class="q-pa-none"
