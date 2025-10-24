@@ -140,14 +140,15 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [ ] add extra info for schema
 - [ ] display standard ER diagram `hard`
     - [ ] display potential invalid links
-- [ ] support dataclass (pending)
+- [ ] optimize static resource (allow manually config url)
+- [ ] improve search dialog
+    - [ ] add route/tag list
 
 ### in analysis
 - [ ] click field to highlight links
 - [ ] animation effect for edges
 - [ ] customrized right click panel
     - [ ] show own dependencies
-- [ ] clean up fe code
 
 ### plan:
 #### <0.9:
@@ -200,21 +201,23 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 #### 0.10
 - [ ] perfomance: cache the origin data, refactor voyager.py
 - [ ] better edge for brief mode
-- [ ] support opening route in swagger
-    - config docs path
 - [ ] add http method for route
-- [ ] enable/disable module cluster  (may save space)
+- [ ] add focus button to only show related nodes under current route/tag graph in dialog
+- [ ] enable/disable module cluster  (to save space)
 - [ ] logging information
-- [ ] add tests
 - [ ] hide brief mode if not configured
-- [ ] optimize static resource (allow manually config url)
 - [ ] show route count in tag expansion item
 - [ ] route list should have a max height to trigger scrollable
 - [ ] fix layout issue when rendering huge graph
 - [ ] fix missing route (tag has only one route which return primitive value)
+- [ ] make right panel resize by dragging
+- [ ] hide tag if tag picked, hide route if route picked
+- [ ] allow closing tag expansion item
 
 #### 0.11
-- [ ] improve search dialog
+- [ ] support opening route in swagger
+    - config docs path
+- [ ] add tests
 
 #### 0.12
 - [ ] integration with pydantic-resolve
@@ -223,6 +226,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 
 #### 0.13
 - [ ] config release pipeline
+
 
 ## Using with pydantic-resolve
 
