@@ -28,6 +28,7 @@ const app = createApp({
       // Splitter size (left panel width in px)
       splitter: 300,
       detailDrawer: false,
+      drawerWidth: 500, // drawer 宽度
     });
 
     const showDetail = ref(false);
@@ -237,6 +238,30 @@ const app = createApp({
       onGenerate(false);
     }
 
+    function startDragDrawer(e) {
+      const startX = e.clientX;
+      const startWidth = state.drawerWidth;
+      
+      function onMouseMove(moveEvent) {
+        const deltaX = startX - moveEvent.clientX; 
+        const newWidth = Math.max(300, Math.min(800, startWidth + deltaX));
+        state.drawerWidth = newWidth;
+      }
+      
+      function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+      
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    }
+
     onMounted(async () => {
       await loadInitial();
     });
@@ -272,6 +297,7 @@ const app = createApp({
       showRenderGraph,
       renderCoreData,
       toggleShowField,
+      startDragDrawer,
     };
   },
 });

@@ -54,7 +54,7 @@ class Voyager:
 
     def _get_available_route(self, app: FastAPI):
         for route in app.routes:
-            if isinstance(route, routing.APIRoute) and route.response_model:
+            if isinstance(route, routing.APIRoute):
                 yield route
 
 

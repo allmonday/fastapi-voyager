@@ -210,7 +210,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] route list should have a max height to trigger scrollable
 - [ ] fix layout issue when rendering huge graph
 - [ ] fix missing route (tag has only one route which return primitive value)
-- [ ] make right panel resize by dragging
+- [x] make right panel resizable by dragging
 - [ ] hide tag if tag picked, hide route if route picked
 - [ ] allow closing tag expansion item
 

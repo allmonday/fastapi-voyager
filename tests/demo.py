@@ -7,7 +7,7 @@ import tests.service.schema as serv
 
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 
-@app.get("/sprints", tags=['for-restapi'], response_model=list[serv.Sprint])
+@app.get("/sprints", tags=['for-restapi', 'group_a'], response_model=list[serv.Sprint])
 def get_sprint():
     return []
 
@@ -96,4 +96,8 @@ def get_page_test_2():
 
 @app.get("/page_test_3/", tags=['for-page'], response_model=bool)
 def get_page_test_3_long_long_long_name():
+    return True
+
+@app.get("/page_test_4/", tags=['for-page', 'group_b'])
+def get_page_test_3_no_response_model():
     return True

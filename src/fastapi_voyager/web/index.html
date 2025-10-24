@@ -163,11 +163,27 @@
 
         <q-drawer
           v-model="state.detailDrawer"
-          width="500"
+          :width="state.drawerWidth"
           side="right"
           overlay
           bordered
         >
+          <!-- 可拖拽的调整栏 -->
+          <div 
+            @mousedown="startDragDrawer"
+            style="
+              position: absolute; 
+              left: -3px; 
+              top: 0; 
+              width: 6px; 
+              height: 100%; 
+              cursor: col-resize; 
+              background: transparent;
+              z-index: 1000;
+            "
+            title="drag to resize"
+          ></div>
+          
           <div style="z-index: 1; position: absolute; left: -17px; top: 9px">
             <q-btn
               @click="state.detailDrawer = !state.detailDrawer"
@@ -215,7 +231,7 @@
                     >
                       <template #header>
                         <div class="row items-center" style="width: 100%">
-                          <div class="row items-end">
+                          <div class="row items-center">
                             <q-icon
                               class="q-mr-sm"
                               :name="state.tag == tag.name ? 'folder' : 'folder_open'"
