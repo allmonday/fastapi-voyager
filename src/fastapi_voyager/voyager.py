@@ -1,4 +1,4 @@
-import inspect
+from pydantic import BaseModel
 from fastapi import FastAPI, routing
 from fastapi_voyager.type_helper import (
     get_core_types,
@@ -57,6 +57,11 @@ class Voyager:
             if isinstance(route, routing.APIRoute):
                 yield route
 
+    def analysis_route(self, route: routing.APIRoute):
+        ...
+    
+    def analysis_tags(self, tag: str):
+        ...
 
     def analysis(self, app: FastAPI):
         """
@@ -68,67 +73,76 @@ class Voyager:
         """
         schemas: list[type[BaseModel]] = []
 
+        # First, group all routes by tag
+        routes_by_tag: dict[str, list] = {}
         for route in self._get_available_route(app):
-            # check tags
             tags = getattr(route, 'tags', None)
-            route_tag = tags[0] if tags else '__default__'
-            if self.include_tags and route_tag not in self.include_tags:
-                continue
 
-            # add tag if not exists
+            # using multiple tags is harmful, it's not recommended and will not be supported
+            route_tag = tags[0] if tags else '__default__'  
+            routes_by_tag.setdefault(route_tag, []).append(route)
+
+        # Then filter by include_tags if provided
+        if self.include_tags:
+            filtered_routes_by_tag = {tag: routes for tag, routes in routes_by_tag.items() 
+                                    if tag in self.include_tags}
+        else:
+            filtered_routes_by_tag = routes_by_tag
+
+        # Process filtered routes
+        for route_tag, routes in filtered_routes_by_tag.items():
+
             tag_id = f'tag__{route_tag}'
-            if tag_id not in self.tag_set:
-                tag_obj = Tag(id=tag_id, name=route_tag, routes=[])
-                self.tag_set[tag_id] = tag_obj
-                self.tags.append(tag_obj)
+            tag_obj = Tag(id=tag_id, name=route_tag, routes=[])
+            self.tags.append(tag_obj)
 
-            # add route and create links
-            route_id = full_class_name(route.endpoint)
-            route_name = route.endpoint.__name__
-            route_module = route.endpoint.__module__
+            for route in routes:
+                # add route and create links
+                route_id = full_class_name(route.endpoint)
+                route_name = route.endpoint.__name__
+                route_module = route.endpoint.__module__
 
-            # filter by route_name (route.id) if provided
-            if self.route_name is not None and route_id != self.route_name:
-                continue
+                # filter by route_name (route.id) if provided
+                if self.route_name is not None and route_id != self.route_name:
+                    continue
 
-            is_primitive_response = is_non_pydantic_type(route.response_model)
-            # filter primitive route if needed
-            if self.hide_primitive_route and is_primitive_response:
-                continue
+                is_primitive_response = is_non_pydantic_type(route.response_model)
+                # filter primitive route if needed
+                if self.hide_primitive_route and is_primitive_response:
+                    continue
 
-            self.links.append(Link(
-                source=tag_id,
-                source_origin=tag_id,
-                target=route_id,
-                target_origin=route_id,
-                type='tag_route'
-            ))
+                self.links.append(Link(
+                    source=tag_id,
+                    source_origin=tag_id,
+                    target=route_id,
+                    target_origin=route_id,
+                    type='tag_route'
+                ))
 
-            route_obj = Route(
-                id=route_id,
-                name=route_name,
-                module=route_module,
-                response_schema=get_type_name(route.response_model),
-                is_primitive=is_primitive_response
-            )
-            self.routes.append(route_obj)
-            # add route into current tag
-            self.tag_set[tag_id].routes.append(route_obj)
+                route_obj = Route(
+                    id=route_id,
+                    name=route_name,
+                    module=route_module,
+                    response_schema=get_type_name(route.response_model),
+                    is_primitive=is_primitive_response
+                )
+                self.routes.append(route_obj)
+                tag_obj.routes.append(route_obj)
 
-            # add response_models and create links from route -> response_model
-            for schema in get_core_types(route.response_model):
-                if schema and issubclass(schema, BaseModel):
-                    is_primitive_response = False
-                    target_name = full_class_name(schema)
-                    self.links.append(Link(
-                        source=route_id,
-                        source_origin=route_id,
-                        target=self.generate_node_head(target_name),
-                        target_origin=target_name,
-                        type='route_to_schema'
-                    ))
+                # add response_models and create links from route -> response_model
+                for schema in get_core_types(route.response_model):
+                    if schema and issubclass(schema, BaseModel):
+                        is_primitive_response = False
+                        target_name = full_class_name(schema)
+                        self.links.append(Link(
+                            source=route_id,
+                            source_origin=route_id,
+                            target=self.generate_node_head(target_name),
+                            target_origin=target_name,
+                            type='route_to_schema'
+                        ))
 
-                    schemas.append(schema)
+                        schemas.append(schema)
 
         for s in schemas:
             self.analysis_schemas(s)
@@ -271,6 +285,12 @@ class Voyager:
             schema=self.schema
         )
 
+    def handle_hide(self, tags, routes, links):
+        if self.include_tags:
+            return [], routes, [lk for lk in links if lk.type != 'tag_route']
+        else:
+            return tags, routes, links
+    
     def render_dot(self):
         _tags, _routes, _nodes, _links = filter_graph(
             schema=self.schema,
@@ -281,7 +301,10 @@ class Voyager:
             links=self.links,
             node_set=self.node_set,
         )
+
         renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema)
+
+        _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
         return renderer.render_dot(_tags, _routes, _nodes, _links)
     
     def render_brief_dot(self, module_prefix: str | None = None):
@@ -293,4 +316,6 @@ class Voyager:
             links=self.links,
         )
         renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=None)
-        return renderer.render_dot(_tags, _routes, _nodes, _links)
+
+        _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
+        return renderer.render_dot(_tags, _routes, _nodes, _links, True)

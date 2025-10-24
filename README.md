@@ -199,20 +199,14 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] route list should have a max height 
 
 #### 0.10
-- [ ] perfomance: cache the origin data, refactor voyager.py
-    - [ ] store tag routes, `{ tag: { route: schema}}`.
-        - voyager.render():  tag -> route -> schema  --> node
-        - tag(s).render(): route -> schema
-        - route(s).render(): schema
-    - [ ] hide tag if tag picked, hide route if route picked
-    - [ ] better edge for brief mode
+- [x] refactor voyager.py tag -> route structure
+- [x] fix missing route (tag has only one route which return primitive value)
+- [x] make right panel resizable by dragging
+- [x] allow closing tag expansion item
 - [ ] add focus button to only show related nodes under current route/tag graph in dialog
 - [ ] enable/disable module cluster  (to save space)
 - [ ] hide brief mode if not configured
 - [ ] fix layout issue when rendering huge graph
-- [x] fix missing route (tag has only one route which return primitive value)
-- [x] make right panel resizable by dragging
-- [x] allow closing tag expansion item
 - [ ] logging information
 
 #### 0.11

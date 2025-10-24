@@ -104,7 +104,7 @@ class Renderer:
         inner_nodes = [
             f'''
             "{r.id}" [
-                label = "    {r.name}: {r.response_schema}    "
+                label = "    {r.name} | {r.response_schema}    "
                 margin="0.5,0.1"
                 shape = "record"
             ];''' for r in mod.routes
@@ -122,7 +122,7 @@ class Renderer:
                 {child_str}
             }}'''
 
-    def render_dot(self, tags: list[Tag], routes: list[Route], nodes: list[SchemaNode], links: list[Link]) -> str:
+    def render_dot(self, tags: list[Tag], routes: list[Route], nodes: list[SchemaNode], links: list[Link], spline_line=False) -> str:
         module_schemas = build_module_schema_tree(nodes)
         module_routes = build_module_route_tree(routes)
 
@@ -144,6 +144,7 @@ class Renderer:
         digraph world {{
             pad="0.5"
             nodesep=0.8
+            {'splines=line' if spline_line else ''}
             fontname="Helvetica,Arial,sans-serif"
             node [fontname="Helvetica,Arial,sans-serif"]
             edge [
