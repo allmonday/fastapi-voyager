@@ -19,6 +19,7 @@ class OptionParam(BaseModel):
 	tags: list[Tag]
 	schemas: list[SchemaNode]
 	dot: str
+	enable_brief_mode: bool
 
 class Payload(BaseModel):
 	tags: Optional[list[str]] = None
@@ -53,11 +54,10 @@ def create_route(
 		schemas = voyager.nodes[:]
 		schemas.sort(key=lambda s: s.name)
 
-		return OptionParam(tags=tags, schemas=schemas, dot=dot)
+		return OptionParam(tags=tags, schemas=schemas, dot=dot, enable_brief_mode=bool(module_prefix))
 
 	@router.post("/dot", response_class=PlainTextResponse)
 	def get_filtered_dot(payload: Payload) -> str:
-		print(payload)
 		voyager = Voyager(
 			include_tags=payload.tags,
 			schema=payload.schema_name,

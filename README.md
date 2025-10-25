@@ -203,13 +203,13 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [x] fix missing route (tag has only one route which return primitive value)
 - [x] make right panel resizable by dragging
 - [x] allow closing tag expansion item
-- [ ] add focus button to only show related nodes under current route/tag graph in dialog
-- [ ] enable/disable module cluster  (to save space)
-- [ ] hide brief mode if not configured
-- [ ] fix layout issue when rendering huge graph
-- [ ] logging information
+- [x] hide brief mode if not configured
+- [x] add focus button to only show related nodes under current route/tag graph in dialog
 
 #### 0.11
+- [ ] enable/disable module cluster  (to save space)
+- [ ] fix layout issue when rendering huge graph
+- [ ] logging information
 - [ ] support opening route in swagger
     - config docs path
 - [ ] add tests

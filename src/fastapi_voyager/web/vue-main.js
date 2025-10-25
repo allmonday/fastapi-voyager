@@ -19,7 +19,9 @@ const app = createApp({
         { label: "Object fields", value: "object" },
         { label: "All fields", value: "all" },
       ],
+      enableBriefMode: false,
       brief: false,
+      focus: false,
       hidePrimitiveRoute: false,
       generating: false,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
@@ -72,6 +74,7 @@ const app = createApp({
             acc[r.id] = r;
             return acc;
           }, {});
+        state.enableBriefMode = data.enable_brief_mode || false;
 
         // default route options placeholder
       } catch (e) {
@@ -81,18 +84,30 @@ const app = createApp({
       }
     }
 
-    async function onGenerate(resetZoom = true) {
+    async function onFocusChange(val) {
+      if (val) {
+        await onGenerate(false, schemaCodeName.value)
+      } else {
+        await onGenerate(false, null)
+        setTimeout(() => {
+          const ele = $(`[data-name='${schemaCodeName.value}'] polygon`)
+          debugger
+          ele.click()
+        }, 1)
+      }
+    }
+
+    async function onGenerate(resetZoom = true, schema_name = null) {
       state.generating = true;
       try {
         const payload = {
           tags: state.tag ? [state.tag] : null,
-          schema_name: state.schemaId || null,
+          schema_name: schema_name || null,
           route_name: state.routeId || null,
           show_fields: state.showFields,
           brief: state.brief,
           hide_primitive_route: state.hidePrimitiveRoute,
         };
-
         const res = await fetch("dot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -121,6 +136,7 @@ const app = createApp({
           resetCb: () => {
             state.detailDrawer = false;
             showRouteDetail.value = false;
+            schemaCodeName.value = ''
           }
         });
 
@@ -200,6 +216,8 @@ const app = createApp({
       state.schemaId = null;
       // state.showFields = "object";
       state.brief = false;
+      state.focus = false
+      schemaCodeName.value = ''
       onGenerate();
     }
 
@@ -208,6 +226,8 @@ const app = createApp({
         state._tag = tagName;
         state.tag = tagName;
         state.routeId = "";
+        state.focus = false
+        schemaCodeName.value = ''
         onGenerate();
       } else {
         state._tag = null
@@ -225,6 +245,8 @@ const app = createApp({
       }
       state.detailDrawer = false;
       showRouteDetail.value = false;
+      state.focus = false
+      schemaCodeName.value = ''
       onGenerate();
     }
 
@@ -303,6 +325,7 @@ const app = createApp({
       renderCoreData,
       toggleShowField,
       startDragDrawer,
+      onFocusChange
     };
   },
 });

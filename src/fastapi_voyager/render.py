@@ -62,9 +62,8 @@ class Renderer:
         else:
             raise ValueError(f'Unknown link type: {link.type}')
 
-    def render_module_schema_wrapper(self, mods: list[ModuleNode]) -> str:
+    def render_module_schema_content(self, mods: list[ModuleNode]) -> str:
         module_color_flag = set(self.module_color.keys())
-        print(module_color_flag)
 
         def render_module_schema(mod: ModuleNode) -> str:
             color: Optional[str] = None
@@ -136,7 +135,7 @@ class Renderer:
         ])
 
 
-        module_schemas_str = self.render_module_schema_wrapper(module_schemas)
+        module_schemas_str = self.render_module_schema_content(module_schemas)
         module_routes_str = '\n'.join(self.render_module_route(m) for m in module_routes)
         link_str = '\n'.join(self.render_link(link) for link in links)
 
