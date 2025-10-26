@@ -5,7 +5,9 @@
 
 > This repo is still in early stage, it supports pydantic v2 only
 
-Inspect your API interactively!
+Inspect your API interactively!  
+
+[visit online demo](https://www.newsyeah.fun/voyager/) of project: [composition oriented development pattern](https://github.com/allmonday/composition-oriented-development-pattern)
 
 <p align="center"><img src="./voyager.jpg" alt="" /></p>
 <p align="center"><a target="_blank" rel="" href="https://www.youtube.com/watch?v=PGlbQq1M-n8"><img src="http://img.youtube.com/vi/PGlbQq1M-n8/0.jpg" alt="" style="max-width: 100%;"></a></p>
