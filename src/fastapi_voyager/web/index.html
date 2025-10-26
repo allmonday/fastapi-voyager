@@ -152,7 +152,6 @@
                         shift + click to see schema's dependencies without
                         unrelated nodes
                       </li>
-                      <li>alt + click to see schema details</li>
                     </ul>
                   </div>
                 </q-tooltip>
@@ -286,7 +285,8 @@
                   v-show="schemaCodeName"
                   @update:model-value="val => onFocusChange(val)"
                   label="Focus"
-                  style="position: absolute; left: 8px; top: 8px; z-index: 10; background: rgba(255,255,255,0.85); border-radius: 4px; padding: 2px 8px;"
+                  title="pick a schema and toggle focus on to display related nodes only"
+                  style="position: absolute; left: 8px; bottom: 8px; z-index: 10; background: rgba(255,255,255,0.85); border-radius: 4px; padding: 2px 8px;"
                   size="sm"
                 />
               </div>

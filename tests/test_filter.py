@@ -1,4 +1,4 @@
-from fastapi_voyager.filter import filter_subgraph
+from fastapi_voyager.filter import filter_subgraph_by_module_prefix
 from fastapi_voyager.type import Tag, Route, SchemaNode, Link, PK
 
 
@@ -42,7 +42,7 @@ def test_filter_subgraph_filters_nodes_and_links():
     routes = [route]
     nodes = [node_a, node_b]
 
-    _, _, filtered_nodes, filtered_links = filter_subgraph(
+    _, _, filtered_nodes, filtered_links = filter_subgraph_by_module_prefix(
         tags=tags,
         routes=routes,
         links=links,
@@ -110,7 +110,7 @@ def test_filter_subgraph_handles_cycles_and_multiple_matches():
 
     nodes = [node_root, node_mid, node_target1, node_target2]
 
-    _, _, filtered_nodes, filtered_links = filter_subgraph(
+    _, _, filtered_nodes, filtered_links = filter_subgraph_by_module_prefix(
         tags=[tag],
         routes=[route],
         links=links,

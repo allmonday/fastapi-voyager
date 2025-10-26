@@ -93,7 +93,6 @@ const app = createApp({
         await onGenerate(false, null)
         setTimeout(() => {
           const ele = $(`[data-name='${schemaCodeName.value}'] polygon`)
-          debugger
           ele.click()
         }, 1)
       }
@@ -121,11 +120,13 @@ const app = createApp({
         const graphUI = new GraphUI("#graph", {
           onSchemaShiftClick: (id) => {
             if (state.rawSchemas.has(id)) {
+              resetDetailPanels()
               schemaFieldFilterSchema.value = id;
               showSchemaFieldFilter.value = true;
             }
           },
           onSchemaClick: (id) => {
+            resetDetailPanels()
             if (state.rawSchemas.has(id)) {
               schemaCodeName.value = id;
               state.detailDrawer = true;
@@ -136,9 +137,7 @@ const app = createApp({
             }
           },
           resetCb: () => {
-            state.detailDrawer = false;
-            showRouteDetail.value = false;
-            schemaCodeName.value = ''
+            resetDetailPanels()
           }
         });
 
@@ -210,6 +209,12 @@ const app = createApp({
     function showDialog() {
       schemaFieldFilterSchema.value = null;
       showSchemaFieldFilter.value = true;
+    }
+
+    function resetDetailPanels() {
+      state.detailDrawer = false
+      showRouteDetail.value = false;
+      schemaCodeName.value = ''
     }
 
     async function onReset() {

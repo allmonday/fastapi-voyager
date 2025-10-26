@@ -106,7 +106,7 @@ def filter_graph(
     return _tags, _routes, _nodes, _links
 
 
-def filter_subgraph(
+def filter_subgraph_by_module_prefix(
     *,
     tags: list[Tag],
     routes: list[Route],

@@ -210,7 +210,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] fix graph height
     - [x] show version in title
 - 0.10.3
-    - [ ] fix focus in brief-mode
+    - [x] fix focus in brief-mode
+    - [x] ui: adjust focus position
+    - [x] refactor naming
 
 #### 0.11
 - [ ] enable/disable module cluster  (to save space)

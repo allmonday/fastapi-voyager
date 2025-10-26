@@ -14,7 +14,7 @@ from fastapi_voyager.type_helper import (
 )
 from pydantic import BaseModel
 from fastapi_voyager.type import Route, SchemaNode, Link, Tag, LinkType, FieldType, PK, CoreData
-from fastapi_voyager.filter import filter_graph, filter_subgraph
+from fastapi_voyager.filter import filter_graph, filter_subgraph_by_module_prefix
 from fastapi_voyager.render import Renderer
 import pydantic_resolve.constant as const
 
@@ -308,14 +308,25 @@ class Voyager:
         return renderer.render_dot(_tags, _routes, _nodes, _links)
     
     def render_brief_dot(self, module_prefix: str | None = None):
-        _tags, _routes, _nodes, _links = filter_subgraph(
-            module_prefix=module_prefix,
+        _tags, _routes, _nodes, _links = filter_graph(
+            schema=self.schema,
+            schema_field=self.schema_field,
             tags=self.tags,
             routes=self.routes,
             nodes=self.nodes,
             links=self.links,
+            node_set=self.node_set,
         )
-        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=None)
+
+        _tags, _routes, _nodes, _links = filter_subgraph_by_module_prefix(
+            module_prefix=module_prefix,
+            tags=_tags,
+            routes=_routes,
+            nodes=_nodes,
+            links=_links,
+        )
+
+        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema)
 
         _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
         return renderer.render_dot(_tags, _routes, _nodes, _links, True)
