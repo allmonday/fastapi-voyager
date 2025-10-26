@@ -31,7 +31,8 @@ const app = createApp({
       // Splitter size (left panel width in px)
       splitter: 300,
       detailDrawer: false,
-      drawerWidth: 500, // drawer 宽度
+      drawerWidth: 300, // drawer 宽度
+      version: "", // version from backend
     });
 
     const showDetail = ref(false);
@@ -75,6 +76,7 @@ const app = createApp({
             return acc;
           }, {});
         state.enableBriefMode = data.enable_brief_mode || false;
+        state.version = data.version || "";
 
         // default route options placeholder
       } catch (e) {

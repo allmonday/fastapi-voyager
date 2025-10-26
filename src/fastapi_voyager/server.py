@@ -9,6 +9,7 @@ from fastapi_voyager.voyager import Voyager
 from fastapi_voyager.type import Tag, FieldInfo, CoreData, SchemaNode
 from fastapi_voyager.render import Renderer
 from fastapi_voyager.type_helper import get_source, get_vscode_link
+from fastapi_voyager.version import __version__
 
 
 WEB_DIR = Path(__file__).parent / "web"
@@ -20,6 +21,7 @@ class OptionParam(BaseModel):
 	schemas: list[SchemaNode]
 	dot: str
 	enable_brief_mode: bool
+	version: str
 
 class Payload(BaseModel):
 	tags: Optional[list[str]] = None
@@ -54,7 +56,7 @@ def create_route(
 		schemas = voyager.nodes[:]
 		schemas.sort(key=lambda s: s.name)
 
-		return OptionParam(tags=tags, schemas=schemas, dot=dot, enable_brief_mode=bool(module_prefix))
+		return OptionParam(tags=tags, schemas=schemas, dot=dot, enable_brief_mode=bool(module_prefix), version=__version__)
 
 	@router.post("/dot", response_class=PlainTextResponse)
 	def get_filtered_dot(payload: Payload) -> str:

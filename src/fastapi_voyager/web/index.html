@@ -57,7 +57,7 @@
     }
 
     .adjust-fit {
-      height: calc(100% - 54px);
+      height: calc(100vh - 54px);
     }
   </style>
   <body>
@@ -67,10 +67,11 @@
           <q-toolbar class="row text-grey-9 bg-white" style="width: 100%">
             <div
               class="col-auto text-primary"
-              style="font-size: 16px; font-weight: bold"
+              style="font-size: 18px; font-weight: bold; display: flex; align-items: baseline;"
             >
               <q-icon class="q-mr-sm" name="satellite_alt"></q-icon>
               <span> FastAPI Voyager </span>
+              <span v-if="state.version" style="font-size: 12px; margin-left: 8px; font-weight: normal;">{{ state.version }}</span>
             </div>
             <div class="col-auto" style="font-size: 16px">
               <q-option-group
@@ -279,7 +280,7 @@
 
             <template #after>
               <div style="position: relative; width: 100%; height: 100%;">
-                <div id="graph" class="fit"></div>
+                <div id="graph" class="adjust-fit"></div>
                 <q-toggle
                   v-model="state.focus"
                   v-show="schemaCodeName"
