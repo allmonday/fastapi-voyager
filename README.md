@@ -145,6 +145,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] optimize static resource (allow manually config url)
 - [ ] improve search dialog
     - [ ] add route/tag list
+- [ ] type alias should not be kept as node instead of compiling to original type
+- [ ] how to correctly handle the generic type ?
 
 ### in analysis
 - [ ] click field to highlight links
@@ -215,6 +217,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] fix focus in brief-mode
     - [x] ui: adjust focus position
     - [x] refactor naming
+- 0.10.4
+    - [ ] fix: when focus is on, should ensure changes from other params not broken.
+    - [ ] fix: focus should reset zoom
 
 #### 0.11
 - [ ] enable/disable module cluster  (to save space)
