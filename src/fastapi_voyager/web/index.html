@@ -64,7 +64,7 @@
     <div id="q-app">
       <q-layout view="hHh lpR fff">
         <q-header bordered class="bg-primary text-white">
-          <q-toolbar class="row text-grey-9 bg-white" style="width: 100%">
+          <q-toolbar class="row text-grey-9 bg-white" style="width: 100%; border-bottom: 2px solid #009485;">
             <div
               class="col-auto text-primary"
               style="font-size: 18px; font-weight: bold; display: flex; align-items: baseline;"
@@ -86,39 +86,21 @@
               />
             </div>
             <div class="col-auto q-ml-auto">
-              <q-toggle
-                v-if="state.enableBriefMode"
-                class="q-mr-md"
-                v-model="state.brief"
-                label="Brief Mode"
-                @update:model-value="(val) => toggleBrief(val)"
-                title="skip middle classes, config module_prefix to enable it"
-                dense
-              />
-            </div>
-            <div class="col-auto">
-              <q-toggle
-                v-model="state.hidePrimitiveRoute"
-                @update:model-value="(val) => toggleHidePrimitiveRoute(val)"
-                label="Hide Primitive"
-                title="hide routes return primitive"
-                class="q-mr-md"
-                dense
-              />
-            </div>
-            <div class="col-auto">
               <q-btn
                 outline
                 @click="onReset"
                 title="may be very slow"
-                class="q-mr-md"
-                label="Show All"
+                icon="border_all"
+                flat
+                class="q-mr-sm"
+                label="Full Graph"
               />
             </div>
             <div class="col-auto">
               <q-btn
                 outline
                 icon="search"
+                flat
                 label="Search"
                 class="q-mr-md"
                 @click="showDialog()"
@@ -279,15 +261,34 @@
             <template #after>
               <div style="position: relative; width: 100%; height: 100%;">
                 <div id="graph" class="adjust-fit"></div>
-                <q-toggle
-                  v-model="state.focus"
-                  v-show="schemaCodeName"
-                  @update:model-value="val => onFocusChange(val)"
-                  label="Focus"
-                  title="pick a schema and toggle focus on to display related nodes only"
-                  style="position: absolute; left: 8px; bottom: 8px; z-index: 10; background: rgba(255,255,255,0.85); border-radius: 4px; padding: 2px 8px;"
-                  size="sm"
-                />
+                <div style="position: absolute; left: 8px; bottom: 8px; z-index: 10; background: rgba(255,255,255,0.85); border-radius: 4px; padding: 2px 8px;">
+                  <div>
+                    <q-toggle
+                      v-model="state.focus"
+                      v-show="schemaCodeName"
+                      @update:model-value="val => onFocusChange(val)"
+                      label="Focus"
+                      title="pick a schema and toggle focus on to display related nodes only"
+                    />
+                  </div>
+                  <div>
+                    <q-toggle
+                      v-if="state.enableBriefMode"
+                      v-model="state.brief"
+                      label="Brief Mode"
+                      @update:model-value="(val) => toggleBrief(val)"
+                      title="skip middle classes, config module_prefix to enable it"
+                    />
+                  </div>
+                  <div>
+                    <q-toggle
+                      v-model="state.hidePrimitiveRoute"
+                      @update:model-value="(val) => toggleHidePrimitiveRoute(val)"
+                      label="Hide Primitive"
+                      title="hide routes return primitive"
+                    />
+                  </div>
+                </div>
               </div>
             </template>
           </q-splitter>

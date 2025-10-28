@@ -218,8 +218,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] ui: adjust focus position
     - [x] refactor naming
 - 0.10.4
-    - [ ] fix: when focus is on, should ensure changes from other params not broken.
-    - [ ] fix: focus should reset zoom
+    - [x] fix: when focus is on, should ensure changes from other params not broken.
+    
 
 #### 0.11
 - [ ] enable/disable module cluster  (to save space)
@@ -228,6 +228,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] support opening route in swagger
     - config docs path
 - [ ] add tests
+- [ ] fix: focus should reset zoom
 
 #### 0.12
 - [ ] integration with pydantic-resolve

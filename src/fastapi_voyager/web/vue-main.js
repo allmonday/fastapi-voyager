@@ -88,9 +88,9 @@ const app = createApp({
 
     async function onFocusChange(val) {
       if (val) {
-        await onGenerate(false, schemaCodeName.value)
+        await onGenerate(false)
       } else {
-        await onGenerate(false, null)
+        await onGenerate(false)
         setTimeout(() => {
           const ele = $(`[data-name='${schemaCodeName.value}'] polygon`)
           ele.click()
@@ -98,7 +98,8 @@ const app = createApp({
       }
     }
 
-    async function onGenerate(resetZoom = true, schema_name = null) {
+    async function onGenerate(resetZoom = true) {
+      const schema_name = state.focus ? schemaCodeName.value : null;
       state.generating = true;
       try {
         const payload = {
