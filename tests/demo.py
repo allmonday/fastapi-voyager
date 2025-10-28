@@ -98,6 +98,10 @@ def get_page_test_2():
 def get_page_test_3_long_long_long_name():
     return True
 
-@app.get("/page_test_4/", tags=['for-page', 'group_b'])
+@app.get("/page_test_4/", tags=['for-page'])
+def get_page_test_3_no_response_model():
+    return True
+
+@app.get("/page_test_5/", tags=['long_long_long_tag_name', 'group_b'])
 def get_page_test_3_no_response_model():
     return True
