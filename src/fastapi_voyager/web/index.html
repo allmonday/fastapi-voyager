@@ -232,14 +232,13 @@
                       content-class="q-pa-none"
                     >
                       <template #header>
-                        <div class="row items-center" style="width: 100%;">
-                          <div class="row items-center">
+                        <div class="" style="white-space: nowrap; width: 100%">
                             <q-icon
+                              style="vertical-align: top;"
                               class="q-mr-sm"
                               :name="state.tag == tag.name ? 'folder' : 'folder_open'"
                             ></q-icon>
-                            <span>{{ tag.name }} <q-chip class="q-ml-sm" dense>{{ tag.routes.length }}</q-chip></span>
-                          </div>
+                            <span>{{ tag.name }} <q-chip style="position:relative; top: -1px;" class="q-ml-sm" dense>{{ tag.routes.length }}</q-chip></span>
                         </div>
                       </template>
                         <q-list separator style="overflow: auto; max-height: 60vh;">
