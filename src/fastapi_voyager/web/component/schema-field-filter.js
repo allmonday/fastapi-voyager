@@ -46,7 +46,7 @@ export default defineComponent({
       // Flatten to array for local operations
       state.schemas = Object.values(dict);
       state.schemaOptions = state.schemas.map((s) => ({
-        label: `${s.name} (${s.id})`,
+        label: `${s.name} - ${s.id}`,
         value: s.id,
       }));
       // Maintain compatibility: loadingSchemas flag toggled quickly (no async work)
@@ -57,7 +57,7 @@ export default defineComponent({
       const needle = (val || "").toLowerCase();
       update(() => {
         let opts = state.schemas.map((s) => ({
-          label: `${s.name} (${s.id})`,
+          label: `${s.name} - ${s.id}`,
           value: s.id,
         }));
         if (needle) {
@@ -178,13 +178,12 @@ export default defineComponent({
 				:disable="!state.schemaFullname" 
 				:loading="state.querying" 
 				@click="onQuery" />
-		</div>
 				<q-btn
 					flat dense round icon="close"
 					aria-label="Close"
 					@click="close"
-					style="position:absolute; top:6px; right:6px; z-index:11; background:rgba(255,255,255,0.85);"
 				/>
+		</div>
 		<div v-if="state.error" style="position:absolute; top:52px; left:8px; z-index:10; color:#c10015; font-size:12px;">{{ state.error }}</div>
 		<div id="graph-schema-field" style="width:100%; height:100%; overflow:auto; background:#fafafa"></div>
 	</div>
