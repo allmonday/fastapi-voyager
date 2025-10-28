@@ -88,7 +88,7 @@ const app = createApp({
 
     async function onFocusChange(val) {
       if (val) {
-        await onGenerate(false)
+        await onGenerate(true)  // target could be out of view when switchingfrom big to small
       } else {
         await onGenerate(false)
         setTimeout(() => {
