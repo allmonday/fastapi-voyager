@@ -37,7 +37,7 @@ class Renderer:
             fields_parts.append(field_str)
 
         header_color = 'tomato' if node.id == self.schema else '#009485'
-        header = f"""<tr><td cellpadding="1.5" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">    {node.name}    </font> </td> </tr>"""
+        header = f"""<tr><td cellpadding="6" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">    {node.name}    </font></td> </tr>"""
         field_content = ''.join(fields_parts) if fields_parts else ''
         return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content}   </table>>"""
 

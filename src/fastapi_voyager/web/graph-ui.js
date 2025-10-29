@@ -57,6 +57,13 @@ export class GraphUI {
     return $result;
   }
 
+  highlightSchemaBanner(node) {
+    const ele = node.querySelector("polygon[fill='#009485']")
+    if (ele) {
+      ele.setAttribute('fill', 'tomato');
+    }
+  }
+
   _init() {
     const self = this;
     $(this.selector).graphviz({
@@ -65,6 +72,26 @@ export class GraphUI {
       ready: function () {
         self.gv = this;
 
+        self.gv.nodes().dblclick(function (event) {
+          event.stopPropagation();
+          try {
+            self.highlightSchemaBanner(this)
+          } catch(e) {
+            console.log(e)
+          }
+          const set = $();
+          set.push(this);
+          // const obj = { set, direction: "bidirectional" };
+          const schemaName = event.currentTarget.dataset.name;
+          // self.currentSelection = [obj];
+          if (schemaName) {
+            try {
+              self.options.onSchemaClick(schemaName);
+            } catch (e) {
+              console.warn("onSchemaClick callback failed", e);
+            }
+          }
+        });
         self.gv.nodes().click(function (event) {
           const set = $();
           set.push(this);
@@ -83,12 +110,10 @@ export class GraphUI {
           } else {
             self.currentSelection = [obj];
             self._highlight();
-            if (schemaName) {
-              try {
-                self.options.onSchemaClick(schemaName);
-              } catch (e) {
-                console.warn("onSchemaClick callback failed", e);
-              }
+            try {
+              self.options.resetCb();
+            } catch (e) {
+              console.warn("resetCb callback failed", e);
             }
           }
         });
@@ -107,28 +132,34 @@ export class GraphUI {
 
         // svg 背景点击高亮清空
 
-        $(document).off('click.graphui').on('click.graphui', function (evt) {
-          // 如果点击目标不在 graph 容器内，直接退出
-          const graphContainer = $(self.selector)[0];
-          if (!graphContainer || !evt.target || !graphContainer.contains(evt.target)) {
-            return;
-          }
+        $(document)
+          .off("click.graphui")
+          .on("click.graphui", function (evt) {
+            // 如果点击目标不在 graph 容器内，直接退出
+            const graphContainer = $(self.selector)[0];
+            if (
+              !graphContainer ||
+              !evt.target ||
+              !graphContainer.contains(evt.target)
+            ) {
+              return;
+            }
 
-          let isNode = false;
-          const $nodes = self.gv.nodes();
-          const node = evt.target.parentNode;
-          $nodes.each(function () {
-            if (this === node) {
-              isNode = true;
+            let isNode = false;
+            const $nodes = self.gv.nodes();
+            const node = evt.target.parentNode;
+            $nodes.each(function () {
+              if (this === node) {
+                isNode = true;
+              }
+            });
+            if (!isNode && self.gv) {
+              self.gv.highlight();
+              if (self.options.resetCb) {
+                self.options.resetCb();
+              }
             }
           });
-          if (!isNode && self.gv) {
-            self.gv.highlight();
-            if (self.options.resetCb) {
-              self.options.resetCb();
-            }
-          }
-        });
 
         $(document).on("keydown.graphui", function (evt) {
           if (evt.keyCode === 27 && self.gv) {

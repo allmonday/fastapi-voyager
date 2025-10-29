@@ -42,7 +42,8 @@ export default defineComponent({
     async function loadSchemas() {
       // Use externally provided props.schemas dict directly; no network call.
       state.error = null;
-      const dict = props.schemas && typeof props.schemas === "object" ? props.schemas : {};
+      const dict =
+        props.schemas && typeof props.schemas === "object" ? props.schemas : {};
       // Flatten to array for local operations
       state.schemas = Object.values(dict);
       state.schemaOptions = state.schemas.map((s) => ({
@@ -126,7 +127,6 @@ export default defineComponent({
         applyExternalSchema(props.schemaName);
       }
     });
-
 
     function close() {
       emit("close");

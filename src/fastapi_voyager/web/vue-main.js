@@ -48,6 +48,7 @@ const app = createApp({
     const schemaCodeName = ref("");
     const routeCodeId = ref("");
     const showRouteDetail = ref(false);
+    let graphUI = null;
 
     function openDetail() {
       showDetail.value = true;
@@ -88,13 +89,13 @@ const app = createApp({
 
     async function onFocusChange(val) {
       if (val) {
-        await onGenerate(true)  // target could be out of view when switchingfrom big to small
+        await onGenerate(true); // target could be out of view when switchingfrom big to small
       } else {
-        await onGenerate(false)
+        await onGenerate(false);
         setTimeout(() => {
-          const ele = $(`[data-name='${schemaCodeName.value}'] polygon`)
-          ele.click()
-        }, 1)
+          const ele = $(`[data-name='${schemaCodeName.value}'] polygon`);
+          ele.dblclick();
+        }, 1);
       }
     }
 
@@ -118,30 +119,31 @@ const app = createApp({
         const dotText = await res.text();
 
         // create graph instance once
-        const graphUI = new GraphUI("#graph", {
-          onSchemaShiftClick: (id) => {
-            if (state.rawSchemas.has(id)) {
-              resetDetailPanels()
-              schemaFieldFilterSchema.value = id;
-              showSchemaFieldFilter.value = true;
-            }
-          },
-          onSchemaClick: (id) => {
-            resetDetailPanels()
-            if (state.rawSchemas.has(id)) {
-              schemaCodeName.value = id;
-              state.detailDrawer = true;
-            }
-            if (id in state.routeItems) {
-              routeCodeId.value = id;
-              showRouteDetail.value = true;
-            }
-          },
-          resetCb: () => {
-            resetDetailPanels()
-          }
-        });
-
+        if (!graphUI) {
+          graphUI = new GraphUI("#graph", {
+            onSchemaShiftClick: (id) => {
+              if (state.rawSchemas.has(id)) {
+                resetDetailPanels();
+                schemaFieldFilterSchema.value = id;
+                showSchemaFieldFilter.value = true;
+              }
+            },
+            onSchemaClick: (id) => {
+              resetDetailPanels();
+              if (state.rawSchemas.has(id)) {
+                schemaCodeName.value = id;
+                state.detailDrawer = true;
+              }
+              if (id in state.routeItems) {
+                routeCodeId.value = id;
+                showRouteDetail.value = true;
+              }
+            },
+            resetCb: () => {
+              resetDetailPanels();
+            },
+          });
+        }
         await graphUI.render(dotText, resetZoom);
       } catch (e) {
         console.error("Generate failed", e);
@@ -213,9 +215,9 @@ const app = createApp({
     }
 
     function resetDetailPanels() {
-      state.detailDrawer = false
+      state.detailDrawer = false;
       showRouteDetail.value = false;
-      schemaCodeName.value = ''
+      schemaCodeName.value = "";
     }
 
     async function onReset() {
@@ -224,8 +226,8 @@ const app = createApp({
       state.schemaId = null;
       // state.showFields = "object";
       state.brief = false;
-      state.focus = false
-      schemaCodeName.value = ''
+      state.focus = false;
+      schemaCodeName.value = "";
       onGenerate();
     }
 
@@ -234,11 +236,11 @@ const app = createApp({
         state._tag = tagName;
         state.tag = tagName;
         state.routeId = "";
-        state.focus = false
-        schemaCodeName.value = ''
+        state.focus = false;
+        schemaCodeName.value = "";
         onGenerate();
       } else {
-        state._tag = null
+        state._tag = null;
       }
 
       state.detailDrawer = false;
@@ -253,8 +255,8 @@ const app = createApp({
       }
       state.detailDrawer = false;
       showRouteDetail.value = false;
-      state.focus = false
-      schemaCodeName.value = ''
+      state.focus = false;
+      schemaCodeName.value = "";
       onGenerate();
     }
 
@@ -276,24 +278,24 @@ const app = createApp({
     function startDragDrawer(e) {
       const startX = e.clientX;
       const startWidth = state.drawerWidth;
-      
+
       function onMouseMove(moveEvent) {
-        const deltaX = startX - moveEvent.clientX; 
+        const deltaX = startX - moveEvent.clientX;
         const newWidth = Math.max(300, Math.min(800, startWidth + deltaX));
         state.drawerWidth = newWidth;
       }
-      
+
       function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
       }
-      
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
       e.preventDefault();
     }
 
@@ -333,7 +335,7 @@ const app = createApp({
       renderCoreData,
       toggleShowField,
       startDragDrawer,
-      onFocusChange
+      onFocusChange,
     };
   },
 });

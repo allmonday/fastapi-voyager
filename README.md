@@ -219,6 +219,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] refactor naming
 - 0.10.4
     - [x] fix: when focus is on, should ensure changes from other params not broken.
+- 0.10.5
+    - [x] double click to show details, and highlight as tomato
     
 
 #### 0.11
@@ -229,6 +231,10 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - config docs path
 - [ ] add tests
 - [ ] fix: focus should reset zoom
+- [ ] sort field name
+- [ ] set max limit for fields
+- [ ] add info icon alone with schema node
+- [ ] add loading for field detail panel
 
 #### 0.12
 - [ ] integration with pydantic-resolve
