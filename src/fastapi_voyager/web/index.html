@@ -218,6 +218,9 @@
                               :name="state.tag == tag.name ? 'folder' : 'folder_open'"
                             ></q-icon>
                             <span>{{ tag.name }} <q-chip style="position:relative; top: -1px;" class="q-ml-sm" dense>{{ tag.routes.length }}</q-chip></span>
+                            <a target="_blank" class="q-ml-sm" v-if="state.swaggerUrl" :href="state.swaggerUrl + '#/' + tag.name">
+                              <q-icon size="small" name="link"></q-icon>
+                            </a>
                         </div>
                       </template>
                         <q-list separator style="overflow: auto; max-height: 60vh;">
@@ -237,6 +240,9 @@
                                   name="data_object"
                                 ></q-icon>
                                 {{ route.name }}
+                                <a target="_blank" class="q-ml-sm" v-if="state.swaggerUrl" :href="state.swaggerUrl + '#/' + tag.name + '/' + route.unique_id">
+                                  <q-icon size="small" name="link"></q-icon>
+                                </a>
                               </span>
                             </q-item-section>
                           </q-item>

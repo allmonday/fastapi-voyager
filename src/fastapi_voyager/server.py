@@ -22,6 +22,7 @@ class OptionParam(BaseModel):
 	dot: str
 	enable_brief_mode: bool
 	version: str
+	swagger_url: Optional[str] = None
 
 class Payload(BaseModel):
 	tags: Optional[list[str]] = None
@@ -33,9 +34,11 @@ class Payload(BaseModel):
 	brief: bool = False
 	hide_primitive_route: bool = False
 
+
 def create_route(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
+	swagger_url: Optional[str] = None,
 	module_prefix: Optional[str] = None,
 ):
 	"""
@@ -56,7 +59,13 @@ def create_route(
 		schemas = voyager.nodes[:]
 		schemas.sort(key=lambda s: s.name)
 
-		return OptionParam(tags=tags, schemas=schemas, dot=dot, enable_brief_mode=bool(module_prefix), version=__version__)
+		return OptionParam(
+			tags=tags, 
+			schemas=schemas,
+			dot=dot,
+			enable_brief_mode=bool(module_prefix),
+			version=__version__,
+			swagger_url=swagger_url)
 
 	@router.post("/dot", response_class=PlainTextResponse)
 	def get_filtered_dot(payload: Payload) -> str:
@@ -71,7 +80,10 @@ def create_route(
 		)
 		voyager.analysis(target_app)
 		if payload.brief:
-			return voyager.render_brief_dot(module_prefix=module_prefix)
+			if payload.tags:
+				return voyager.render_tag_level_brief_dot(module_prefix=module_prefix)
+			else:
+				return voyager.render_overall_brief_dot(module_prefix=module_prefix)
 		else:
 			return voyager.render_dot()
 
@@ -196,8 +208,9 @@ def create_voyager(
 	module_color: dict[str, str] | None = None,
 	gzip_minimum_size: int | None = 500,
 	module_prefix: Optional[str] = None,
+	swagger_url: Optional[str] = None,
 ) -> FastAPI:
-	router = create_route(target_app, module_color=module_color, module_prefix=module_prefix)
+	router = create_route(target_app, module_color=module_color, module_prefix=module_prefix, swagger_url=swagger_url)
 
 	app = FastAPI(title="fastapi-voyager demo server")
 	if gzip_minimum_size is not None and gzip_minimum_size >= 0:

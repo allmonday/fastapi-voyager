@@ -59,6 +59,8 @@ class Renderer:
             return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid, dashed", dir="back", minlen=3, taillabel = "< inherit >", color = "purple", tailport="n"];"""
         elif link.type == 'subset':
             return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid, dashed", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"];"""
+        elif link.type == 'tag_to_schema':
+            return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid", dir="back", arrowtail="odot", minlen=3];"""
         else:
             raise ValueError(f'Unknown link type: {link.type}')
 

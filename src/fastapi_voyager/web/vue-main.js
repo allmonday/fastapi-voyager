@@ -24,6 +24,7 @@ const app = createApp({
       focus: false,
       hidePrimitiveRoute: false,
       generating: false,
+      swaggerUrl: null,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: new Set(), // [{ name, id }]
       rawSchemasFull: {}, // full schemas dict: { [schema.id]: schema }
@@ -78,6 +79,7 @@ const app = createApp({
           }, {});
         state.enableBriefMode = data.enable_brief_mode || false;
         state.version = data.version || "";
+        state.swaggerUrl = data.swagger_url || null
 
         // default route options placeholder
       } catch (e) {
@@ -225,7 +227,6 @@ const app = createApp({
       state.routeId = "";
       state.schemaId = null;
       // state.showFields = "object";
-      state.brief = false;
       state.focus = false;
       schemaCodeName.value = "";
       onGenerate();

@@ -6,15 +6,13 @@ from fastapi_voyager.type_helper import (
     get_bases_fields,
     is_inheritance_of_pydantic_base,
     get_pydantic_fields,
-    get_vscode_link,
-    get_source,
     get_type_name,
     update_forward_refs,
     is_non_pydantic_type
 )
 from pydantic import BaseModel
 from fastapi_voyager.type import Route, SchemaNode, Link, Tag, LinkType, FieldType, PK, CoreData
-from fastapi_voyager.filter import filter_graph, filter_subgraph_by_module_prefix
+from fastapi_voyager.filter import filter_graph, filter_subgraph_from_tag_to_schema_by_module_prefix, filter_subgraph_by_module_prefix
 from fastapi_voyager.render import Renderer
 import pydantic_resolve.constant as const
 
@@ -123,6 +121,7 @@ class Voyager:
                     id=route_id,
                     name=route_name,
                     module=route_module,
+                    unique_id=route.unique_id,
                     response_schema=get_type_name(route.response_model),
                     is_primitive=is_primitive_response
                 )
@@ -307,7 +306,8 @@ class Voyager:
         _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
         return renderer.render_dot(_tags, _routes, _nodes, _links)
     
-    def render_brief_dot(self, module_prefix: str | None = None):
+
+    def render_tag_level_brief_dot(self, module_prefix: str | None = None):
         _tags, _routes, _nodes, _links = filter_graph(
             schema=self.schema,
             schema_field=self.schema_field,
@@ -319,6 +319,30 @@ class Voyager:
         )
 
         _tags, _routes, _nodes, _links = filter_subgraph_by_module_prefix(
+            module_prefix=module_prefix,
+            tags=_tags,
+            routes=_routes,
+            nodes=_nodes,
+            links=_links,
+        )
+
+        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema)
+
+        _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
+        return renderer.render_dot(_tags, _routes, _nodes, _links, True)
+
+    def render_overall_brief_dot(self, module_prefix: str | None = None):
+        _tags, _routes, _nodes, _links = filter_graph(
+            schema=self.schema,
+            schema_field=self.schema_field,
+            tags=self.tags,
+            routes=self.routes,
+            nodes=self.nodes,
+            links=self.links,
+            node_set=self.node_set,
+        )
+
+        _tags, _routes, _nodes, _links = filter_subgraph_from_tag_to_schema_by_module_prefix(
             module_prefix=module_prefix,
             tags=_tags,
             routes=_routes,

@@ -217,6 +217,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] fix focus in brief-mode
     - [x] ui: adjust focus position
     - [x] refactor naming
+    - [x] fix layout issue when rendering huge graph
 - 0.10.4
     - [x] fix: when focus is on, should ensure changes from other params not broken.
 - 0.10.5
@@ -224,19 +225,20 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     
 
 #### 0.11
-- [ ] enable/disable module cluster  (to save space)
-- [ ] fix layout issue when rendering huge graph
-- [ ] logging information
-- [ ] support opening route in swagger
-    - config docs path
-- [ ] add tests
-- [ ] fix: focus should reset zoom
-- [ ] sort field name
-- [ ] set max limit for fields
-- [ ] add info icon alone with schema node
-- [ ] add loading for field detail panel
+- 0.11.1
+    - [x] support opening route in swagger
+        - [x] config docs path
+    - [x] provide option to hide routes in brief mode (auto hide in full graph mode)
+- 0.11.2
+    - [ ] enable/disable module cluster  (to save space)
+    - [ ] logging information
+    - [ ] sort field name
+    - [ ] set max limit for fields
+    - [ ] add info icon alone with schema node
+    - [ ] add loading for field detail panel
 
 #### 0.12
+- [ ] add tests
 - [ ] integration with pydantic-resolve
     - [ ] show hint for resolve, post fields
     - [ ] display loader as edges

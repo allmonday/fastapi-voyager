@@ -22,6 +22,7 @@ class Tag(NodeBase):
 @dataclass
 class Route(NodeBase):
     module: str
+    unique_id: str = ''
     response_schema: str = ''
     is_primitive: bool = True
 
@@ -51,7 +52,8 @@ class ModuleNode:
 #    - subset: schema -> schema (subset)
 #    - parent: schema -> schema (inheritance)
 #    - schema: schema -> schema (field reference)
-LinkType = Literal['schema', 'parent', 'tag_route', 'subset', 'route_to_schema']
+#    - tag_to_schema: tag -> schema (only happens in module prefix filtering, aka brief mode)
+LinkType = Literal['schema', 'parent', 'tag_route', 'subset', 'route_to_schema', 'tag_to_schema']
 
 @dataclass
 class Link:
