@@ -16,8 +16,7 @@ interactively !!
 
 [visit online demo](https://www.newsyeah.fun/voyager/) of project: [composition oriented development pattern](https://github.com/allmonday/composition-oriented-development-pattern)
 
-<p align="center"><img src="./voyager.jpg" alt="" /></p>
-<p align="center"><a target="_blank" rel="" href="https://www.youtube.com/watch?v=PGlbQq1M-n8"><img src="http://img.youtube.com/vi/PGlbQq1M-n8/0.jpg" alt="" style="max-width: 100%;"></a></p>
+<img width="1600" height="986" alt="image" src="https://github.com/user-attachments/assets/8829cda0-f42d-4c84-be2f-b019bb5fe7e1" />
 
 ## Installation
 
@@ -68,32 +67,25 @@ voyager -m tests.demo
            --module_color=tests.demo:tomato
 ```
 
-### generate the graph
-after initialization, pick tag, rotue to render graph
-
-<img width="1628" height="765" alt="image" src="https://github.com/user-attachments/assets/b4712f82-e754-453b-aa69-24c932b8f48f" />
-
 ### highlight
 click a node to highlight it's upperstream and downstream nodes. figure out the related models of one page, or homw many pages are related with one model.
 
-<img width="1485" height="616" alt="image" style="border: 1px solid #aaa" src="https://github.com/user-attachments/assets/70c4095f-86c7-45da-a6f0-fd41ac645813" />
+<img width="1100" height="700" alt="image" src="https://github.com/user-attachments/assets/3e0369ea-5fa4-469a-82c1-ed57d407e53d" />
 
-### filter related nodes
-`shift` click a node to check related node, pick a field to narrow the result, picked node is marked as red.
+### focus on nodes
+toggle focus to hide nodes not related with current picked one.
 
-<img width="1423" height="552" alt="image" src="https://github.com/user-attachments/assets/468a058d-afa1-4601-a7c5-c6aad6a8a557" />
+before: 
+<img width="1066" height="941" alt="image" src="https://github.com/user-attachments/assets/39f30817-899a-4289-93f4-a1646d3441c1" />
+after:
+<img width="1061" height="937" alt="image" src="https://github.com/user-attachments/assets/79709b02-7571-43fc-abc9-17a287a97515" />
 
 ### view source code
-`alt` click a node to show source code or open file in vscode.
+double click a node to show source code or open file in vscode.
+<img width="1297" height="940" alt="image" src="https://github.com/user-attachments/assets/c8bb2e7d-b727-42a6-8c9e-64dce297d2d8" />
 
-<img width="1049" height="694" alt="image" src="https://github.com/user-attachments/assets/7839ac83-8d60-44ad-b1c9-9652a76339b1" />
-
-<img width="1042" height="675" alt="image" src="https://github.com/user-attachments/assets/38ae705f-5982-4a02-9c3f-038b1d00bcf6" />
-
-`alt` click a route to show source code or open file in vscode
-
-<img width="882" height="445" alt="image" src="https://github.com/user-attachments/assets/158560ef-63ca-4991-9b7d-587be4fa04e4" />
-
+double click a route to show source code or open file in vscode
+<img width="1132" height="824" alt="image" src="https://github.com/user-attachments/assets/b706e879-e4fc-48dd-ace1-99bf97e3ed6a" />
 
 
 
