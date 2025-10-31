@@ -5,7 +5,14 @@
 
 > This repo is still in early stage, it supports pydantic v2 only
 
-Inspect your API interactively!  
+FastAPI can help you:
+
+- design your API
+- inspect your API
+- refactor your API
+
+interactively !!
+
 
 [visit online demo](https://www.newsyeah.fun/voyager/) of project: [composition oriented development pattern](https://github.com/allmonday/composition-oriented-development-pattern)
 
