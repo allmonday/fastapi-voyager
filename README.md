@@ -245,6 +245,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - 0.11.4
     - [x] add loading for field detail panel
 - 0.11.5
+    - [x] optimize open in swagger link
     - [ ] logging information
     - [ ] sort field name
     - [ ] set max limit for fields

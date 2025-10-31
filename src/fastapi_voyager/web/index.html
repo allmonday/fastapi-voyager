@@ -218,9 +218,9 @@
                               class="q-mr-sm"
                               :name="state.tag == tag.name ? 'folder' : 'folder_open'"
                             ></q-icon>
-                            <span>{{ tag.name }} <q-chip style="position:relative; top: -1px;" class="q-ml-sm" dense>{{ tag.routes.length }}</q-chip></span>
-                            <a target="_blank" class="q-ml-sm" v-if="state.swaggerUrl" :href="state.swaggerUrl + '#/' + tag.name">
-                              <q-icon size="small" name="link"></q-icon>
+                            <span>{{ tag.name }} <q-chip style="position:relative; top: -1px;" class="q-ml-md" dense>{{ tag.routes.length }}</q-chip></span>
+                            <a v-if="state._tag == tag.name" target="_blank" class="q-ml-sm" v-if="state.swaggerUrl" :href="state.swaggerUrl + '#/' + tag.name">
+                              <q-icon color="primary" size="" name="link" title="open in swagger"></q-icon>
                             </a>
                         </div>
                       </template>
@@ -241,8 +241,8 @@
                                   name="data_object"
                                 ></q-icon>
                                 {{ route.name }}
-                                <a target="_blank" class="q-ml-sm" v-if="state.swaggerUrl" :href="state.swaggerUrl + '#/' + tag.name + '/' + route.unique_id">
-                                  <q-icon size="small" name="link"></q-icon>
+                                <a v-if="state.routeId == route.id" target="_blank" class="q-ml-md" v-if="state.swaggerUrl" :href="state.swaggerUrl + '#/' + tag.name + '/' + route.unique_id">
+                                  <q-icon color="primary" size="" name="link" title="open in swagger"></q-icon>
                                 </a>
                               </span>
                             </q-item-section>
