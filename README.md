@@ -239,8 +239,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
         - [x] config docs path
     - [x] provide option to hide routes in brief mode (auto hide in full graph mode)
 - 0.11.2
-    - [ ] add loading for field detail panel
     - [x] enable/disable module cluster  (to save space)
+- 0.11.3
+    - [ ] add loading for field detail panel
     - [ ] logging information
     - [ ] sort field name
     - [ ] set max limit for fields

@@ -148,6 +148,7 @@
           side="right"
           style="border-left: 1px solid #888;"
           bordered
+          overlay
         >
           <!-- 可拖拽的调整栏 -->
           <div 
@@ -265,37 +266,41 @@
               <div style="position: relative; width: 100%; height: 100%;">
                 <div id="graph" class="adjust-fit"></div>
                 <div style="position: absolute; left: 8px; bottom: 8px; z-index: 10; background: rgba(255,255,255,0.85); border-radius: 4px; padding: 2px 8px;">
-                  <div>
+                  <div class="q-mt-sm">
                     <q-toggle
                       v-model="state.focus"
                       v-show="schemaCodeName"
                       @update:model-value="val => onFocusChange(val)"
                       label="Focus"
+                      dense
                       title="pick a schema and toggle focus on to display related nodes only"
                     />
                   </div>
-                  <div>
+                  <div class="q-mt-sm">
                     <q-toggle
                       v-if="state.enableBriefMode"
+                      dense
                       v-model="state.brief"
                       label="Brief Mode"
                       @update:model-value="(val) => toggleBrief(val)"
                       title="skip middle classes, config module_prefix to enable it"
                     />
                   </div>
-                  <div>
+                  <div class="q-mt-sm">
                     <q-toggle
                       v-model="state.hidePrimitiveRoute"
                       @update:model-value="(val) => toggleHidePrimitiveRoute(val)"
                       label="Hide Primitive"
+                      dense
                       title="hide routes return primitive"
                     />
                   </div>
-                  <div>
+                  <div class="q-mt-sm">
                     <q-toggle
                       v-model="state.showModule"
                       @update:model-value="(val) => toggleShowModule(val)"
                       label="Show Module Cluster"
+                      dense
                       title="show module cluster"
                     />
                   </div>
