@@ -232,12 +232,11 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
         - [x] config docs path
     - [x] provide option to hide routes in brief mode (auto hide in full graph mode)
 - 0.11.2
+    - [ ] add loading for field detail panel
     - [ ] enable/disable module cluster  (to save space)
     - [ ] logging information
     - [ ] sort field name
     - [ ] set max limit for fields
-    - [ ] add info icon alone with schema node
-    - [ ] add loading for field detail panel
 
 #### 0.12
 - [ ] add tests
