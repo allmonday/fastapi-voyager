@@ -291,6 +291,14 @@
                       title="hide routes return primitive"
                     />
                   </div>
+                  <div>
+                    <q-toggle
+                      v-model="state.showModule"
+                      @update:model-value="(val) => toggleShowModule(val)"
+                      label="Show Module Cluster"
+                      title="show module cluster"
+                    />
+                  </div>
                 </div>
               </div>
             </template>

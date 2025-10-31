@@ -27,6 +27,7 @@ class Voyager:
             module_color: dict[str, str] | None = None,
             route_name: str | None = None,
             hide_primitive_route: bool = False,
+            show_module: bool = True
         ):
 
         self.routes: list[Route] = []
@@ -48,6 +49,7 @@ class Voyager:
         self.module_color = module_color or {}
         self.route_name = route_name
         self.hide_primitive_route = hide_primitive_route
+        self.show_module = show_module
     
 
     def _get_available_route(self, app: FastAPI):
@@ -301,7 +303,7 @@ class Voyager:
             node_set=self.node_set,
         )
 
-        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema)
+        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema, show_module=self.show_module)
 
         _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
         return renderer.render_dot(_tags, _routes, _nodes, _links)
@@ -326,7 +328,7 @@ class Voyager:
             links=_links,
         )
 
-        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema)
+        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema, show_module=self.show_module)
 
         _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
         return renderer.render_dot(_tags, _routes, _nodes, _links, True)
@@ -350,7 +352,7 @@ class Voyager:
             links=_links,
         )
 
-        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema)
+        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema, show_module=self.show_module)
 
         _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
         return renderer.render_dot(_tags, _routes, _nodes, _links, True)

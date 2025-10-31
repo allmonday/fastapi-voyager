@@ -34,6 +34,7 @@ const app = createApp({
       detailDrawer: false,
       drawerWidth: 300, // drawer 宽度
       version: "", // version from backend
+      showModule: true
     });
 
     const showDetail = ref(false);
@@ -112,6 +113,7 @@ const app = createApp({
           show_fields: state.showFields,
           brief: state.brief,
           hide_primitive_route: state.hidePrimitiveRoute,
+          show_module: state.showModule,
         };
         const res = await fetch("dot", {
           method: "POST",
@@ -261,6 +263,11 @@ const app = createApp({
       onGenerate();
     }
 
+    function toggleShowModule(val) {
+      state.showModule = val;
+      onGenerate()
+    }
+
     function toggleShowField(field) {
       state.showFields = field;
       onGenerate(false);
@@ -337,6 +344,7 @@ const app = createApp({
       toggleShowField,
       startDragDrawer,
       onFocusChange,
+      toggleShowModule
     };
   },
 });

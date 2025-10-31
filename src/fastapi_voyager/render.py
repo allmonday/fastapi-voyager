@@ -10,10 +10,12 @@ class Renderer:
         show_fields: FieldType = 'single',
         module_color: dict[str, str] | None = None,
         schema: str | None = None,
+        show_module: bool = True
     ) -> None:
         self.show_fields = show_fields if show_fields in ('single', 'object', 'all') else 'single'
         self.module_color = module_color or {}
         self.schema = schema
+        self.show_module = show_module
 
     def render_schema_label(self, node: SchemaNode) -> str:
         has_base_fields = any(f.from_base for f in node.fields)
@@ -60,13 +62,18 @@ class Renderer:
         elif link.type == 'subset':
             return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid, dashed", dir="back", minlen=3, taillabel = "< subset >", color = "orange", tailport="n"];"""
         elif link.type == 'tag_to_schema':
-            return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid",  minlen=3];"""
+            return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid", minlen=3];"""
         else:
             raise ValueError(f'Unknown link type: {link.type}')
 
-    def render_module_schema_content(self, mods: list[ModuleNode]) -> str:
-        module_color_flag = set(self.module_color.keys())
-
+    def render_module_schema_content(self, nodes: list[SchemaNode]) -> str:
+        def render_node(node: SchemaNode) -> str:
+            return f'''
+                "{node.id}" [
+                    label = {self.render_schema_label(node)}
+                    shape = "plain"
+                    margin="0.5,0.1"
+                ];'''
         def render_module_schema(mod: ModuleNode) -> str:
             color: Optional[str] = None
 
@@ -76,14 +83,7 @@ class Renderer:
                     color = self.module_color[k]
                     break
 
-            inner_nodes = [
-                f'''
-                    "{node.id}" [
-                        label = {self.render_schema_label(node)}
-                        shape = "plain"
-                        margin="0.5,0.1"
-                    ];''' for node in mod.schema_nodes
-            ]
+            inner_nodes = [ render_node(node) for node in mod.schema_nodes ]
             inner_nodes_str = '\n'.join(inner_nodes)
             child_str = '\n'.join(render_module_schema(m) for m in mod.modules)
             return f'''
@@ -98,34 +98,49 @@ class Renderer:
                     {inner_nodes_str}
                     {child_str}
                 }}'''
-        return '\n'.join(render_module_schema(m) for m in mods)
+        if self.show_module:
+            module_schemas = build_module_schema_tree(nodes)
+            module_color_flag = set(self.module_color.keys())
+            return '\n'.join(render_module_schema(m) for m in module_schemas)
+        else:
+            return '\n'.join(render_node(n) for n in nodes)
     
-    def render_module_route(self, mod: ModuleRoute) -> str:
-        # Inner route nodes, same style as flat route_str
-        inner_nodes = [
-            f'''
-            "{r.id}" [
-                label = "    {r.name} | {r.response_schema}    "
-                margin="0.5,0.1"
-                shape = "record"
-            ];''' for r in mod.routes
-        ]
-        inner_nodes_str = '\n'.join(inner_nodes)
-        child_str = '\n'.join(self.render_module_route(m) for m in mod.modules)
-        return f'''
-            subgraph cluster_route_module_{mod.fullname.replace('.', '_')} {{
-                tooltip="{mod.fullname}"
-                color = "#666"
-                style="rounded"
-                label = "  {mod.name}"
-                labeljust = "l"
-                {inner_nodes_str}
-                {child_str}
-            }}'''
+    def render_module_route_content(self, routes: list[Route]) -> str:
+        def render_route(route: Route) -> str:
+            response_schema = route.response_schema[:25] + '..' if len(route.response_schema) > 25 else route.response_schema
+            return f'''
+                "{route.id}" [
+                    label = "    {route.name} | {response_schema}    "
+                    margin="0.5,0.1"
+                    shape = "record"
+                ];'''
+
+        def render_module_route(mod: ModuleRoute) -> str:
+            # Inner route nodes, same style as flat route_str
+            inner_nodes = [
+                render_route(r) for r in mod.routes
+            ]
+            inner_nodes_str = '\n'.join(inner_nodes)
+            child_str = '\n'.join(render_module_route(m) for m in mod.modules)
+            return f'''
+                subgraph cluster_route_module_{mod.fullname.replace('.', '_')} {{
+                    tooltip="{mod.fullname}"
+                    color = "#666"
+                    style="rounded"
+                    label = "  {mod.name}"
+                    labeljust = "l"
+                    {inner_nodes_str}
+                    {child_str}
+                }}'''
+        if self.show_module:
+            module_routes = build_module_route_tree(routes)
+            module_routes_str = '\n'.join(render_module_route(m) for m in module_routes)
+            return module_routes_str
+        else:
+            return '\n'.join(render_route(r) for r in routes)
+
 
     def render_dot(self, tags: list[Tag], routes: list[Route], nodes: list[SchemaNode], links: list[Link], spline_line=False) -> str:
-        module_schemas = build_module_schema_tree(nodes)
-        module_routes = build_module_route_tree(routes)
 
         tag_str = '\n'.join([
             f'''
@@ -136,9 +151,8 @@ class Renderer:
             ];''' for t in tags
         ])
 
-
-        module_schemas_str = self.render_module_schema_content(module_schemas)
-        module_routes_str = '\n'.join(self.render_module_route(m) for m in module_routes)
+        module_routes_str = self.render_module_route_content(routes)
+        module_schemas_str = self.render_module_schema_content(nodes)
         link_str = '\n'.join(self.render_link(link) for link in links)
 
         dot_str = f'''

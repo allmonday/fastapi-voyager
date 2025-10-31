@@ -33,6 +33,7 @@ class Payload(BaseModel):
 	show_meta: bool = False
 	brief: bool = False
 	hide_primitive_route: bool = False
+	show_module: bool = True
 
 
 def create_route(
@@ -77,6 +78,7 @@ def create_route(
 			module_color=module_color,
 			route_name=payload.route_name,
 			hide_primitive_route=payload.hide_primitive_route,
+			show_module=payload.show_module,
 		)
 		voyager.analysis(target_app)
 		if payload.brief:
