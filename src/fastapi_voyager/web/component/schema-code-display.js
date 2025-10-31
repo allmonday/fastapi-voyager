@@ -14,6 +14,8 @@ export default defineComponent({
   props: {
     schemaName: { type: String, required: true },
     schemas: { type: Object, default: () => ({}) },
+    // visibility from parent (e.g., dialog v-model)
+    modelValue: { type: Boolean, default: true },
   },
   setup(props, { emit }) {
     const code = ref("");
@@ -21,6 +23,7 @@ export default defineComponent({
     const error = ref("");
     const fields = ref([]); // schema fields list
     const tab = ref("fields");
+    const loading = ref(false);
 
 
     async function highlightLater() {
@@ -45,12 +48,22 @@ export default defineComponent({
       });
     }
 
+    function resetState() {
+      code.value = "";
+      link.value = "";
+      error.value = null;
+      fields.value = [];
+      // tab.value = "fields";
+      loading.value = true;
+    }
+
     async function loadSource() {
       if (!props.schemaName) return;
 
       error.value = null;
       code.value = "";
       link.value = "";
+      loading.value = true;
 
       // try to fetch from server: /source/{schema_name}
       const payload = { schema_name: props.schemaName };
@@ -71,13 +84,8 @@ export default defineComponent({
         } else {
           error.value = (data && data.error) || "Failed to load source";
         }
-      } catch (e) {
-        error.value = "Failed to load source";
-      } finally {
-      }
 
-      try {
-        const resp = await fetch(`vscode-link`, {
+        const resp2 = await fetch(`vscode-link`, {
           method: "POST",
           headers: {
             Accept: "application/json",
@@ -85,16 +93,16 @@ export default defineComponent({
           },
           body: JSON.stringify(payload),
         });
-        // surface server-side validation message for bad request
-        const data = await resp.json().catch(() => ({}));
-        if (resp.ok) {
-          link.value = data.link || "// no vscode link available";
+        const data2 = await resp2.json().catch(() => ({}));
+        if (resp2.ok) {
+          link.value = data2.link || "// no vscode link available";
         } else {
-          error.value += (data && data.error) || "Failed to load source";
+          error.value = (error.value || "") + ((data2 && data2.error) || "Failed to load source");
         }
       } catch (e) {
         error.value = "Failed to load source";
       } finally {
+        loading.value = false;
       }
 
       const schema = props.schemas && props.schemas[props.schemaName];
@@ -118,18 +126,36 @@ export default defineComponent({
     watch(
       () => props.schemaName,
       () => {
+        resetState();
         loadSource();
       },
     );
 
+    // respond to visibility changes: when shown, clear old data and reload
+    watch(
+      () => props.modelValue,
+      (val) => {
+        if (val) {
+          resetState();
+          loadSource();
+        }
+      }
+    );
+
     onMounted(() => {
-      loadSource();
+      if (props.modelValue) {
+        resetState();
+        loadSource();
+      }
     });
 
-    return { link, code, error, fields, tab };
+    return { link, code, error, fields, tab, loading };
   },
   template: `
   <div class="frv-code-display" style="border: 1px solid #ccc; border-left: none; position:relative; height:100%; background:#fff;">
+      <div v-show="loading" style="position:absolute; top:0; left:0; right:0; z-index:10;">
+        <q-linear-progress indeterminate color="primary" size="2px"/>
+      </div>
       <div class="q-ml-lg q-mt-md">
         <a :href="link" target="_blank" rel="noopener" style="font-size:12px; color:#3b82f6;">
           Open in VSCode

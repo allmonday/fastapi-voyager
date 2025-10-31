@@ -7,4 +7,5 @@ app.mount(
         app, 
         module_color={"tests.service": "red"}, 
         module_prefix="tests.service", 
+        swagger_url="/docs",
         online_repo_url="https://github.com/allmonday/fastapi-voyager/blob/main"))
