@@ -24,6 +24,22 @@ uv add fastapi-voyager
 voyager -m path.to.your.app.module --server
 ```
 
+## Mount into project
+
+```python
+from fastapi import FastAPI
+from fastapi_voyager import create_voyager
+from tests.demo import app
+
+app.mount('/voyager', create_voyager(
+    app, 
+    module_color={"tests.service": "red"}, 
+    module_prefix="tests.service"),
+    swagger_url="/docs")
+```
+
+more about [sub application](https://fastapi.tiangolo.com/advanced/sub-applications/?h=sub)
+
 
 ## Feature
 
@@ -72,20 +88,6 @@ click a node to highlight it's upperstream and downstream nodes. figure out the 
 <img width="882" height="445" alt="image" src="https://github.com/user-attachments/assets/158560ef-63ca-4991-9b7d-587be4fa04e4" />
 
 
-## Mount to target project
-
-```python
-from fastapi import FastAPI
-from fastapi_voyager import create_voyager
-from tests.demo import app
-
-app.mount('/voyager', create_voyager(
-    app, 
-    module_color={"tests.service": "red"}, 
-    module_prefix="tests.service"))
-```
-
-more about [sub application](https://fastapi.tiangolo.com/advanced/sub-applications/?h=sub)
 
 
 ## Command Line Usage
