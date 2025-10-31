@@ -1,7 +1,7 @@
 import inspect
 import os
 from pydantic import BaseModel
-from typing import get_origin, get_args, Union, Annotated, Any, Type, Generic
+from typing import get_origin, get_args, Union, Annotated, Any, Type, Generic, Optional
 from fastapi_voyager.type import FieldInfo
 from types import UnionType
 import pydantic_resolve.constant as const
@@ -182,7 +182,7 @@ def get_pydantic_fields(schema: type[BaseModel], bases_fields: set[str]) -> list
     return fields
 
 
-def get_vscode_link(kls):
+def get_vscode_link(kls, online_repo_url: Optional[str] = None) -> str:
     """Build a VSCode deep link to the class definition.
 
     Priority:
@@ -197,6 +197,10 @@ def get_vscode_link(kls):
         _lines, start_line = inspect.getsourcelines(kls)
 
         distro = os.environ.get("WSL_DISTRO_NAME")
+        if online_repo_url:
+            cwd = os.getcwd()
+            relative_path = os.path.relpath(source_file, cwd)
+            return f"{online_repo_url}/{relative_path}#L{start_line}"
         if distro:
             # Ensure absolute path (it should already be under /) and build remote link
             return f"vscode://vscode-remote/wsl+{distro}{source_file}:{start_line}"

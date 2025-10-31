@@ -41,6 +41,7 @@ def create_route(
 	module_color: dict[str, str] | None = None,
 	swagger_url: Optional[str] = None,
 	module_prefix: Optional[str] = None,
+	online_repo_url: Optional[str] = None,
 ):
 	"""
 	module_color: dict mapping module name to color string, e.g. {'models': 'lightblue'}
@@ -183,7 +184,7 @@ def create_route(
 			
 			mod = __import__(module_name, fromlist=[class_name])
 			obj = getattr(mod, class_name)
-			link = get_vscode_link(obj)
+			link = get_vscode_link(obj, online_repo_url=online_repo_url)
 			
 			return JSONResponse(content={"link": link})
 		except ImportError as e:
@@ -211,8 +212,14 @@ def create_voyager(
 	gzip_minimum_size: int | None = 500,
 	module_prefix: Optional[str] = None,
 	swagger_url: Optional[str] = None,
+	online_repo_url: Optional[str] = None,
 ) -> FastAPI:
-	router = create_route(target_app, module_color=module_color, module_prefix=module_prefix, swagger_url=swagger_url)
+	router = create_route(
+		target_app, 
+		module_color=module_color, 
+		module_prefix=module_prefix, 
+		swagger_url=swagger_url,
+		online_repo_url=online_repo_url)
 
 	app = FastAPI(title="fastapi-voyager demo server")
 	if gzip_minimum_size is not None and gzip_minimum_size >= 0:
