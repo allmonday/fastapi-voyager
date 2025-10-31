@@ -28,7 +28,4 @@ jobs:
         run: uv build
 
       - name: Publish to PyPI
-        env:
-          UV_PUBLISH_USERNAME: __token__
-          UV_PUBLISH_PASSWORD: ${{ secrets.PYPI_PUBLISHER }}
-        run: uv publish --token $UV_PUBLISH_PASSWORD
+        run: uv publish --token ${{ secrets.PYPI_PUBLISHER }}
