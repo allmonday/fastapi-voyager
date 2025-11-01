@@ -154,6 +154,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] animation effect for edges
 - [ ] customrized right click panel
     - [ ] show own dependencies
+- [ ] sort field name
+- [ ] set max limit for fields
+- [ ] logging information
 
 ### plan:
 #### <0.9:
@@ -240,10 +243,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] optimize open in swagger link
     - [x] change jquery cdn
 - 0.11.6
-    - [ ] flag of loading full graph in first render or not
-    - [ ] logging information
-    - [ ] sort field name
-    - [ ] set max limit for fields
+    - [x] flag of loading full graph in first render or not
+    - [x] optimize loading static resource 
 
 #### 0.12
 - [ ] add tests

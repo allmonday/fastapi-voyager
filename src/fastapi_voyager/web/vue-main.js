@@ -34,7 +34,7 @@ const app = createApp({
       detailDrawer: false,
       drawerWidth: 300, // drawer 宽度
       version: "", // version from backend
-      showModule: true
+      showModule: true,
     });
 
     const showDetail = ref(false);
@@ -81,6 +81,19 @@ const app = createApp({
         state.enableBriefMode = data.enable_brief_mode || false;
         state.version = data.version || "";
         state.swaggerUrl = data.swagger_url || null
+
+        switch (data.initial_page_policy) {
+          case "full":
+            onGenerate()
+            return
+          case "empty":
+            return
+          case "first":
+            state.tag = state.rawTags.length > 0 ? state.rawTags[0].name : null;
+            state._tag = state.tag;
+            onGenerate();
+            return
+        }
 
         // default route options placeholder
       } catch (e) {
@@ -226,6 +239,7 @@ const app = createApp({
 
     async function onReset() {
       state.tag = null;
+      state._tag = null;
       state.routeId = "";
       state.schemaId = null;
       // state.showFields = "object";
@@ -308,7 +322,9 @@ const app = createApp({
     }
 
     onMounted(async () => {
+      document.body.classList.remove("app-loading")
       await loadInitial();
+      // Reveal app content only after initial JS/data is ready
     });
 
     return {

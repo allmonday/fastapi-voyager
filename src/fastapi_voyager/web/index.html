@@ -59,8 +59,39 @@
     .adjust-fit {
       height: calc(100vh - 54px);
     }
+    /* App boot loading overlay & gating */
+    #app-loading-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #ffffff;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: #009485;
+    }
+    .loading-text { font-size: 14px; }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(0, 148, 133, 0.2);
+      border-top-color: #009485;
+      border-radius: 50%;
+      animation: frv-spin 0.8s linear infinite;
+    }
+    @keyframes frv-spin { to { transform: rotate(360deg); } }
+    /* While JS not ready: hide app, show overlay */
+    body.app-loading #q-app { visibility: hidden; }
+    body.app-loading #app-loading-overlay { display: flex; }
   </style>
-  <body>
+  <body class="app-loading">
+    <!-- App boot loading overlay: shown until JS initializes -->
+    <div id="app-loading-overlay" aria-busy="true" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loading-text">Loading…</div>
+    </div>
     <div id="q-app">
       <q-layout view="hHh lpR fff">
         <q-header bordered class="bg-primary text-white">
@@ -75,7 +106,7 @@
             </div>
             <div class="col-auto" style="font-size: 16px">
               <q-option-group
-                style="margin-left: 140px"
+                style="margin-left: 80px"
                 v-model="state.showFields"
                 :options="state.fieldOptions"
                 @update:model-value="(val) => toggleShowField(val)"
@@ -410,7 +441,8 @@
         />
       </q-dialog>
     </div>
-
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="fastapi-voyager-static/quasar.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js" integrity="sha512-egJ/Y+22P9NQ9aIyVCh0VCOsfydyn8eNmqBy+y2CnJG+fpRIxXMS6jbWP8tVKp0jp+NO5n8WtMUAnNnGoJKi4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"
@@ -422,15 +454,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-graphviz/5.6.0/d3-graphviz.min.js" integrity="sha512-Le8HpIpS2Tc7SDHLM6AOgAKq6ZR4uDwLhjPSR20DtXE5dFb9xECHRwgpc1nxxnU0Dv+j6FNMoSddky5gyvI3lQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
-
-    <!-- Add the following at the end of your body tag -->
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.22/vue.global.prod.min.js"
-      integrity="sha512-Y9sKU0AwzWRxKSLd2i35LuDpUdHY/E9tJrKG0mxw0qYQ75VVgGYazIUQPwKhFK9vGO3jIgAtxLiSq8GQ7PDfUg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script src="fastapi-voyager-static/quasar.min.js"></script>
     <script src="fastapi-voyager-static/graphviz.svg.js"></script>
     <!-- highlight.js minimal ES module load (python only) -->
     <link
@@ -438,10 +461,18 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
     />
     <script type="module">
-      import hljs from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js";
-      import python from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/python.min.js";
-      hljs.registerLanguage("python", python);
-      window.hljs = hljs;
+      window.addEventListener('DOMContentLoaded', async () => {
+        if (!window.hljs) {
+          try {
+            const { default: hljs } = await import('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js');
+            const { default: python } = await import('https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/python.min.js');
+            hljs.registerLanguage("python", python);
+            window.hljs = hljs;
+          } catch (e) {
+            console.warn("Failed to preload highlight.js", e);
+          }
+        }
+      });
     </script>
     <script type="module" src="fastapi-voyager-static/vue-main.js"></script>
   </body>

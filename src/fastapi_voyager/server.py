@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 from fastapi import FastAPI, APIRouter
 from starlette.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
@@ -15,6 +15,7 @@ from fastapi_voyager.version import __version__
 WEB_DIR = Path(__file__).parent / "web"
 WEB_DIR.mkdir(exist_ok=True)
 
+INITIAL_PAGE_POLICY = Literal['first', 'full', 'empty']
 
 class OptionParam(BaseModel):
 	tags: list[Tag]
@@ -22,6 +23,7 @@ class OptionParam(BaseModel):
 	dot: str
 	enable_brief_mode: bool
 	version: str
+	initial_page_policy: INITIAL_PAGE_POLICY
 	swagger_url: Optional[str] = None
 
 class Payload(BaseModel):
@@ -42,6 +44,7 @@ def create_route(
 	swagger_url: Optional[str] = None,
 	module_prefix: Optional[str] = None,
 	online_repo_url: Optional[str] = None,
+	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
 ):
 	"""
 	module_color: dict mapping module name to color string, e.g. {'models': 'lightblue'}
@@ -67,7 +70,8 @@ def create_route(
 			dot=dot,
 			enable_brief_mode=bool(module_prefix),
 			version=__version__,
-			swagger_url=swagger_url)
+			swagger_url=swagger_url,
+			initial_page_policy=initial_page_policy)
 
 	@router.post("/dot", response_class=PlainTextResponse)
 	def get_filtered_dot(payload: Payload) -> str:
@@ -213,13 +217,16 @@ def create_voyager(
 	module_prefix: Optional[str] = None,
 	swagger_url: Optional[str] = None,
 	online_repo_url: Optional[str] = None,
+	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
 ) -> FastAPI:
 	router = create_route(
 		target_app, 
 		module_color=module_color, 
 		module_prefix=module_prefix, 
 		swagger_url=swagger_url,
-		online_repo_url=online_repo_url)
+		online_repo_url=online_repo_url,
+		initial_page_policy=initial_page_policy,
+		)
 
 	app = FastAPI(title="fastapi-voyager demo server")
 	if gzip_minimum_size is not None and gzip_minimum_size >= 0:
