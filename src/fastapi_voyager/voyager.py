@@ -29,7 +29,6 @@ class Voyager:
             route_name: str | None = None,
             hide_primitive_route: bool = False,
             show_module: bool = True,
-            route_name_fn: Callable | None = None
         ):
 
         self.routes: list[Route] = []
@@ -52,7 +51,6 @@ class Voyager:
         self.route_name = route_name
         self.hide_primitive_route = hide_primitive_route
         self.show_module = show_module
-        self.route_name_fn = route_name_fn
     
 
     def _get_available_route(self, app: FastAPI):
@@ -126,7 +124,7 @@ class Voyager:
                     id=route_id,
                     name=route_name,
                     module=route_module,
-                    unique_id=self.route_name_fn(route) if self.route_name_fn else route.unique_id,
+                    unique_id=route.operation_id or route.unique_id,
                     response_schema=get_type_name(route.response_model),
                     is_primitive=is_primitive_response
                 )

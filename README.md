@@ -247,6 +247,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] optimize loading static resource 
 - 0.11.7
     - [x] fix swagger link
+- 0.11.8
+    - [x] fix swagger link in another way
 
 #### 0.12
 - [ ] add tests

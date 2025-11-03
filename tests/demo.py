@@ -105,3 +105,7 @@ def get_page_test_3_no_response_model():
 @app.get("/page_test_5/", tags=['long_long_long_tag_name', 'group_b'])
 def get_page_test_3_no_response_model():
     return True
+
+
+for r in app.router.routes:
+    r.operation_id = r.name
