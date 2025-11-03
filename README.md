@@ -246,7 +246,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] flag of loading full graph in first render or not
     - [x] optimize loading static resource 
 - 0.11.7
-    - [ ] fix swagger link
+    - [x] fix swagger link
 
 #### 0.12
 - [ ] add tests
