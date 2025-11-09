@@ -5,14 +5,7 @@
 
 > This repo is still in early stage, it supports pydantic v2 only
 
-FastAPI Voyager can help you:
-
-- design your API
-- inspect your API
-- refactor your API
-
-interactively !!
-
+Visualize your FastAPI endpoints, and explore them interactively.
 
 [visit online demo](https://www.newsyeah.fun/voyager/) of project: [composition oriented development pattern](https://github.com/allmonday/composition-oriented-development-pattern)
 
