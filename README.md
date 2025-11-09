@@ -5,7 +5,7 @@
 
 > This repo is still in early stage, it supports pydantic v2 only
 
-FastAPI can help you:
+FastAPI Voyager can help you:
 
 - design your API
 - inspect your API
