@@ -141,6 +141,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [ ] add route/tag list
 - [ ] type alias should not be kept as node instead of compiling to original type
 - [ ] how to correctly handle the generic type ?
+- [ ] support Google analysis config
 
 ### in analysis
 - [ ] click field to highlight links

@@ -5,7 +5,7 @@ app.mount(
     '/voyager', 
     create_voyager(
         app, 
-        module_color={"tests.service": "red"}, 
+        module_color={"tests.service": "purple"}, 
         module_prefix="tests.service", 
         swagger_url="/docs",
         initial_page_policy='first',

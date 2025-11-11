@@ -38,18 +38,15 @@ class Payload(BaseModel):
 	show_module: bool = True
 
 
-def create_route(
+def create_voyager(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
-	swagger_url: Optional[str] = None,
+	gzip_minimum_size: int | None = 500,
 	module_prefix: Optional[str] = None,
+	swagger_url: Optional[str] = None,
 	online_repo_url: Optional[str] = None,
 	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
-):
-	"""
-	module_color: dict mapping module name to color string, e.g. {'models': 'lightblue'}
-	module_prefix: prefix string to define schemas show in brief mode
-	"""
+) -> FastAPI:
 	router = APIRouter(tags=['fastapi-voyager'])
 
 	@router.get("/dot", response_model=OptionParam)
@@ -207,27 +204,6 @@ def create_route(
 				content={"error": f"Internal error: {str(e)}"}
 			)
         
-	return router
-
-
-def create_voyager(
-	target_app: FastAPI,
-	module_color: dict[str, str] | None = None,
-	gzip_minimum_size: int | None = 500,
-	module_prefix: Optional[str] = None,
-	swagger_url: Optional[str] = None,
-	online_repo_url: Optional[str] = None,
-	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
-) -> FastAPI:
-	router = create_route(
-		target_app, 
-		module_color=module_color, 
-		module_prefix=module_prefix, 
-		swagger_url=swagger_url,
-		online_repo_url=online_repo_url,
-		initial_page_policy=initial_page_policy,
-		)
-
 	app = FastAPI(title="fastapi-voyager demo server")
 	if gzip_minimum_size is not None and gzip_minimum_size >= 0:
 		app.add_middleware(GZipMiddleware, minimum_size=gzip_minimum_size)
