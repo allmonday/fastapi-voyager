@@ -283,7 +283,7 @@ def is_generic_container(cls):
     
 def is_non_pydantic_type(tp):
     for schema in get_core_types(tp):
-        if schema and issubclass(schema, BaseModel):
+        if schema and safe_issubclass(schema, BaseModel):
             return False
     return True
 
