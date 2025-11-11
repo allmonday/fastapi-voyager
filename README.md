@@ -23,6 +23,9 @@ uv add fastapi-voyager
 voyager -m path.to.your.app.module --server
 ```
 
+> *sub_app* is not supported yet.
+
+
 ## Mount into project
 
 ```python
@@ -254,12 +257,13 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] config release pipeline
 
 
-## Using with pydantic-resolve
+## About pydantic-resolve
 
-WIP: ...
+pydantic-resolve's `@ensure_subset` decorator helps safely pick fields from the 'source class' while indicating the reference from the current class to the base class.
 
-pydantic-resolve's @ensure_subset decorator is helpful to pick fields from `source class` in safe.
+pydantic-resolve is a lightweight tool designed to build complex, nested data in a simple, declarative way. In version 2, it will introduce an important feature: ER model definition, and fastapi-voyager will support and visualize these diagrams.
 
+Developers can use fastapi-voyager without needing to know about pydantic-resolve.
 
 
 ## Credits
@@ -293,3 +297,7 @@ open `localhost:8000/voyager`
 
 frontend: `src/web/vue-main.js`
 backend: `voyager.py`, `render.py`, `server.py`
+
+## Branch and Release flow
+
+TODO
