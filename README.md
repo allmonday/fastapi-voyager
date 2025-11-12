@@ -23,8 +23,11 @@ uv add fastapi-voyager
 voyager -m path.to.your.app.module --server
 ```
 
-> *sub_app* is not supported yet.
+> [Sub-Application mounts](https://fastapi.tiangolo.com/advanced/sub-applications/) are not supported yet, but you can specify the name of the FastAPI application used with `--app`. Only a single application (default: 'app') can be selected, but in a scenario where `api` is attached through `app.mount("/api", api)`, you can select `api` like this:
 
+```shell
+voyager -m path.to.your.app.module --server --app api
+```
 
 ## Mount into project
 
