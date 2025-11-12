@@ -236,7 +236,6 @@ def filter_subgraph_from_tag_to_schema_by_module_prefix(
     seen_pairs: set[tuple[str, str]] = set()
 
     for link in tag_route_links:
-        # print(link)
         tag_id = link.source_origin
         start_node_id = link.target_origin
         if tag_id is None or start_node_id is None:

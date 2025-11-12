@@ -1,10 +1,13 @@
 import inspect
+import logging
 import os
 from pydantic import BaseModel
 from typing import get_origin, get_args, Union, Annotated, Any, Type, Generic, Optional
 from fastapi_voyager.type import FieldInfo
 from types import UnionType
 import pydantic_resolve.constant as const
+
+logger = logging.getLogger(__name__)
 
 # Python <3.12 compatibility: TypeAliasType exists only from 3.12 (PEP 695)
 try:  # pragma: no cover - import guard
@@ -232,7 +235,7 @@ def safe_issubclass(kls, classinfo):
     try:
         return issubclass(kls, classinfo)
     except TypeError:
-        print(kls.__name__, 'is not a class')
+        logger.debug("%s is not a subclass of %s", kls.__name__, classinfo.__name__)
         return False
 
 

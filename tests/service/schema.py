@@ -1,6 +1,5 @@
-from fastapi_voyager.voyager import Voyager
 from pydantic import BaseModel
-from pydantic_resolve import ensure_subset
+from typing import Literal
 
 class Sprint(BaseModel):
     id: int
@@ -8,6 +7,7 @@ class Sprint(BaseModel):
 
 class Story(BaseModel):
     id: int
+    type: Literal['feature', 'bugfix']
     sprint_id: int
     title: str
     description: str

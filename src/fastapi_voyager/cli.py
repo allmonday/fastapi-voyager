@@ -1,15 +1,18 @@
 """Command line interface for fastapi-voyager."""
 import argparse
-import sys
-import importlib.util
 import importlib
+import importlib.util
+import logging
 import os
+import sys
 from typing import Optional
 
 from fastapi import FastAPI
-from fastapi_voyager.voyager import Voyager
-from fastapi_voyager.version import __version__
 from fastapi_voyager import server as viz_server
+from fastapi_voyager.version import __version__
+from fastapi_voyager.voyager import Voyager
+
+logger = logging.getLogger(__name__)
 
 
 def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optional[FastAPI]:
@@ -22,7 +25,7 @@ def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optio
         # Load the module
         spec = importlib.util.spec_from_file_location("app_module", module_path)
         if spec is None or spec.loader is None:
-            print(f"Error: Could not load module from {module_path}")
+            logger.error(f"Could not load module from {module_path}")
             return None
             
         module = importlib.util.module_from_spec(spec)
@@ -34,15 +37,13 @@ def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optio
             app = getattr(module, app_name)
             if isinstance(app, FastAPI):
                 return app
-            else:
-                print(f"Error: '{app_name}' is not a FastAPI instance")
-                return None
-        else:
-            print(f"Error: No attribute '{app_name}' found in the module")
+            logger.error(f"'{app_name}' is not a FastAPI instance")
             return None
+        logger.error(f"No attribute '{app_name}' found in the module")
+        return None
             
     except Exception as e:
-        print(f"Error loading FastAPI app: {e}")
+        logger.error(f"Error loading FastAPI app: {e}")
         return None
 
 
@@ -66,22 +67,20 @@ def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Opt
                 app = getattr(module, app_name)
                 if isinstance(app, FastAPI):
                     return app
-                else:
-                    print(f"Error: '{app_name}' is not a FastAPI instance")
-                    return None
-            else:
-                print(f"Error: No attribute '{app_name}' found in module '{module_name}'")
+                logger.error(f"'{app_name}' is not a FastAPI instance")
                 return None
+            logger.error(f"No attribute '{app_name}' found in module '{module_name}'")
+            return None
         finally:
             # Cleanup: if we added the path, remove it
             if path_added and current_dir in sys.path:
                 sys.path.remove(current_dir)
             
     except ImportError as e:
-        print(f"Error: Could not import module '{module_name}': {e}")
+        logger.error(f"Could not import module '{module_name}': {e}")
         return None
     except Exception as e:
-        print(f"Error loading FastAPI app from module '{module_name}': {e}")
+        logger.error(f"Error loading FastAPI app from module '{module_name}': {e}")
         return None
 
 
@@ -110,9 +109,9 @@ def generate_visualization(
     # Optionally write to file
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(dot_content)
-    print(f"DOT file generated: {output_file}")
-    print("To render the graph, use: dot -Tpng router_viz.dot -o router_viz.png")
-    print("Or view online: https://dreampuf.github.io/GraphvizOnline/")
+    logger.debug(f"DOT file generated: {output_file}")
+    logger.debug("To render the graph, use: dot -Tpng router_viz.dot -o router_viz.png")
+    logger.debug("Or view online: https://dreampuf.github.io/GraphvizOnline/")
 
 
 def main():
@@ -216,42 +215,21 @@ Examples:
         default=None,
         help="Filter by route id (format: <endpoint>_<path with _>)"
     )
-    parser.add_argument(
-        "--demo",
-        action="store_true",
-        help="Run built-in demo (equivalent to: --module tests.demo --server --module_color=tests.service:blue --module_color=tests.demo:tomato)"
-    )
     
     args = parser.parse_args()
     
-    # Handle demo mode: override module_name and defaults
-    if args.demo:
-        # Force module loading path
-        args.module_name = "tests.demo"
-        # Ensure server mode on
-        args.server = True
-        # Inject default module colors if absent / merge
-        demo_defaults = ["tests.service:blue", "tests.demo:tomato"]
-        existing = set(args.module_color or [])
-        for d in demo_defaults:
-            # only add if same key not already provided
-            key = d.split(":", 1)[0]
-            if not any(mc.startswith(key + ":") for mc in existing):
-                args.module_color = (args.module_color or []) + [d]
-
     if args.module_prefix and not args.server:
         parser.error("--module_prefix can only be used together with --server")
 
-    # Validate required target if not demo
-    if not args.demo and not (args.module_name or args.module):
-        parser.error("You must provide a module file, -m module name, or use --demo")
+    if not (args.module_name or args.module):
+        parser.error("You must provide a module file, -m module name")
 
     # Load FastAPI app based on the input method (module_name takes precedence)
     if args.module_name:
         app = load_fastapi_app_from_module(args.module_name, args.app)
     else:
         if not os.path.exists(args.module):
-            print(f"Error: File '{args.module}' not found")
+            logger.error(f"File '{args.module}' not found")
             sys.exit(1)
         app = load_fastapi_app_from_file(args.module, args.app)
     
@@ -279,14 +257,14 @@ Examples:
             try:
                 import uvicorn
             except ImportError:
-                print("Error: uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
+                logger.debug("uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
                 sys.exit(1)
             app_server = viz_server.create_voyager(
                 app,
                 module_color=module_color,
                 module_prefix=args.module_prefix,
             )
-            print(f"Starting preview server at http://{args.host}:{args.port} ... (Ctrl+C to stop)")
+            logger.debug(f"Starting preview server at http://{args.host}:{args.port} ... (Ctrl+C to stop)")
             uvicorn.run(app_server, host=args.host, port=args.port)
         else:
             # Generate and write dot file locally
@@ -300,7 +278,7 @@ Examples:
                 route_name=args.route_name,
             )
     except Exception as e:
-        print(f"Error generating visualization: {e}")
+        logger.debug(f"Error generating visualization: {e}")
         sys.exit(1)
 
 
