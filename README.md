@@ -248,6 +248,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] fix swagger link in another way
 - 0.11.9
     - [x] replace issubclass with safe_issubclass to prevent exception.
+- 0.11.10
+    - [x] fix bug during updating forward refs
 
 #### 0.12
 - [ ] add tests

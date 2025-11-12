@@ -232,27 +232,24 @@ def safe_issubclass(kls, classinfo):
     try:
         return issubclass(kls, classinfo)
     except TypeError:
-        print(kls.__name__, 'is not a class')
+        # may raise error for corner case such as ForwardRef
+        print(str(kls), 'is not a target class')  
         return False
 
 
 def update_forward_refs(kls):
     # TODO: refactor
-    def update_pydantic_forward_refs(kls2: Type[BaseModel]):
+    def update_pydantic_forward_refs(pydantic_kls: Type[BaseModel]):
         """
         recursively update refs.
         """
 
-        kls2.model_rebuild()
-        setattr(kls2, const.PYDANTIC_FORWARD_REF_UPDATED, True)
+        pydantic_kls.model_rebuild()
+        setattr(pydantic_kls, const.PYDANTIC_FORWARD_REF_UPDATED, True)
 
-        values = kls2.model_fields.values()
+        values = pydantic_kls.model_fields.values()
         for field in values:
             update_forward_refs(field.annotation)
-
-    if safe_issubclass(kls, BaseModel):
-        kls.model_rebuild()
-        setattr(kls, const.PYDANTIC_FORWARD_REF_UPDATED, True)
         
     for shelled_type in get_core_types(kls):
         if getattr(shelled_type, const.PYDANTIC_FORWARD_REF_UPDATED, False):

@@ -4,6 +4,7 @@ from typing import Optional, Generic, TypeVar
 from pydantic_resolve import ensure_subset, Resolver
 from tests.service.schema import Story, Task, A
 import tests.service.schema as serv
+from dataclasses import dataclass
 
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 
@@ -15,6 +16,11 @@ class PageMember(serv.Member):
     fullname: str = ''
     def post_fullname(self):
         return self.first_name + ' ' + self.last_name
+    sh: 'Something'  # forward reference
+
+@dataclass
+class Something:
+    id: int
 
 class TaskA(Task):
     task_type: str = 'A'
