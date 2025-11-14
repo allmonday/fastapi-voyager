@@ -253,6 +253,8 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] fix bug during updating forward refs
 - 0.11.11
     - [x] replace print with logging and add `--log-level` in cli, by default info
+    - [x] fill node title color with module color
+    - [x] optimize cluster render logic
 
 ### 0.12
 - 0.12.1
@@ -260,6 +262,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [ ] sort field name in nodes
     - [ ] set max limit for fields in nodes
     - [ ] upgrade network algorithm (optional)
+    - [ ] refactor render.py
 
 #### 0.13
 - 0.12.0
