@@ -23,8 +23,11 @@ uv add fastapi-voyager
 voyager -m path.to.your.app.module --server
 ```
 
-> *sub_app* is not supported yet.
+> [Sub-Application mounts](https://fastapi.tiangolo.com/advanced/sub-applications/) are not supported yet, but you can specify the name of the FastAPI application used with `--app`. Only a single application (default: 'app') can be selected, but in a scenario where `api` is attached through `app.mount("/api", api)`, you can select `api` like this:
 
+```shell
+voyager -m path.to.your.app.module --server --app api
+```
 
 ## Mount into project
 
@@ -137,8 +140,6 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - [ ] user can generate nodes/edges manually and connect to generated ones
     - [ ] eg: add owner
     - [ ] add extra info for schema
-- [ ] display standard ER diagram `hard`
-    - [ ] display potential invalid links
 - [ ] optimize static resource (allow manually config url)
 - [ ] improve search dialog
     - [ ] add route/tag list
@@ -149,11 +150,9 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 ### in analysis
 - [ ] click field to highlight links
 - [ ] animation effect for edges
-- [ ] customrized right click panel
-    - [ ] show own dependencies
-- [ ] sort field name
-- [ ] set max limit for fields
-- [ ] logging information
+- [ ] display standard ER diagram spec. `hard but important`
+    - [ ] display potential invalid links
+    - [ ] highlight relationship belongs to ER diagram
 
 ### plan:
 #### <0.9:
@@ -248,15 +247,27 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [x] fix swagger link in another way
 - 0.11.9
     - [x] replace issubclass with safe_issubclass to prevent exception.
+- 0.11.10
+    - [x] fix bug during updating forward refs
+- 0.11.11
+    placeholder
 
-#### 0.12
-- [ ] add tests
-- [ ] integration with pydantic-resolve
-    - [ ] show hint for resolve, post fields
-    - [ ] display loader as edges
+### 0.12
+- 0.12.1
+    - [ ] sort tag / route names in left panel
+    - [ ] sort field name in nodes
+    - [ ] set max limit for fields in nodes
+    - [ ] upgrade network algorithm (optional)
 
 #### 0.13
-- [ ] config release pipeline
+- 0.12.0
+    - [ ] integration with pydantic-resolve
+        - [ ] show hint for resolve, post fields
+        - [ ] display loader as edges
+    - [ ] add tests
+
+#### 0.13
+placeholder
 
 
 ## About pydantic-resolve
