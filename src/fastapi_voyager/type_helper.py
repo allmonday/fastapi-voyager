@@ -231,12 +231,11 @@ def get_source(kls):
         return "failed to get source"
 
 
-def safe_issubclass(kls, classinfo):
+def safe_issubclass(kls, target_kls):
     try:
-        return issubclass(kls, classinfo)
+        return issubclass(kls, target_kls)
     except TypeError:
-        # may raise error for corner case such as ForwardRef
-        print(str(kls), 'is not a target class')  
+        logger.debug(f'{kls.__module__}:{kls.__qualname__} is not subclass of {target_kls.__module__}:{target_kls.__qualname__}')  
         return False
 
 

@@ -109,9 +109,9 @@ def generate_visualization(
     # Optionally write to file
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(dot_content)
-    logger.debug(f"DOT file generated: {output_file}")
-    logger.debug("To render the graph, use: dot -Tpng router_viz.dot -o router_viz.png")
-    logger.debug("Or view online: https://dreampuf.github.io/GraphvizOnline/")
+    logger.info(f"DOT file generated: {output_file}")
+    logger.info("To render the graph, use: dot -Tpng router_viz.dot -o router_viz.png")
+    logger.info("Or view online: https://dreampuf.github.io/GraphvizOnline/")
 
 
 def main():
@@ -215,6 +215,12 @@ Examples:
         default=None,
         help="Filter by route id (format: <endpoint>_<path with _>)"
     )
+    parser.add_argument(
+        "--log-level",
+        dest="log_level",
+        default="INFO",
+        help="Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL (default: INFO)"
+    )
     
     args = parser.parse_args()
     
@@ -223,6 +229,10 @@ Examples:
 
     if not (args.module_name or args.module):
         parser.error("You must provide a module file, -m module name")
+
+    # Configure logging based on --log-level
+    level_name = (args.log_level or "INFO").upper()
+    logging.basicConfig(level=level_name)
 
     # Load FastAPI app based on the input method (module_name takes precedence)
     if args.module_name:
@@ -257,15 +267,15 @@ Examples:
             try:
                 import uvicorn
             except ImportError:
-                logger.debug("uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
+                logger.info("uvicorn is required to run the server. Install via 'pip install uvicorn' or 'uv add uvicorn'.")
                 sys.exit(1)
             app_server = viz_server.create_voyager(
                 app,
                 module_color=module_color,
                 module_prefix=args.module_prefix,
             )
-            logger.debug(f"Starting preview server at http://{args.host}:{args.port} ... (Ctrl+C to stop)")
-            uvicorn.run(app_server, host=args.host, port=args.port)
+            logger.info(f"Starting preview server at http://{args.host}:{args.port} ... (Ctrl+C to stop)")
+            uvicorn.run(app_server, host=args.host, port=args.port, log_level=level_name.lower())
         else:
             # Generate and write dot file locally
             generate_visualization(
@@ -278,7 +288,7 @@ Examples:
                 route_name=args.route_name,
             )
     except Exception as e:
-        logger.debug(f"Error generating visualization: {e}")
+        logger.info(f"Error generating visualization: {e}")
         sys.exit(1)
 
 

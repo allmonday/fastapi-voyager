@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Literal
+from typing import Literal, Dict
 
 class Sprint(BaseModel):
     id: int
@@ -8,6 +8,7 @@ class Sprint(BaseModel):
 class Story(BaseModel):
     id: int
     type: Literal['feature', 'bugfix']
+    dct: Dict
     sprint_id: int
     title: str
     description: str

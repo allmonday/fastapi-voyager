@@ -115,6 +115,8 @@ voyager -m tests.demo --module_color=tests.demo:red --module_color=tests.service
 voyager -m tests.demo -o my_visualization.dot
 
 voyager --version
+
+voyager --help
 ```
 
 The tool will generate a DOT file that you can render using Graphviz:
@@ -250,7 +252,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
 - 0.11.10
     - [x] fix bug during updating forward refs
 - 0.11.11
-    placeholder
+    - [x] replace print with logging and add `--log-level` in cli, by default info
 
 ### 0.12
 - 0.12.1
