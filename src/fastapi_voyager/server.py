@@ -57,6 +57,9 @@ def create_voyager(
 
 		# include tags and their routes
 		tags = voyager.tags
+		for t in tags:
+			t.routes.sort(key=lambda r: r.name)
+		tags.sort(key=lambda t: t.name)
 
 		schemas = voyager.nodes[:]
 		schemas.sort(key=lambda s: s.name)
