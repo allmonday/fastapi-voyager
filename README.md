@@ -43,49 +43,33 @@ app.mount('/voyager', create_voyager(
     swagger_url="/docs")
 ```
 
-more about [sub application](https://fastapi.tiangolo.com/advanced/sub-applications/?h=sub)
-
-
-## Feature
+## Features
 
 For scenarios of using FastAPI as internal API integration endpoints, `fastapi-voyager` helps to visualize the dependencies.
 
-It is also an architecture inspection tool that can identify issues in data relationships through visualization during the design phase.
+It is also an architecture inspection tool that can identify issues in data relationships during design phase before turly implemtatioin.
 
 If the process of building the view model follows the ER model, the full potential of fastapi-voyager can be realized. It allows for quick identification of APIs  that use entities, as well as which entities are used by a specific API
 
-
-
-```shell
-git clone https://github.com/allmonday/fastapi-voyager.git
-cd fastapi-voyager
-
-voyager -m tests.demo 
-           --server --port=8001 
-           --module_color=tests.service:blue 
-           --module_color=tests.demo:tomato
-```
-
-### highlight
+### highlight nodes and links
 click a node to highlight it's upperstream and downstream nodes. figure out the related models of one page, or homw many pages are related with one model.
+
 
 <img width="1100" height="700" alt="image" src="https://github.com/user-attachments/assets/3e0369ea-5fa4-469a-82c1-ed57d407e53d" />
 
 ### focus on nodes
-toggle focus to hide nodes not related with current picked one.
 
-before: 
-<img width="1066" height="941" alt="image" src="https://github.com/user-attachments/assets/39f30817-899a-4289-93f4-a1646d3441c1" />
-after:
+Double click a node, and then toggle focus to hide irrelevant nodes.
+
 <img width="1061" height="937" alt="image" src="https://github.com/user-attachments/assets/79709b02-7571-43fc-abc9-17a287a97515" />
 
 ### view source code
-double click a node to show source code or open file in vscode.
+
+double click a node or route to show source code or open file in vscode.
+
 <img width="1297" height="940" alt="image" src="https://github.com/user-attachments/assets/c8bb2e7d-b727-42a6-8c9e-64dce297d2d8" />
 
-double click a route to show source code or open file in vscode
 <img width="1132" height="824" alt="image" src="https://github.com/user-attachments/assets/b706e879-e4fc-48dd-ace1-99bf97e3ed6a" />
-
 
 
 ## Command Line Usage
@@ -119,29 +103,13 @@ voyager --version
 voyager --help
 ```
 
-The tool will generate a DOT file that you can render using Graphviz:
-
-```bash
-# Install graphviz
-brew install graphviz  # macOS
-apt-get install graphviz  # Ubuntu/Debian
-
-# Render the graph
-dot -Tpng router_viz.dot -o router_viz.png
-
-# Or view online at: https://dreampuf.github.io/GraphvizOnline/
-```
-
-or you can open router_viz.dot with vscode extension `graphviz interactive preview`
-
-
 ## About pydantic-resolve
 
-pydantic-resolve's `@ensure_subset` decorator helps safely pick fields from the 'source class' while indicating the reference from the current class to the base class.
+pydantic-resolve's `@ensure_subset` decorator helps safely pick fields from the 'source class' while **indicating the reference** from the current class to the base class.
 
-pydantic-resolve is a lightweight tool designed to build complex, nested data in a simple, declarative way. In version 2, it will introduce an important feature: ER model definition, and fastapi-voyager will support and visualize these diagrams.
+pydantic-resolve is a lightweight tool designed to build complex, nested data in a simple, declarative way. In version 2.0.0alpha, it will introduce an important feature: ER Diagram, and fastapi-voyager will support this feature, allowing for a clearer understanding of the business relationships between the data.
 
-Developers can use fastapi-voyager without needing to know about pydantic-resolve.
+Developers can use fastapi-voyager without needing to know anything about pydantic-resolve, but I still highly recommend everyone to give it a try.
 
 ## Dependencies
 
@@ -172,8 +140,13 @@ uvicorn tests.programatic:app  --reload
 open `localhost:8000/voyager`
 
 
-frontend: `src/web/vue-main.js`
-backend: `voyager.py`, `render.py`, `server.py`
+frontend: 
+- `src/web/vue-main.js`: main js
+
+backend: 
+- `voyager.py`: main entry
+- `render.py`: generate dot file
+- `server.py`: serve mode
 
 
 ## Plan & Raodmap
