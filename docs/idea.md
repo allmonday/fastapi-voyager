@@ -1,4 +1,4 @@
-# Plan
+# Idea
 
 ## backlog
 - [ ] user can generate nodes/edges manually and connect to generated ones

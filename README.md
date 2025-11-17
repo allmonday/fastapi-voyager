@@ -143,18 +143,17 @@ pydantic-resolve is a lightweight tool designed to build complex, nested data in
 
 Developers can use fastapi-voyager without needing to know about pydantic-resolve.
 
-
-## Credits
-
-- https://apis.guru/graphql-voyager/, thanks for inspiration.
-- https://github.com/tintinweb/vscode-interactive-graphviz, thanks for web visualization.
-
-
 ## Dependencies
 
 - FastAPI
 - [pydantic-resolve](https://github.com/allmonday/pydantic-resolve)
 - Quasar
+
+
+## Credits
+
+- https://apis.guru/graphql-voyager/, thanks for inspiration.
+- https://github.com/tintinweb/vscode-interactive-graphviz, thanks for web visualization.
 
 
 ## How to develop & contribute?
@@ -176,6 +175,7 @@ open `localhost:8000/voyager`
 frontend: `src/web/vue-main.js`
 backend: `voyager.py`, `render.py`, `server.py`
 
-## Branch and Release flow
 
-TODO
+## Plan & Raodmap
+- [ideas](./docs/idea.md)
+- [changelog & roadmap](./docs/changelog.md)
