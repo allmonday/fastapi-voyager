@@ -157,6 +157,7 @@ export default defineComponent({
         <q-linear-progress indeterminate color="primary" size="2px"/>
       </div>
       <div class="q-ml-lg q-mt-md">
+        <p style="font-size: 16px;"> {{ schemaName }} </p>
         <a :href="link" target="_blank" rel="noopener" style="font-size:12px; color:#3b82f6;">
           Open in VSCode
         </a>
