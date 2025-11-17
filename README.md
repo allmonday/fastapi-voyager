@@ -263,6 +263,7 @@ or you can open router_viz.dot with vscode extension `graphviz interactive previ
     - [ ] set max limit for fields in nodes
     - [ ] upgrade network algorithm (optional)
     - [ ] refactor render.py
+    - [ ] persist the tag/ route in url
 
 #### 0.13
 - 0.12.0
