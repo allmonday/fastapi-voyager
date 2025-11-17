@@ -102,11 +102,12 @@
 ## 0.12
 - 0.12.1
     - [x] sort tag / route names in left panel
-    - [ ] sort field name in nodes (only table inside right panel)
-    - [ ] set max limit for fields in nodes
-    - [ ] upgrade network algorithm (optional)
+    - [x] display schema name on top of detail panel
+    - [x] optimize dbclick style
+    - [x] persist the tag/ route in url
+- 0.12.2
+    - [ ] search tag/ route
     - [ ] refactor render.py
-    - [ ] persist the tag/ route in url
     - [ ] reorg: move variable into reactive in vue-main.js
 
 ## 0.13
