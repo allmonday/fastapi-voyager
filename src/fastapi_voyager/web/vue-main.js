@@ -59,6 +59,66 @@ const app = createApp({
       showDetail.value = false;
     }
 
+    function readQuerySelection() {
+      if (typeof window === "undefined") {
+        return { tag: null, route: null };
+      }
+      const params = new URLSearchParams(window.location.search);
+      return {
+        tag: params.get("tag") || null,
+        route: params.get("route") || null,
+      };
+    }
+
+    function findTagByRoute(routeId) {
+      return (
+        state.rawTags.find((tag) =>
+          (tag.routes || []).some((route) => route.id === routeId)
+        )?.name || null
+      );
+    }
+
+    function syncSelectionToUrl() {
+      if (typeof window === "undefined") {
+        return;
+      }
+      const params = new URLSearchParams(window.location.search);
+      if (state.tag) {
+        params.set("tag", state.tag);
+      } else {
+        params.delete("tag");
+      }
+      if (state.routeId) {
+        params.set("route", state.routeId);
+      } else {
+        params.delete("route");
+      }
+      const hash = window.location.hash || "";
+      const search = params.toString();
+      const base = window.location.pathname;
+      const newUrl = search ? `${base}?${search}${hash}` : `${base}${hash}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+
+    function applySelectionFromQuery(selection) {
+      let applied = false;
+      if (selection.tag && state.rawTags.some((tag) => tag.name === selection.tag)) {
+        state.tag = selection.tag;
+        state._tag = selection.tag;
+        applied = true;
+      }
+      if (selection.route && state.routeItems?.[selection.route]) {
+        state.routeId = selection.route;
+        applied = true;
+        const inferredTag = findTagByRoute(selection.route);
+        if (inferredTag) {
+          state.tag = inferredTag;
+          state._tag = inferredTag;
+        }
+      }
+      return applied;
+    }
+
     async function loadInitial() {
       state.initializing = true;
       try {
@@ -81,6 +141,14 @@ const app = createApp({
         state.enableBriefMode = data.enable_brief_mode || false;
         state.version = data.version || "";
         state.swaggerUrl = data.swagger_url || null
+
+        const querySelection = readQuerySelection();
+        const restoredFromQuery = applySelectionFromQuery(querySelection);
+        if (restoredFromQuery) {
+          syncSelectionToUrl();
+          onGenerate();
+          return;
+        }
 
         switch (data.initial_page_policy) {
           case "full":
@@ -246,6 +314,7 @@ const app = createApp({
       state.focus = false;
       schemaCodeName.value = "";
       onGenerate();
+      syncSelectionToUrl();
     }
 
     function toggleTag(tagName, expanded = null) {
@@ -262,6 +331,7 @@ const app = createApp({
 
       state.detailDrawer = false;
       showRouteDetail.value = false;
+      syncSelectionToUrl();
     }
 
     function selectRoute(routeId) {
@@ -275,6 +345,7 @@ const app = createApp({
       state.focus = false;
       schemaCodeName.value = "";
       onGenerate();
+      syncSelectionToUrl();
     }
 
     function toggleShowModule(val) {
