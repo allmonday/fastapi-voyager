@@ -11,6 +11,10 @@ Visualize your FastAPI endpoints, and explore them interactively.
 
 <img width="1600" height="986" alt="image" src="https://github.com/user-attachments/assets/8829cda0-f42d-4c84-be2f-b019bb5fe7e1" />
 
+## Plan & Raodmap
+- [ideas](./docs/idea.md)
+- [changelog & roadmap](./docs/changelog.md)
+
 ## Installation
 
 ```bash
@@ -147,8 +151,3 @@ backend:
 - `voyager.py`: main entry
 - `render.py`: generate dot file
 - `server.py`: serve mode
-
-
-## Plan & Raodmap
-- [ideas](./docs/idea.md)
-- [changelog & roadmap](./docs/changelog.md)
