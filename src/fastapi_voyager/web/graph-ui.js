@@ -58,9 +58,10 @@ export class GraphUI {
   }
 
   highlightSchemaBanner(node) {
-    const ele = node.querySelector("polygon[fill='#009485']")
+    const polygons = node.querySelectorAll("polygon");
+    const ele = polygons[2]; // select the second polygon
     if (ele) {
-      ele.setAttribute('fill', 'tomato');
+      ele.setAttribute('stroke-width', '3.5');
     }
   }
 
@@ -160,12 +161,6 @@ export class GraphUI {
               }
             }
           });
-
-        $(document).on("keydown.graphui", function (evt) {
-          if (evt.keyCode === 27 && self.gv) {
-            self.gv.highlight();
-          }
-        });
       },
     });
   }
