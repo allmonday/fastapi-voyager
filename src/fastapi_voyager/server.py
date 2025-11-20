@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_voyager.voyager import Voyager
-from fastapi_voyager.type import Tag, FieldInfo, CoreData, SchemaNode
+from fastapi_voyager.type import Tag, CoreData, SchemaNode
 from fastapi_voyager.render import Renderer
 from fastapi_voyager.type_helper import get_source, get_vscode_link
 from fastapi_voyager.version import __version__
@@ -14,6 +14,22 @@ from fastapi_voyager.version import __version__
 
 WEB_DIR = Path(__file__).parent / "web"
 WEB_DIR.mkdir(exist_ok=True)
+
+GA_PLACEHOLDER = "<!-- GA_SNIPPET -->"
+
+def _build_ga_snippet(ga_id: Optional[str]) -> str:
+	if not ga_id:
+		return ""
+
+	return f"""    <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{dataLayer.push(arguments);}}
+      gtag('js', new Date());
+
+      gtag('config', '{ga_id}');
+    </script>
+"""
 
 INITIAL_PAGE_POLICY = Literal['first', 'full', 'empty']
 
@@ -46,6 +62,7 @@ def create_voyager(
 	swagger_url: Optional[str] = None,
 	online_repo_url: Optional[str] = None,
 	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
+	ga_id: Optional[str] = None,
 ) -> FastAPI:
 	router = APIRouter(tags=['fastapi-voyager'])
 
@@ -116,7 +133,8 @@ def create_voyager(
 	def index():
 		index_file = WEB_DIR / "index.html"
 		if index_file.exists():
-			return index_file.read_text(encoding="utf-8")
+			content = index_file.read_text(encoding="utf-8")
+			return content.replace(GA_PLACEHOLDER, _build_ga_snippet(ga_id))
 		# fallback simple page if index.html missing
 		return """
 		<!doctype html>

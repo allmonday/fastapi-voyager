@@ -106,6 +106,8 @@
     - [x] optimize dbclick style
     - [x] persist the tag/ route in url
 - 0.12.2
+    - [x] add google analytics
+- 0.12.3
     - [ ] search tag/ route
     - [ ] refactor render.py
     - [ ] reorg: move variable into reactive in vue-main.js
