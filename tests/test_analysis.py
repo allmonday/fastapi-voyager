@@ -1,7 +1,8 @@
-from fastapi_voyager.voyager import Voyager
-from pydantic import BaseModel
+
 from fastapi import FastAPI
-from typing import Optional
+from pydantic import BaseModel
+
+from fastapi_voyager.voyager import Voyager
 
 
 def test_analysis():
@@ -22,11 +23,11 @@ def test_analysis():
 
     app = FastAPI()
 
-    @app.get("/test", response_model=Optional[A])
+    @app.get("/test", response_model=A | None)
     def home():
         return None
 
-    @app.get("/test2", response_model=Optional[C])
+    @app.get("/test2", response_model=C | None)
     def home2():
         return None
 

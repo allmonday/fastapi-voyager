@@ -1,6 +1,7 @@
-from typing import Callable, Type, TypeVar, Any
-from fastapi_voyager.type import SchemaNode, ModuleNode, Route, ModuleRoute
+from collections.abc import Callable
+from typing import Any, TypeVar
 
+from fastapi_voyager.type import ModuleNode, ModuleRoute, Route, SchemaNode
 
 N = TypeVar('N')  # Node type: ModuleNode or ModuleRoute
 I = TypeVar('I')  # Item type: SchemaNode or Route
@@ -10,7 +11,7 @@ def _build_module_tree(
     items: list[I],
     *,
     get_module_path: Callable[[I], str | None],
-    NodeClass: Type[N],
+    NodeClass: type[N],
     item_list_attr: str,
 ) -> list[N]:
     """
@@ -34,13 +35,13 @@ def _build_module_tree(
         return NodeClass(**kwargs)  # type: ignore[arg-type]
 
     def get_or_create(child_name: str, parent: N) -> N:
-        for m in getattr(parent, 'modules'):
+        for m in parent.modules:
             if m.name == child_name:
                 return m
-        parent_full = getattr(parent, 'fullname')
+        parent_full = parent.fullname
         fullname = child_name if not parent_full or parent_full == "__root__" else f"{parent_full}.{child_name}"
         new_node = make_node(child_name, fullname)
-        getattr(parent, 'modules').append(new_node)
+        parent.modules.append(new_node)
         return new_node
 
     # Build the tree
@@ -65,13 +66,13 @@ def _build_module_tree(
 
     # Collapse linear chains: no items on node and exactly one child module
     def collapse(node: N) -> None:
-        while len(getattr(node, 'modules')) == 1 and len(getattr(node, item_list_attr)) == 0:
-            child = getattr(node, 'modules')[0]
+        while len(node.modules) == 1 and len(getattr(node, item_list_attr)) == 0:
+            child = node.modules[0]
             node.name = f"{node.name}.{child.name}"
             node.fullname = child.fullname
             setattr(node, item_list_attr, getattr(child, item_list_attr))
-            setattr(node, 'modules', getattr(child, 'modules'))
-        for m in getattr(node, 'modules'):
+            node.modules = child.modules
+        for m in node.modules:
             collapse(m)
 
     for top in result:

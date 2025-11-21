@@ -1,23 +1,24 @@
 from pathlib import Path
-from typing import Optional, Literal
-from fastapi import FastAPI, APIRouter
-from starlette.middleware.gzip import GZipMiddleware
-from pydantic import BaseModel
-from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
+from typing import Literal
+
+from fastapi import APIRouter, FastAPI
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi_voyager.voyager import Voyager
-from fastapi_voyager.type import Tag, CoreData, SchemaNode
+from pydantic import BaseModel
+from starlette.middleware.gzip import GZipMiddleware
+
 from fastapi_voyager.render import Renderer
+from fastapi_voyager.type import CoreData, SchemaNode, Tag
 from fastapi_voyager.type_helper import get_source, get_vscode_link
 from fastapi_voyager.version import __version__
-
+from fastapi_voyager.voyager import Voyager
 
 WEB_DIR = Path(__file__).parent / "web"
 WEB_DIR.mkdir(exist_ok=True)
 
 GA_PLACEHOLDER = "<!-- GA_SNIPPET -->"
 
-def _build_ga_snippet(ga_id: Optional[str]) -> str:
+def _build_ga_snippet(ga_id: str | None) -> str:
 	if not ga_id:
 		return ""
 
@@ -40,13 +41,13 @@ class OptionParam(BaseModel):
 	enable_brief_mode: bool
 	version: str
 	initial_page_policy: INITIAL_PAGE_POLICY
-	swagger_url: Optional[str] = None
+	swagger_url: str | None = None
 
 class Payload(BaseModel):
-	tags: Optional[list[str]] = None
-	schema_name: Optional[str] = None
-	schema_field: Optional[str] = None
-	route_name: Optional[str] = None
+	tags: list[str] | None = None
+	schema_name: str | None = None
+	schema_field: str | None = None
+	route_name: str | None = None
 	show_fields: str = 'object'
 	show_meta: bool = False
 	brief: bool = False
@@ -58,11 +59,11 @@ def create_voyager(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
 	gzip_minimum_size: int | None = 500,
-	module_prefix: Optional[str] = None,
-	swagger_url: Optional[str] = None,
-	online_repo_url: Optional[str] = None,
+	module_prefix: str | None = None,
+	swagger_url: str | None = None,
+	online_repo_url: str | None = None,
 	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
-	ga_id: Optional[str] = None,
+	ga_id: str | None = None,
 ) -> FastAPI:
 	router = APIRouter(tags=['fastapi-voyager'])
 

@@ -1,21 +1,25 @@
-from pydantic import BaseModel
+
+import pydantic_resolve.constant as const
 from fastapi import FastAPI, routing
-from typing import Callable
+from pydantic import BaseModel
+
+from fastapi_voyager.filter import (
+    filter_graph,
+    filter_subgraph_by_module_prefix,
+    filter_subgraph_from_tag_to_schema_by_module_prefix,
+)
+from fastapi_voyager.render import Renderer
+from fastapi_voyager.type import PK, CoreData, FieldType, Link, LinkType, Route, SchemaNode, Tag
 from fastapi_voyager.type_helper import (
-    get_core_types,
     full_class_name,
     get_bases_fields,
-    is_inheritance_of_pydantic_base,
+    get_core_types,
     get_pydantic_fields,
     get_type_name,
+    is_inheritance_of_pydantic_base,
+    is_non_pydantic_type,
     update_forward_refs,
-    is_non_pydantic_type
 )
-from pydantic import BaseModel
-from fastapi_voyager.type import Route, SchemaNode, Link, Tag, LinkType, FieldType, PK, CoreData
-from fastapi_voyager.filter import filter_graph, filter_subgraph_from_tag_to_schema_by_module_prefix, filter_subgraph_by_module_prefix
-from fastapi_voyager.render import Renderer
-import pydantic_resolve.constant as const
 
 
 class Voyager:

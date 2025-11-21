@@ -5,9 +5,9 @@ import importlib.util
 import logging
 import os
 import sys
-from typing import Optional
 
 from fastapi import FastAPI
+
 from fastapi_voyager import server as viz_server
 from fastapi_voyager.version import __version__
 from fastapi_voyager.voyager import Voyager
@@ -15,7 +15,7 @@ from fastapi_voyager.voyager import Voyager
 logger = logging.getLogger(__name__)
 
 
-def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optional[FastAPI]:
+def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> FastAPI | None:
     """Load FastAPI app from a Python module file."""
     try:
         # Convert relative path to absolute path
@@ -47,7 +47,7 @@ def load_fastapi_app_from_file(module_path: str, app_name: str = "app") -> Optio
         return None
 
 
-def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> Optional[FastAPI]:
+def load_fastapi_app_from_module(module_name: str, app_name: str = "app") -> FastAPI | None:
     """Load FastAPI app from a Python module name."""
     try:
         # Temporarily add the current working directory to sys.path

@@ -1,7 +1,16 @@
-from typing import Optional
-from fastapi_voyager.type import SchemaNode, ModuleNode, Link, Tag, Route, FieldType, PK, ModuleRoute
-from fastapi_voyager.module import build_module_schema_tree, build_module_route_tree
 from logging import getLogger
+
+from fastapi_voyager.module import build_module_route_tree, build_module_schema_tree
+from fastapi_voyager.type import (
+    PK,
+    FieldType,
+    Link,
+    ModuleNode,
+    ModuleRoute,
+    Route,
+    SchemaNode,
+    Tag,
+)
 
 logger = getLogger(__name__)
 
@@ -23,7 +32,7 @@ class Renderer:
         logger.info(f'show_module: {self.show_module}')
         logger.info(f'module_color: {self.module_color}')
 
-    def render_schema_label(self, node: SchemaNode, color: Optional[str]=None) -> str:
+    def render_schema_label(self, node: SchemaNode, color: str | None=None) -> str:
         has_base_fields = any(f.from_base for f in node.fields)
         fields = [n for n in node.fields if n.from_base is False]
 
@@ -74,7 +83,7 @@ class Renderer:
             raise ValueError(f'Unknown link type: {link.type}')
 
     def render_module_schema_content(self, nodes: list[SchemaNode]) -> str:
-        def render_node(node: SchemaNode, color: Optional[str]=None) -> str:
+        def render_node(node: SchemaNode, color: str | None=None) -> str:
             return f'''
                 "{node.id}" [
                     label = {self.render_schema_label(node, color)}
@@ -82,8 +91,8 @@ class Renderer:
                     margin="0.5,0.1"
                 ];'''
 
-        def render_module_schema(mod: ModuleNode, inherit_color: Optional[str]=None, show_cluster:bool=True) -> str:
-            color: Optional[str] = inherit_color
+        def render_module_schema(mod: ModuleNode, inherit_color: str | None=None, show_cluster:bool=True) -> str:
+            color: str | None = inherit_color
 
             # recursively vist module from short to long:  'a', 'a.b', 'a.b.c'
             # color_flag: {'a', 'a.b.c'}
@@ -109,7 +118,7 @@ class Renderer:
                         label = "  {mod.name}"
                         labeljust = "l"
                         {(f'pencolor = "{color}"' if color else 'pencolor="#ccc"')}
-                        {(f'penwidth = 3' if color else 'penwidth=""')}
+                        {('penwidth = 3' if color else 'penwidth=""')}
                         {inner_nodes_str}
                         {child_str}
                     }}'''

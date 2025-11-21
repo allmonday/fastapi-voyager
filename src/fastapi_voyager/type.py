@@ -1,6 +1,8 @@
 from dataclasses import field
+from typing import Literal
+
 from pydantic.dataclasses import dataclass
-from typing import Literal, Optional
+
 
 @dataclass
 class NodeBase:
@@ -76,5 +78,5 @@ class CoreData:
     nodes: list[SchemaNode]
     links: list[Link]
     show_fields: FieldType
-    module_color: Optional[dict[str, str]] = None
-    schema: Optional[str] = None
+    module_color: dict[str, str] | None = None
+    schema: str | None = None

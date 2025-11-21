@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 from collections import deque
-from typing import Tuple
-from fastapi_voyager.type import Tag, Route, SchemaNode, Link, PK
+
+from fastapi_voyager.type import PK, Link, Route, SchemaNode, Tag
 
 
 def filter_graph(
@@ -13,7 +14,7 @@ def filter_graph(
     nodes: list[SchemaNode],
     links: list[Link],
     node_set: dict[str, SchemaNode],
-) -> Tuple[list[Tag], list[Route], list[SchemaNode], list[Link]]:
+) -> tuple[list[Tag], list[Route], list[SchemaNode], list[Link]]:
     """Filter tags, routes, schema nodes and links based on a target schema and optional field.
 
     Behaviour summary (mirrors previous Analytics.filter_nodes_and_schemas_based_on_schemas):
@@ -113,7 +114,7 @@ def filter_subgraph_by_module_prefix(
     links: list[Link],
     nodes: list[SchemaNode],
     module_prefix: str
-) -> Tuple[list[Tag], list[Route], list[SchemaNode], list[Link]]:
+) -> tuple[list[Tag], list[Route], list[SchemaNode], list[Link]]:
     """Collapse schema graph so routes link directly to nodes whose module matches ``module_prefix``.
 
     The routine keeps tag→route links untouched, prunes schema nodes whose module does not start
@@ -202,7 +203,7 @@ def filter_subgraph_from_tag_to_schema_by_module_prefix(
     links: list[Link],
     nodes: list[SchemaNode],
     module_prefix: str
-) -> Tuple[list[Tag], list[Route], list[SchemaNode], list[Link]]:
+) -> tuple[list[Tag], list[Route], list[SchemaNode], list[Link]]:
     """Collapse schema graph so routes link directly to nodes whose module matches ``module_prefix``.
 
     The routine keeps tag→route links untouched, prunes schema nodes whose module does not start

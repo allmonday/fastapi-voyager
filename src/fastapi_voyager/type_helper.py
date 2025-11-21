@@ -1,11 +1,13 @@
 import inspect
 import logging
 import os
-from pydantic import BaseModel
-from typing import get_origin, get_args, Union, Annotated, Any, Type, Generic, Optional
-from fastapi_voyager.type import FieldInfo
 from types import UnionType
+from typing import Annotated, Any, Generic, Union, get_args, get_origin
+
 import pydantic_resolve.constant as const
+from pydantic import BaseModel
+
+from fastapi_voyager.type import FieldInfo
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +187,7 @@ def get_pydantic_fields(schema: type[BaseModel], bases_fields: set[str]) -> list
     return fields
 
 
-def get_vscode_link(kls, online_repo_url: Optional[str] = None) -> str:
+def get_vscode_link(kls, online_repo_url: str | None = None) -> str:
     """Build a VSCode deep link to the class definition.
 
     Priority:
@@ -241,7 +243,7 @@ def safe_issubclass(kls, target_kls):
 
 def update_forward_refs(kls):
     # TODO: refactor
-    def update_pydantic_forward_refs(pydantic_kls: Type[BaseModel]):
+    def update_pydantic_forward_refs(pydantic_kls: type[BaseModel]):
         """
         recursively update refs.
         """
@@ -287,7 +289,7 @@ def is_non_pydantic_type(tp):
     return True
 
 if __name__ == "__main__":
-    from tests.demo_anno import PageSprint, PageOverall
+    from tests.demo_anno import PageOverall, PageSprint
 
     update_forward_refs(PageOverall)
     update_forward_refs(PageSprint)

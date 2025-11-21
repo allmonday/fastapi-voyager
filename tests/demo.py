@@ -1,10 +1,12 @@
-from pydantic import BaseModel, Field
-from fastapi import FastAPI
-from typing import Optional, Generic, TypeVar
-from pydantic_resolve import ensure_subset, Resolver
-from tests.service.schema import Story, Task, A
-import tests.service.schema as serv
 from dataclasses import dataclass
+from typing import Generic, TypeVar
+
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
+from pydantic_resolve import Resolver, ensure_subset
+
+import tests.service.schema as serv
+from tests.service.schema import A, Story, Task
 
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 
@@ -31,7 +33,7 @@ class TaskB(Task):
 
 type TaskUnion = TaskA | TaskB
 class PageTask(Task):
-    owner: Optional[PageMember]
+    owner: PageMember | None
 
 @ensure_subset(Story)
 class PageStory(BaseModel):
@@ -44,12 +46,12 @@ class PageStory(BaseModel):
         return self.title + ' (processed ........................)'
 
     tasks: list[PageTask] = []
-    owner: Optional[PageMember] = None
+    owner: PageMember | None = None
     union_tasks: list[TaskUnion] = []
 
 class PageSprint(serv.Sprint):
     stories: list[PageStory]
-    owner: Optional[PageMember] = None
+    owner: PageMember | None = None
 
 class PageOverall(BaseModel):
     sprints: list[PageSprint]
@@ -109,7 +111,7 @@ def get_page_test_3_no_response_model():
     return True
 
 @app.get("/page_test_5/", tags=['long_long_long_tag_name', 'group_b'])
-def get_page_test_3_no_response_model():
+def get_page_test_3_no_response_model_long_long_long_name():
     return True
 
 

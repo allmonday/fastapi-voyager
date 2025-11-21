@@ -1,5 +1,5 @@
 from fastapi_voyager.filter import filter_subgraph_by_module_prefix
-from fastapi_voyager.type import Tag, Route, SchemaNode, Link, PK
+from fastapi_voyager.type import PK, Link, Route, SchemaNode, Tag
 
 
 def _make_tag_route_link(tag: Tag, route: Route) -> Link:
@@ -52,7 +52,9 @@ def test_filter_subgraph_filters_nodes_and_links():
 
     assert filtered_nodes == [node_b]
     assert any(
-        lk.type == "route_to_schema" and lk.source_origin == route.id and lk.target_origin == node_b.id
+        lk.type == "route_to_schema" and \
+        lk.source_origin == route.id and \
+        lk.target_origin == node_b.id
         for lk in filtered_links
     )
     assert len(filtered_links) == 2  # tag -> route and merged route -> filtered node

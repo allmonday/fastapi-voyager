@@ -1,5 +1,5 @@
 import sys
-import typing
+
 import pytest
 
 from fastapi_voyager.type_helper import get_core_types
@@ -9,7 +9,7 @@ def test_optional_and_list_core_types():
     class T: ...
 
     # Optional[T] -> (T,)
-    opt = typing.Optional[T]
+    opt = T | None
     core = get_core_types(opt)
     assert core == (T,)
 
@@ -23,7 +23,7 @@ def test_typing_union_core_types():
     class A: ...
     class B: ...
 
-    u = typing.Union[A, B]
+    u = A | B
     core = get_core_types(u)
     # order preserved
     assert core == (A, B)
@@ -43,7 +43,7 @@ def test_mixed_optional_list():
     class T: ...
 
     # Optional[list[T]] -> (T,) (list unwrapped after removing None)
-    anno = typing.Optional[list[T]]
+    anno = list[T] | None
     core = get_core_types(anno)
     assert core == (T,)
 
@@ -53,7 +53,7 @@ def test_nested_union_flattening():
     class B: ...
     class C: ...
 
-    anno = typing.Union[A, typing.Union[B, C]]
+    anno = A | (B | C)
     core = get_core_types(anno)
     # typing normalizes nested unions -> (A, B, C)
     assert core == (A, B, C)
@@ -77,7 +77,8 @@ def test_uniontype_with_list_member():
 # Only Python 3.12+ supports the PEP 695 `type` statement producing TypeAliasType
 @pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 type aliases require Python 3.12+")
 def test_union_type_alias_and_list():
-    # Dynamically exec a type alias using the new syntax so test file stays valid on <3.12 (even though skipped)
+    # Dynamically exec a type alias using the new syntax 
+    # so test file stays valid on <3.12 (even though skipped)
     ns: dict = {}
     code = """
 class A: ...
