@@ -12,6 +12,8 @@
 - [ ] support Google analysis config
 - [ ] sort field name in nodes (only table inside right panel), pending
 - [ ] set max limit for fields in nodes
+- [ ] minimap
+    - ref: https://observablehq.com/@rabelais/d3-js-zoom-minimap
 
 ## in analysis
 - [ ] upgrade network algorithm (optional)

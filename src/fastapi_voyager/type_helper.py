@@ -256,7 +256,11 @@ def update_forward_refs(kls):
             update_forward_refs(field.annotation)
         
     for shelled_type in get_core_types(kls):
-        if getattr(shelled_type, const.PYDANTIC_FORWARD_REF_UPDATED, False):
+        # Only treat as updated if the flag is set on the class itself, not via inheritance
+
+        local_attrs = getattr(shelled_type, '__dict__', {})
+        if local_attrs.get(const.PYDANTIC_FORWARD_REF_UPDATED, False):
+            logger.debug(shelled_type.__qualname__, 'visited')
             continue
         if safe_issubclass(shelled_type, BaseModel):
             update_pydantic_forward_refs(shelled_type)

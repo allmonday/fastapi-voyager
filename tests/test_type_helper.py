@@ -1,8 +1,7 @@
 import sys
-
 import pytest
-
 from fastapi_voyager.type_helper import get_core_types
+from typing import Annotated
 
 
 def test_optional_and_list_core_types():
@@ -72,8 +71,6 @@ def test_uniontype_with_list_member():
     assert core2 == (A, B)
 
 
-
-
 # Only Python 3.12+ supports the PEP 695 `type` statement producing TypeAliasType
 @pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 type aliases require Python 3.12+")
 def test_union_type_alias_and_list():
@@ -98,3 +95,11 @@ type MyAlias = A | B
     # Direct alias should also work
     core2 = get_core_types(MyAlias)
     assert set(core2) == {A, B}
+
+
+def test_annotated():
+    class A: ...
+
+    core = get_core_types(Annotated[A, 'hello'])
+    assert set(core) == {A}
+

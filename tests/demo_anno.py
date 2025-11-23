@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Annotated
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from pydantic_resolve import Resolver, ensure_subset
@@ -12,11 +13,6 @@ app = FastAPI(title="Demo API", description="A demo FastAPI application for rout
 @app.get("/sprints", tags=['for-restapi'], response_model=list[serv.Sprint])
 def get_sprint():
     return []
-
-class Tree(BaseModel):
-    id: int
-    name: str
-    children: list[Tree] = []
 
 class PageMember(serv.Member):
     fullname: str = ''
@@ -36,11 +32,11 @@ class PageTask(Task):
 
 
 class PageOverall(BaseModel):
-    sprints: list[PageSprint]
+    sprints: Annotated[list[PageSprint], Field(description="List of sprints")]
 
 class PageSprint(serv.Sprint):
-    stories: list[PageStory]
-    owner: PageMember | None = None
+    stories: Annotated[list[PageStory], Field(description="List of stories")]
+    owner: Annotated[PageMember | None, Field(description="Owner of the sprint")] = None
 
 
 @ensure_subset(Story)
@@ -63,13 +59,9 @@ async def get_page_info():
     return await Resolver().resolve(page_overall)
 
 
-class PageStories(BaseModel):
-    stories: list[PageStory] 
+# class PageStories(BaseModel):
+#     stories: list[PageStory] 
 
-@app.get("/page_info/", tags=['for-page'], response_model=PageStories)
-def get_page_stories():
-    return {} # no implementation
-
-@app.get("/rest-tree/", tags=['for-restapi'], response_model=Tree)
-def get_tree():
-    return {} # no implementation
+# @app.get("/page_info/", tags=['for-page'], response_model=PageStories)
+# def get_page_stories():
+#     return {} # no implementation
