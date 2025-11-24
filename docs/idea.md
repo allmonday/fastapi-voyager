@@ -9,15 +9,15 @@
     - [ ] add route/tag list
 - [ ] type alias should not be kept as node instead of compiling to original type
 - [ ] how to correctly handle the generic type ?
-- [ ] support Google analysis config
-- [ ] sort field name in nodes (only table inside right panel), pending
-- [ ] set max limit for fields in nodes
-- [ ] minimap
+    - for example `Page[Student]` of `Page[T]` will be marked in `Page[T]`'s module
+- [ ] sort field name in nodes (only table inside right panel)
+- [ ] set max limit for fields in nodes (? need further thinking)
+- [ ] minimap (good to have)
     - ref: https://observablehq.com/@rabelais/d3-js-zoom-minimap
 
 ## in analysis
-- [ ] upgrade network algorithm (optional)
-- [ ] click field to highlight links
+- [ ] upgrade network algorithm (optional, for example networkx)
+- [ ] click field to highlight links or click link to highlight related nodes
 - [ ] animation effect for edges
 - [ ] display standard ER diagram spec. `hard but important`
     - [ ] display potential invalid links

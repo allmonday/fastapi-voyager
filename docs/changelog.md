@@ -1,4 +1,4 @@
-# Changelog & roadmap
+# Changelog & plan
 
 ## <0.9:
 - [x] group schemas by module hierarchy
