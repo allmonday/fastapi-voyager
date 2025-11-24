@@ -3,11 +3,12 @@
 [![PyPI Downloads](https://static.pepy.tech/badge/fastapi-voyager/month)](https://pepy.tech/projects/fastapi-voyager)
 
 
-> This repo is still in early stage, it supports pydantic v2 only
 
 Visualize your FastAPI endpoints, and explore them interactively.
 
-[visit online demo](https://www.newsyeah.fun/voyager/) of project: [composition oriented development pattern](https://github.com/allmonday/composition-oriented-development-pattern)
+> This repo is still in early stage, it supports pydantic v2 only
+
+[live demo](https://www.newsyeah.fun/voyager/) of project: [composition oriented development pattern](https://github.com/allmonday/composition-oriented-development-pattern)
 
 <img width="1600" height="986" alt="image" src="https://github.com/user-attachments/assets/8829cda0-f42d-4c84-be2f-b019bb5fe7e1" />
 
