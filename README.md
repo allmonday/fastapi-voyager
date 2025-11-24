@@ -12,6 +12,22 @@ Visualize your FastAPI endpoints, and explore them interactively.
 
 <img width="1600" height="986" alt="image" src="https://github.com/user-attachments/assets/8829cda0-f42d-4c84-be2f-b019bb5fe7e1" />
 
+with configuration:
+
+```python
+app.mount('/voyager', 
+          create_voyager(
+            app, 
+            module_color={'src.services': 'tomato'}, 
+            module_prefix='src.services', 
+            swagger_url="/docs",
+            ga_id="G-R64S7Q49VL",
+            initial_page_policy='first',
+            online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master'))
+```
+
+https://github.com/allmonday/composition-oriented-development-pattern/blob/master/src/main.py#L48
+
 ## Plan & Raodmap
 - [ideas](./docs/idea.md)
 - [changelog & roadmap](./docs/changelog.md)
