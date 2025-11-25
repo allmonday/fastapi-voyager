@@ -14,6 +14,9 @@
 - [ ] set max limit for fields in nodes (? need further thinking)
 - [ ] minimap (good to have)
     - ref: https://observablehq.com/@rabelais/d3-js-zoom-minimap
+- [ ] debug mode
+    - [ ] export dot content, load dot content
+
 
 ## in analysis
 - [ ] upgrade network algorithm (optional, for example networkx)
