@@ -5,16 +5,16 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from pydantic_resolve import Resolver, ensure_subset
 
-import tests.service.schema as serv
-from tests.service.schema import A, Story, Task
+from tests.service.schema.schema import Member, Sprint, Story, Task
+from tests.service.schema.extra import A, B 
 
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 
-@app.get("/sprints", tags=['for-restapi', 'group_a'], response_model=list[serv.Sprint])
+@app.get("/sprints", tags=['for-restapi', 'group_a'], response_model=list[Sprint])
 def get_sprint():
     return []
 
-class PageMember(serv.Member):
+class PageMember(Member):
     fullname: str = ''
     def post_fullname(self):
         return self.first_name + ' ' + self.last_name
@@ -49,7 +49,7 @@ class PageStory(BaseModel):
     owner: PageMember | None = None
     union_tasks: list[TaskUnion] = []
 
-class PageSprint(serv.Sprint):
+class PageSprint(Sprint):
     stories: list[PageStory]
     owner: PageMember | None = None
 

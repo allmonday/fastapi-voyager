@@ -93,6 +93,8 @@ class Renderer:
 
         def render_module_schema(mod: ModuleNode, inherit_color: str | None=None, show_cluster:bool=True) -> str:
             color: str | None = inherit_color
+            cluster_color: str | None = None
+
 
             # recursively vist module from short to long:  'a', 'a.b', 'a.b.c'
             # color_flag: {'a', 'a.b.c'}
@@ -103,6 +105,7 @@ class Renderer:
                 if mod.fullname.startswith(k):  
                     module_color_flag.remove(k)
                     color = self.module_color[k]
+                    cluster_color = color if color != inherit_color else None
                     break
 
             inner_nodes = [ render_node(node, color) for node in mod.schema_nodes ]
@@ -117,7 +120,7 @@ class Renderer:
                         style="rounded"
                         label = "  {mod.name}"
                         labeljust = "l"
-                        {(f'pencolor = "{color}"' if color else 'pencolor="#ccc"')}
+                        {(f'pencolor = "{cluster_color}"' if cluster_color else 'pencolor="#ccc"')}
                         {('penwidth = 3' if color else 'penwidth=""')}
                         {inner_nodes_str}
                         {child_str}
