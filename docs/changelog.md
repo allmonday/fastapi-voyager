@@ -111,18 +111,17 @@
     - [x] fix bug in `update_forward_refs`, class should not be skipped if it's parent class has been visited.
 - 0.12.4
     - [x] fix nested cluster with same color
-    - [ ] refactor fe with store based on reactive (demo.js)
-    - [ ] search tag/ route
     - [ ] refactor render.py
-    - [ ] reorg: move variable into reactive in vue-main.js
+    - [ ] refactor fe with store based on reactive (demo.js)
+    - [ ] remove search component, integrated into main page
 
 ## 0.13
-- 0.12.0
+- 0.13.2
+    - [ ] if er diagram is provided, show it first.
+- 0.13.1
     - [ ] integration with pydantic-resolve
         - [ ] show hint for resolve, post fields
         - [ ] display loader as edges
     - [ ] add tests
 
-## 0.13
-todo
 
