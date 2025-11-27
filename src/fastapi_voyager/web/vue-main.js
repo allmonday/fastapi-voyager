@@ -1,6 +1,7 @@
 import SchemaFieldFilter from "./component/schema-field-filter.js";
 import SchemaCodeDisplay from "./component/schema-code-display.js";
 import RouteCodeDisplay from "./component/route-code-display.js";
+import Demo from './component/demo.js'
 import RenderGraph from "./component/render-graph.js";
 import { GraphUI } from "./graph-ui.js";
 const { createApp, reactive, onMounted, watch, ref } = window.Vue;
@@ -39,17 +40,22 @@ const app = createApp({
 
     const showDetail = ref(false);
     const showSchemaFieldFilter = ref(false);
+
     const showDumpDialog = ref(false);
     const dumpJson = ref("");
     const showImportDialog = ref(false);
     const importJsonText = ref("");
+
     const showRenderGraph = ref(false);
+
     const renderCoreData = ref(null);
+
     const schemaName = ref(""); // used by detail dialog
     const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
     const schemaCodeName = ref("");
     const routeCodeId = ref("");
     const showRouteDetail = ref(false);
+
     let graphUI = null;
 
     function openDetail() {
@@ -435,13 +441,18 @@ const app = createApp({
     };
   },
 });
+
 app.use(window.Quasar);
+
 // Set Quasar primary theme color to green
 if (window.Quasar && typeof window.Quasar.setCssVar === "function") {
   window.Quasar.setCssVar("primary", "#009485");
 }
-app.component("schema-field-filter", SchemaFieldFilter);
-app.component("schema-code-display", SchemaCodeDisplay);
-app.component("route-code-display", RouteCodeDisplay);
-app.component("render-graph", RenderGraph);
+
+app.component("schema-field-filter", SchemaFieldFilter);  // shift click and see relationships
+app.component("schema-code-display", SchemaCodeDisplay);  // double click to see node details
+app.component("route-code-display", RouteCodeDisplay);  // double click to see route details
+app.component("render-graph", RenderGraph);   // for debug, render pasted dot content
+app.component('demo-component', Demo)
+
 app.mount("#q-app");

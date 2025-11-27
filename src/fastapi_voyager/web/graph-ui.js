@@ -132,7 +132,6 @@ export class GraphUI {
         });
 
         // svg 背景点击高亮清空
-
         $(document)
           .off("click.graphui")
           .on("click.graphui", function (evt) {

@@ -110,6 +110,8 @@
 - 0.12.3
     - [x] fix bug in `update_forward_refs`, class should not be skipped if it's parent class has been visited.
 - 0.12.4
+    - [x] fix nested cluster with same color
+    - [ ] refactor fe with store based on reactive (demo.js)
     - [ ] search tag/ route
     - [ ] refactor render.py
     - [ ] reorg: move variable into reactive in vue-main.js
