@@ -260,7 +260,7 @@ def update_forward_refs(kls):
 
         local_attrs = getattr(shelled_type, '__dict__', {})
         if local_attrs.get(const.PYDANTIC_FORWARD_REF_UPDATED, False):
-            logger.debug(shelled_type.__qualname__, 'visited')
+            logger.debug("%s visited", shelled_type.__qualname__)
             continue
         if safe_issubclass(shelled_type, BaseModel):
             update_pydantic_forward_refs(shelled_type)

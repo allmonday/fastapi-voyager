@@ -110,6 +110,8 @@
 - 0.12.3
     - [x] fix bug in `update_forward_refs`, class should not be skipped if it's parent class has been visited.
 - 0.12.4
+    - [x] fix logger exception 
+- 0.12.5
     - [x] fix nested cluster with same color
     - [ ] refactor render.py
     - [ ] refactor fe with store based on reactive (demo.js)
