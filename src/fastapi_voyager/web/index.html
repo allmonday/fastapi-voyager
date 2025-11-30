@@ -236,12 +236,12 @@
                 <q-scroll-area class="fit">
                   <q-list dense separator>
                     <q-expansion-item
-                      v-for="tag in state.rawTags"
+                      v-for="tag in store.state.leftPanel.tags"
                       :key="tag.name"
                       expand-separator
-                      :model-value="state._tag === tag.name"
+                      :model-value="store.state.leftPanel._tag === tag.name"
                       @update:model-value="(val) => toggleTag(tag.name, val)"
-                      :header-class="state.tag === tag.name ? 'text-primary text-bold' : ''"
+                      :header-class="store.state.leftPanel.tag === tag.name ? 'text-primary text-bold' : ''"
                       content-class="q-pa-none"
                     >
                       <template #header>
@@ -249,10 +249,10 @@
                             <q-icon
                               style="vertical-align: top;"
                               class="q-mr-sm"
-                              :name="state.tag == tag.name ? 'folder' : 'folder_open'"
+                              :name="store.state.leftPanel.tag == tag.name ? 'folder' : 'folder_open'"
                             ></q-icon>
                             <span>{{ tag.name }} <q-chip style="position:relative; top: -1px;" class="q-ml-md" dense>{{ tag.routes.length }}</q-chip></span>
-                            <a v-if="state._tag == tag.name" target="_blank" class="q-ml-sm" v-if="store.state.swagger.url" :href="store.state.swagger.url + '#/' + tag.name">
+                            <a v-if="store.state.leftPanel._tag == tag.name" target="_blank" class="q-ml-sm" v-if="store.state.swagger.url" :href="store.state.swagger.url + '#/' + tag.name">
                               <q-icon color="primary" size="" name="link" title="open in swagger"></q-icon>
                             </a>
                         </div>
@@ -263,7 +263,7 @@
                             :key="route.id"
                             clickable
                             v-ripple
-                            :active="state.routeId === route.id"
+                            :active="store.state.leftPanel.routeId === route.id"
                             active-class=""
                             @click="selectRoute(route.id)"
                           >
@@ -274,7 +274,7 @@
                                   name="data_object"
                                 ></q-icon>
                                 {{ route.name }}
-                                <a v-if="state.routeId == route.id" target="_blank" class="q-ml-md" v-if="store.state.swagger.url" :href="store.state.swagger.url + '#/' + tag.name + '/' + route.unique_id">
+                                <a v-if="store.state.leftPanel.routeId == route.id" target="_blank" class="q-ml-md" v-if="store.state.swagger.url" :href="store.state.swagger.url + '#/' + tag.name + '/' + route.unique_id">
                                   <q-icon color="primary" size="" name="link" title="open in swagger"></q-icon>
                                 </a>
                               </span>

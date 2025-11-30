@@ -24,7 +24,15 @@ const state = reactive({
 
     // tags and routes
     leftPanel: {  
-        width: 300
+        width: 300,
+        tags: null,
+        tag: null,
+        _tag: null,
+        routeId: null,
+    },
+
+    graph: {
+        schemaId: null
     },
 
     leftPanelFiltered: {
@@ -41,7 +49,7 @@ const state = reactive({
 
     // schema options, schema, fields
     search: {  
-        
+     
     },
 
 

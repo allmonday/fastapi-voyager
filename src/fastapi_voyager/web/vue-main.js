@@ -12,10 +12,6 @@ const app = createApp({
   setup() {
     const state = reactive({
       // options and selections
-      tag: null, // picked tag
-      _tag: null, // display tag
-      routeId: null, // picked route
-      schemaId: null, // picked schema
       showFields: "object",
       brief: false,
       focus: false,
@@ -36,7 +32,6 @@ const app = createApp({
     const renderCoreData = ref(null);
 
     const schemaName = ref(""); // used by detail dialog
-    const schemaFieldFilterSchema = ref(null); // external schemaName for schema-field-filter
     const schemaCodeName = ref("");
     const routeCodeId = ref("");
     const showRouteDetail = ref(false);
@@ -56,7 +51,7 @@ const app = createApp({
 
     function findTagByRoute(routeId) {
       return (
-        state.rawTags.find((tag) =>
+        store.state.leftPanel.tags.find((tag) =>
           (tag.routes || []).some((route) => route.id === routeId)
         )?.name || null
       );
@@ -67,13 +62,13 @@ const app = createApp({
         return;
       }
       const params = new URLSearchParams(window.location.search);
-      if (state.tag) {
-        params.set("tag", state.tag);
+      if (store.state.leftPanel.tag) {
+        params.set("tag", store.state.leftPanel.tag);
       } else {
         params.delete("tag");
       }
-      if (state.routeId) {
-        params.set("route", state.routeId);
+      if (store.state.leftPanel.routeId) {
+        params.set("route", store.state.leftPanel.routeId);
       } else {
         params.delete("route");
       }
@@ -87,17 +82,17 @@ const app = createApp({
     function applySelectionFromQuery(selection) {
       let applied = false;
       if (selection.tag && state.rawTags.some((tag) => tag.name === selection.tag)) {
-        state.tag = selection.tag;
-        state._tag = selection.tag;
+        store.state.leftPanel.tag = selection.tag;
+        store.state.leftPanel._tag = selection.tag;
         applied = true;
       }
       if (selection.route && state.routeItems?.[selection.route]) {
-        state.routeId = selection.route;
+        store.state.leftPanel.routeId = selection.route;
         applied = true;
         const inferredTag = findTagByRoute(selection.route);
         if (inferredTag) {
-          state.tag = inferredTag;
-          state._tag = inferredTag;
+          store.state.leftPanel.tag = inferredTag;
+          store.state.leftPanel._tag = inferredTag;
         }
       }
       return applied;
@@ -108,7 +103,9 @@ const app = createApp({
       try {
         const res = await fetch("dot");
         const data = await res.json();
-        state.rawTags = Array.isArray(data.tags) ? data.tags : [];
+        // state.rawTags = Array.isArray(data.tags) ? data.tags : [];
+        store.state.leftPanel.tags = Array.isArray(data.tags) ? data.tags : [];
+
         const schemasArr = Array.isArray(data.schemas) ? data.schemas : [];
         // Build dict keyed by id for faster lookups and simpler prop passing
         state.rawSchemasFull = Object.fromEntries(
@@ -141,8 +138,8 @@ const app = createApp({
           case "empty":
             return
           case "first":
-            state.tag = state.rawTags.length > 0 ? state.rawTags[0].name : null;
-            state._tag = state.tag;
+            store.state.leftPanel.tag = store.state.leftPanel.tags.length > 0 ? store.state.leftPanel.tags[0].name : null;
+            store.state.leftPanel._tag = store.state.leftPanel.tag;
             onGenerate();
             return
         }
@@ -172,9 +169,9 @@ const app = createApp({
       store.state.generating = true;
       try {
         const payload = {
-          tags: state.tag ? [state.tag] : null,
+          tags: store.state.leftPanel.tag ? [store.state.leftPanel.tag] : null,
           schema_name: schema_name || null,
-          route_name: state.routeId || null,
+          route_name: store.state.leftPanel.routeId || null,
           show_fields: state.showFields,
           brief: state.brief,
           hide_primitive_route: state.hidePrimitiveRoute,
@@ -221,62 +218,62 @@ const app = createApp({
       }
     }
 
-    async function onDumpData() {
-      try {
-        const payload = {
-          tags: state.tag ? [state.tag] : null,
-          schema_name: state.schemaId || null,
-          route_name: state.routeId || null,
-          show_fields: state.showFields,
-          brief: state.brief,
-        };
-        const res = await fetch("dot-core-data", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const json = await res.json();
-        dumpJson.value = JSON.stringify(json, null, 2);
-        showDumpDialog.value = true;
-      } catch (e) {
-        console.error("Dump data failed", e);
-      }
-    }
+    // async function onDumpData() {
+    //   try {
+    //     const payload = {
+    //       tags: state.tag ? [state.tag] : null,
+    //       schema_name: state.schemaId || null,
+    //       route_name: state.routeId || null,
+    //       show_fields: state.showFields,
+    //       brief: state.brief,
+    //     };
+    //     const res = await fetch("dot-core-data", {
+    //       method: "POST",
+    //       headers: { "Content-Type": "application/json" },
+    //       body: JSON.stringify(payload),
+    //     });
+    //     const json = await res.json();
+    //     dumpJson.value = JSON.stringify(json, null, 2);
+    //     showDumpDialog.value = true;
+    //   } catch (e) {
+    //     console.error("Dump data failed", e);
+    //   }
+    // }
 
-    async function copyDumpJson() {
-      try {
-        await navigator.clipboard.writeText(dumpJson.value || "");
-        if (window.Quasar?.Notify) {
-          window.Quasar.Notify.create({ type: "positive", message: "Copied" });
-        }
-      } catch (e) {
-        console.error("Copy failed", e);
-      }
-    }
+    // async function copyDumpJson() {
+    //   try {
+    //     await navigator.clipboard.writeText(dumpJson.value || "");
+    //     if (window.Quasar?.Notify) {
+    //       window.Quasar.Notify.create({ type: "positive", message: "Copied" });
+    //     }
+    //   } catch (e) {
+    //     console.error("Copy failed", e);
+    //   }
+    // }
 
-    function openImportDialog() {
-      importJsonText.value = "";
-      showImportDialog.value = true;
-    }
+    // function openImportDialog() {
+    //   importJsonText.value = "";
+    //   showImportDialog.value = true;
+    // }
 
-    async function onImportConfirm() {
-      let payloadObj = null;
-      try {
-        payloadObj = JSON.parse(importJsonText.value || "{}");
-      } catch (e) {
-        if (window.Quasar?.Notify) {
-          window.Quasar.Notify.create({
-            type: "negative",
-            message: "Invalid JSON",
-          });
-        }
-        return;
-      }
-      // Move the request into RenderGraph component: pass the parsed object and let the component call /dot-render-core-data
-      renderCoreData.value = payloadObj;
-      showRenderGraph.value = true;
-      showImportDialog.value = false;
-    }
+    // async function onImportConfirm() {
+    //   let payloadObj = null;
+    //   try {
+    //     payloadObj = JSON.parse(importJsonText.value || "{}");
+    //   } catch (e) {
+    //     if (window.Quasar?.Notify) {
+    //       window.Quasar.Notify.create({
+    //         type: "negative",
+    //         message: "Invalid JSON",
+    //       });
+    //     }
+    //     return;
+    //   }
+    //   // Move the request into RenderGraph component: pass the parsed object and let the component call /dot-render-core-data
+    //   renderCoreData.value = payloadObj;
+    //   showRenderGraph.value = true;
+    //   showImportDialog.value = false;
+    // }
 
     function showSearchDialog() {
       store.state.searchDialog.show = true;
@@ -290,10 +287,17 @@ const app = createApp({
     }
 
     async function onReset() {
-      state.tag = null;
-      state._tag = null;
-      state.routeId = "";
-      state.schemaId = null;
+      // state.tag = null;
+      // state._tag = null;
+      // state.routeId = "";
+      // state.schemaId = null;
+
+      store.state.leftPanel.tag = null;
+      store.state.leftPanel._tag = null;
+      store.state.leftPanel.routeId = null;
+
+      store.state.graph.schemaId = null;
+
       // state.showFields = "object";
       state.focus = false;
       schemaCodeName.value = "";
@@ -303,14 +307,15 @@ const app = createApp({
 
     function toggleTag(tagName, expanded = null) {
       if (expanded === true) {
-        state._tag = tagName;
-        state.tag = tagName;
-        state.routeId = "";
+        store.state.leftPanel._tag = tagName;
+        store.state.leftPanel.tag = tagName;
+        store.state.leftPanel.routeId = "";
+
         state.focus = false;
         schemaCodeName.value = "";
         onGenerate();
       } else {
-        state._tag = null;
+        store.state.leftPanel._tag = null;
       }
 
       store.state.rightDrawer.drawer = false;
@@ -319,10 +324,10 @@ const app = createApp({
     }
 
     function selectRoute(routeId) {
-      if (state.routeId === routeId) {
-        state.routeId = "";
+      if (store.state.leftPanel.routeId === routeId) {
+        store.state.leftPanel.routeId = "";
       } else {
-        state.routeId = routeId;
+        store.state.leftPanel.routeId = routeId;
       }
       store.state.rightDrawer.drawer = false;
       showRouteDetail.value = false;
@@ -397,14 +402,14 @@ const app = createApp({
       schemaCodeName,
       routeCodeId,
       // dump/import
-      showDumpDialog,
-      dumpJson,
-      copyDumpJson,
-      onDumpData,
-      showImportDialog,
-      importJsonText,
-      openImportDialog,
-      onImportConfirm,
+      // showDumpDialog,
+      // dumpJson,
+      // copyDumpJson,
+      // onDumpData,
+      // showImportDialog,
+      // importJsonText,
+      // openImportDialog,
+      // onImportConfirm,
       // render graph dialog
       showRenderGraph,
       renderCoreData,
