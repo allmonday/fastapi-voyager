@@ -4,7 +4,9 @@ import RouteCodeDisplay from "./component/route-code-display.js";
 import Demo from './component/demo.js'
 import RenderGraph from "./component/render-graph.js";
 import { GraphUI } from "./graph-ui.js";
-const { createApp, reactive, onMounted, watch, ref } = window.Vue;
+import { store } from './store.js'
+
+const { createApp, reactive, onMounted, ref } = window.Vue;
 
 const app = createApp({
   setup() {
@@ -15,31 +17,14 @@ const app = createApp({
       routeId: null, // picked route
       schemaId: null, // picked schema
       showFields: "object",
-      fieldOptions: [
-        { label: "No field", value: "single" },
-        { label: "Object fields", value: "object" },
-        { label: "All fields", value: "all" },
-      ],
-      enableBriefMode: false,
       brief: false,
       focus: false,
       hidePrimitiveRoute: false,
-      generating: false,
-      swaggerUrl: null,
       rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: new Set(), // [{ name, id }]
       rawSchemasFull: {}, // full schemas dict: { [schema.id]: schema }
-      initializing: true,
-      // Splitter size (left panel width in px)
-      splitter: 300,
-      detailDrawer: false,
-      drawerWidth: 300, // drawer 宽度
-      version: "", // version from backend
       showModule: true,
     });
-
-    const showDetail = ref(false);
-    const showSchemaFieldFilter = ref(false);
 
     const showDumpDialog = ref(false);
     const dumpJson = ref("");
@@ -57,13 +42,6 @@ const app = createApp({
     const showRouteDetail = ref(false);
 
     let graphUI = null;
-
-    function openDetail() {
-      showDetail.value = true;
-    }
-    function closeDetail() {
-      showDetail.value = false;
-    }
 
     function readQuerySelection() {
       if (typeof window === "undefined") {
@@ -126,7 +104,7 @@ const app = createApp({
     }
 
     async function loadInitial() {
-      state.initializing = true;
+      store.state.initializing = true;
       try {
         const res = await fetch("dot");
         const data = await res.json();
@@ -144,9 +122,9 @@ const app = createApp({
             acc[r.id] = r;
             return acc;
           }, {});
-        state.enableBriefMode = data.enable_brief_mode || false;
-        state.version = data.version || "";
-        state.swaggerUrl = data.swagger_url || null
+        store.state.modeControl.briefModeEnabled = data.enable_brief_mode || false;
+        store.state.version = data.version || "";
+        store.state.swagger.url = data.swagger_url || null
 
         const querySelection = readQuerySelection();
         const restoredFromQuery = applySelectionFromQuery(querySelection);
@@ -173,7 +151,7 @@ const app = createApp({
       } catch (e) {
         console.error("Initial load failed", e);
       } finally {
-        state.initializing = false;
+        store.state.initializing = false;
       }
     }
 
@@ -191,7 +169,7 @@ const app = createApp({
 
     async function onGenerate(resetZoom = true) {
       const schema_name = state.focus ? schemaCodeName.value : null;
-      state.generating = true;
+      store.state.generating = true;
       try {
         const payload = {
           tags: state.tag ? [state.tag] : null,
@@ -215,15 +193,15 @@ const app = createApp({
             onSchemaShiftClick: (id) => {
               if (state.rawSchemas.has(id)) {
                 resetDetailPanels();
-                schemaFieldFilterSchema.value = id;
-                showSchemaFieldFilter.value = true;
+                store.state.searchDialog.show = true;
+                store.state.searchDialog.schema = id;
               }
             },
             onSchemaClick: (id) => {
               resetDetailPanels();
               if (state.rawSchemas.has(id)) {
                 schemaCodeName.value = id;
-                state.detailDrawer = true;
+                store.state.rightDrawer.drawer = true;
               }
               if (id in state.routeItems) {
                 routeCodeId.value = id;
@@ -239,7 +217,7 @@ const app = createApp({
       } catch (e) {
         console.error("Generate failed", e);
       } finally {
-        state.generating = false;
+        store.state.generating = false;
       }
     }
 
@@ -300,13 +278,13 @@ const app = createApp({
       showImportDialog.value = false;
     }
 
-    function showDialog() {
-      schemaFieldFilterSchema.value = null;
-      showSchemaFieldFilter.value = true;
+    function showSearchDialog() {
+      store.state.searchDialog.show = true;
+      store.state.searchDialog.schema = null;
     }
 
     function resetDetailPanels() {
-      state.detailDrawer = false;
+      store.state.rightDrawer.drawer = false;
       showRouteDetail.value = false;
       schemaCodeName.value = "";
     }
@@ -335,7 +313,7 @@ const app = createApp({
         state._tag = null;
       }
 
-      state.detailDrawer = false;
+      store.state.rightDrawer.drawer = false;
       showRouteDetail.value = false;
       syncSelectionToUrl();
     }
@@ -346,7 +324,7 @@ const app = createApp({
       } else {
         state.routeId = routeId;
       }
-      state.detailDrawer = false;
+      store.state.rightDrawer.drawer = false;
       showRouteDetail.value = false;
       state.focus = false;
       schemaCodeName.value = "";
@@ -376,12 +354,12 @@ const app = createApp({
 
     function startDragDrawer(e) {
       const startX = e.clientX;
-      const startWidth = state.drawerWidth;
+      const startWidth = store.state.rightDrawer.width;
 
       function onMouseMove(moveEvent) {
         const deltaX = startX - moveEvent.clientX;
         const newWidth = Math.max(300, Math.min(800, startWidth + deltaX));
-        state.drawerWidth = newWidth;
+        store.state.rightDrawer.width = newWidth;
       }
 
       function onMouseUp() {
@@ -405,6 +383,7 @@ const app = createApp({
     });
 
     return {
+      store,
       state,
       toggleTag,
       toggleBrief,
@@ -412,14 +391,9 @@ const app = createApp({
       selectRoute,
       onGenerate,
       onReset,
-      showDetail,
       showRouteDetail,
-      openDetail,
-      closeDetail,
       schemaName,
-      showSchemaFieldFilter,
-      schemaFieldFilterSchema,
-      showDialog,
+      showSearchDialog,
       schemaCodeName,
       routeCodeId,
       // dump/import
@@ -437,7 +411,7 @@ const app = createApp({
       toggleShowField,
       startDragDrawer,
       onFocusChange,
-      toggleShowModule
+      toggleShowModule,
     };
   },
 });

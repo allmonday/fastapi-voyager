@@ -105,13 +105,13 @@
             >
               <q-icon class="q-mr-sm" name="satellite_alt"></q-icon>
               <span> FastAPI Voyager </span>
-              <span v-if="state.version" style="font-size: 12px; margin-left: 8px; font-weight: normal;">{{ state.version }}</span>
+              <span v-if="store.state.version" style="font-size: 12px; margin-left: 8px; font-weight: normal;">{{ store.state.version }}</span>
             </div>
             <div class="col-auto" style="font-size: 16px">
               <q-option-group
                 style="margin-left: 80px"
                 v-model="state.showFields"
-                :options="state.fieldOptions"
+                :options="store.state.fieldOptions"
                 @update:model-value="(val) => toggleShowField(val)"
                 color="primary"
                 type="radio"
@@ -137,7 +137,7 @@
                 flat
                 label="Search"
                 class="q-mr-md"
-                @click="showDialog()"
+                @click="showSearchDialog()"
               />
             </div>
             <div class="col-auto">
@@ -176,8 +176,8 @@
         </q-header>
 
         <q-drawer
-          v-model="state.detailDrawer"
-          :width="state.drawerWidth"
+          v-model="store.state.rightDrawer.drawer"
+          :width="store.state.rightDrawer.width"
           side="right"
           style="border-left: 1px solid #888;"
           bordered
@@ -201,7 +201,7 @@
           
           <div style="z-index: 11; position: absolute; left: -17px; top: 9px">
             <q-btn
-              @click="state.detailDrawer = !state.detailDrawer"
+              @click="store.state.rightDrawer.drawer = !store.state.rightDrawer.drawer"
               round
               unelevated
               color="primary"
@@ -217,7 +217,7 @@
 
         <q-page-container>
           <q-splitter
-            v-model="state.splitter"
+            v-model="store.state.leftPanel.width"
             unit="px"
             :limits="[200, 800]"
             class="adjust-fit"
@@ -252,7 +252,7 @@
                               :name="state.tag == tag.name ? 'folder' : 'folder_open'"
                             ></q-icon>
                             <span>{{ tag.name }} <q-chip style="position:relative; top: -1px;" class="q-ml-md" dense>{{ tag.routes.length }}</q-chip></span>
-                            <a v-if="state._tag == tag.name" target="_blank" class="q-ml-sm" v-if="state.swaggerUrl" :href="state.swaggerUrl + '#/' + tag.name">
+                            <a v-if="state._tag == tag.name" target="_blank" class="q-ml-sm" v-if="store.state.swagger.url" :href="store.state.swagger.url + '#/' + tag.name">
                               <q-icon color="primary" size="" name="link" title="open in swagger"></q-icon>
                             </a>
                         </div>
@@ -274,7 +274,7 @@
                                   name="data_object"
                                 ></q-icon>
                                 {{ route.name }}
-                                <a v-if="state.routeId == route.id" target="_blank" class="q-ml-md" v-if="state.swaggerUrl" :href="state.swaggerUrl + '#/' + tag.name + '/' + route.unique_id">
+                                <a v-if="state.routeId == route.id" target="_blank" class="q-ml-md" v-if="store.state.swagger.url" :href="store.state.swagger.url + '#/' + tag.name + '/' + route.unique_id">
                                   <q-icon color="primary" size="" name="link" title="open in swagger"></q-icon>
                                 </a>
                               </span>
@@ -301,17 +301,7 @@
                 <div style="position: absolute; left: 8px; top: 8px; z-index: 10; background: rgba(255,255,255,0.85); border-radius: 4px; padding: 2px 8px;">
                   <div class="q-mt-sm">
                     <q-toggle
-                      v-model="state.focus"
-                      v-show="schemaCodeName"
-                      @update:model-value="val => onFocusChange(val)"
-                      label="Focus"
-                      dense
-                      title="pick a schema and toggle focus on to display related nodes only"
-                    />
-                  </div>
-                  <div class="q-mt-sm">
-                    <q-toggle
-                      v-if="state.enableBriefMode"
+                      v-if="store.state.modeControl.briefModeEnabled"
                       dense
                       v-model="state.brief"
                       label="Brief Mode"
@@ -346,8 +336,8 @@
                       dense
                       title="pick a schema and toggle focus on to display related nodes only"
                     />
-                  </div>
-                  <!-- <div class="q-mt-sm">
+                  <!-- </div>
+                  <div class="q-mt-sm">
                   <demo-component></demo-component>
                   </div> -->
                 </div>
@@ -359,14 +349,14 @@
 
       <!-- Schema Field Filter Dialog -->
       <q-dialog
-        v-model="showSchemaFieldFilter"
+        v-model="store.state.searchDialog.show"
         :persistent="true"
         :maximized="true"
       >
         <schema-field-filter
           :schemas="state.rawSchemasFull"
-          :schema-name="schemaFieldFilterSchema"
-          @close="showSchemaFieldFilter = false"
+          :schema-name="store.state.searchDialog.schema"
+          @close="store.state.searchDialog.show = false"
         />
       </q-dialog>
 

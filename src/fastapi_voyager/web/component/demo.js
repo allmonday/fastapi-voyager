@@ -10,7 +10,7 @@ export default defineComponent({
   },
   template: `
     <div>
-      <p>Count: {{ store.state.count }}</p>
+      <p>Count: {{ store.state.item.count }}</p>
       <button @click="store.mutations.increment()">Add</button>
     </div>
   `
