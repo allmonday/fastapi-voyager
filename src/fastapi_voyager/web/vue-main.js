@@ -12,13 +12,8 @@ const app = createApp({
   setup() {
     const state = reactive({
       // options and selections
-      showFields: "object",
-      brief: false,
-      focus: false,
-      hidePrimitiveRoute: false,
       rawSchemas: new Set(), // [{ name, id }]
       rawSchemasFull: {}, // full schemas dict: { [schema.id]: schema }
-      showModule: true,
     });
 
     const showDumpDialog = ref(false);
@@ -163,17 +158,17 @@ const app = createApp({
     }
 
     async function onGenerate(resetZoom = true) {
-      const schema_name = state.focus ? schemaCodeName.value : null;
+      const schema_name = store.state.modeControl.focus ? schemaCodeName.value : null;
       store.state.generating = true;
       try {
         const payload = {
           tags: store.state.leftPanel.tag ? [store.state.leftPanel.tag] : null,
           schema_name: schema_name || null,
           route_name: store.state.leftPanel.routeId || null,
-          show_fields: state.showFields,
-          brief: state.brief,
-          hide_primitive_route: state.hidePrimitiveRoute,
-          show_module: state.showModule,
+          show_fields: store.state.filter.showFields,
+          brief: store.state.modeControl.brief,
+          hide_primitive_route: store.state.filter.hidePrimitiveRoute,
+          show_module: store.state.filter.showModule,
         };
         const res = await fetch("dot", {
           method: "POST",
@@ -297,7 +292,7 @@ const app = createApp({
       store.state.graph.schemaId = null;
 
       // state.showFields = "object";
-      state.focus = false;
+      store.state.modeControl.focus = false;
       schemaCodeName.value = "";
       onGenerate();
       syncSelectionToUrl();
@@ -309,7 +304,7 @@ const app = createApp({
         store.state.leftPanel.tag = tagName;
         store.state.leftPanel.routeId = "";
 
-        state.focus = false;
+        store.state.modeControl.focus = false;
         schemaCodeName.value = "";
         onGenerate();
       } else {
@@ -329,29 +324,29 @@ const app = createApp({
       }
       store.state.rightDrawer.drawer = false;
       showRouteDetail.value = false;
-      state.focus = false;
+      store.state.modeControl.focus = false;
       schemaCodeName.value = "";
       onGenerate();
       syncSelectionToUrl();
     }
 
     function toggleShowModule(val) {
-      state.showModule = val;
+      store.state.filter.showModule = val;
       onGenerate()
     }
 
     function toggleShowField(field) {
-      state.showFields = field;
+      store.state.filter.showFields = field;
       onGenerate(false);
     }
 
     function toggleBrief(val) {
-      state.brief = val;
+      store.state.modeControl.brief = val;
       onGenerate();
     }
 
     function toggleHidePrimitiveRoute(val) {
-      state.hidePrimitiveRoute = val;
+      store.state.filter.hidePrimitiveRoute = val;
       onGenerate(false);
     }
 

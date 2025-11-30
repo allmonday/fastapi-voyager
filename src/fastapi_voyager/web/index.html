@@ -110,7 +110,7 @@
             <div class="col-auto" style="font-size: 16px">
               <q-option-group
                 style="margin-left: 80px"
-                v-model="state.showFields"
+                v-model="store.state.filter.showFields"
                 :options="store.state.fieldOptions"
                 @update:model-value="(val) => toggleShowField(val)"
                 color="primary"
@@ -259,7 +259,7 @@
                       </template>
                         <q-list separator style="overflow: auto; max-height: 60vh;">
                           <q-item
-                            v-for="route in (state.hidePrimitiveRoute ? tag.routes.filter(r => !r.is_primitive) :tag.routes || [])"
+                            v-for="route in (store.state.filter.hidePrimitiveRoute ? tag.routes.filter(r => !r.is_primitive) :tag.routes || [])"
                             :key="route.id"
                             clickable
                             v-ripple
@@ -303,7 +303,7 @@
                     <q-toggle
                       v-if="store.state.modeControl.briefModeEnabled"
                       dense
-                      v-model="state.brief"
+                      v-model="store.state.filter.brief"
                       label="Brief Mode"
                       @update:model-value="(val) => toggleBrief(val)"
                       title="skip middle classes, config module_prefix to enable it"
@@ -311,7 +311,7 @@
                   </div>
                   <div class="q-mt-sm">
                     <q-toggle
-                      v-model="state.hidePrimitiveRoute"
+                      v-model="store.state.filter.hidePrimitiveRoute"
                       @update:model-value="(val) => toggleHidePrimitiveRoute(val)"
                       label="Hide Primitive"
                       dense
@@ -320,7 +320,7 @@
                   </div>
                   <div class="q-mt-sm">
                     <q-toggle
-                      v-model="state.showModule"
+                      v-model="store.state.filter.showModule"
                       @update:model-value="(val) => toggleShowModule(val)"
                       label="Show Module Cluster"
                       dense
@@ -329,7 +329,7 @@
                   </div>
                   <div class="q-mt-sm">
                     <q-toggle
-                      v-model="state.focus"
+                      v-model="store.state.modeControl.focus"
                       v-show="schemaCodeName"
                       @update:model-value="val => onFocusChange(val)"
                       label="Focus"

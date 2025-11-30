@@ -39,14 +39,6 @@ const state = reactive({
 
     },
 
-    // brief, hide primitive ...
-    modeControl: {  
-        brief: false,
-        focus: false,
-        hidePrimitiveRoute: false,
-        briefModeEnabled: false,  // show brief mode toggle
-    },
-
     // schema options, schema, fields
     search: {  
      
@@ -72,12 +64,21 @@ const state = reactive({
     status: {  
         generating: false,
         loading: false,
-        initializating: true,
+        initializing: true,
+    },
+
+    // brief, hide primitive ...
+    modeControl: {  
+        focus: false,  // control the schema param
+        briefModeEnabled: false,  // show brief mode toggle
     },
 
     // api filters
     filter: {
-
+        hidePrimitiveRoute: false,
+        showFields: 'object',
+        brief: false,
+        showModule: true,
     }
 
 })
