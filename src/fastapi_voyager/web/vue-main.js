@@ -16,7 +16,6 @@ const app = createApp({
       brief: false,
       focus: false,
       hidePrimitiveRoute: false,
-      rawTags: [], // [{ name, routes: [{ id, name }] }]
       rawSchemas: new Set(), // [{ name, id }]
       rawSchemasFull: {}, // full schemas dict: { [schema.id]: schema }
       showModule: true,
@@ -81,7 +80,7 @@ const app = createApp({
 
     function applySelectionFromQuery(selection) {
       let applied = false;
-      if (selection.tag && state.rawTags.some((tag) => tag.name === selection.tag)) {
+      if (selection.tag && store.state.leftPanel.tags.some((tag) => tag.name === selection.tag)) {
         store.state.leftPanel.tag = selection.tag;
         store.state.leftPanel._tag = selection.tag;
         applied = true;
@@ -103,7 +102,6 @@ const app = createApp({
       try {
         const res = await fetch("dot");
         const data = await res.json();
-        // state.rawTags = Array.isArray(data.tags) ? data.tags : [];
         store.state.leftPanel.tags = Array.isArray(data.tags) ? data.tags : [];
 
         const schemasArr = Array.isArray(data.schemas) ? data.schemas : [];
