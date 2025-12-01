@@ -14,7 +14,6 @@ export default defineComponent({
   name: "SchemaFieldFilter",
   props: {
     schemaName: { type: String, default: null }, // external injection triggers auto-query
-    // externally provided schemas dict (state.rawSchemasFull): { [id]: schema }
     schemas: { type: Object, default: () => ({}) },
   },
   emits: ["queried", "close"],

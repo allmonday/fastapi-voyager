@@ -6,30 +6,10 @@ import RenderGraph from "./component/render-graph.js";
 import { GraphUI } from "./graph-ui.js";
 import { store } from './store.js'
 
-const { createApp, reactive, onMounted, ref } = window.Vue;
+const { createApp, onMounted, ref } = window.Vue;
 
 const app = createApp({
   setup() {
-    const state = reactive({
-      // options and selections
-      rawSchemas: new Set(), // [{ name, id }]
-      rawSchemasFull: {}, // full schemas dict: { [schema.id]: schema }
-    });
-
-    const showDumpDialog = ref(false);
-    const dumpJson = ref("");
-    const showImportDialog = ref(false);
-    const importJsonText = ref("");
-
-    const showRenderGraph = ref(false);
-
-    const renderCoreData = ref(null);
-
-    const schemaName = ref(""); // used by detail dialog
-    const schemaCodeName = ref("");
-    const routeCodeId = ref("");
-    const showRouteDetail = ref(false);
-
     let graphUI = null;
 
     function readQuerySelection() {
@@ -80,7 +60,7 @@ const app = createApp({
         store.state.leftPanel._tag = selection.tag;
         applied = true;
       }
-      if (selection.route && state.routeItems?.[selection.route]) {
+      if (selection.route && store.state.graph.routeItems?.[selection.route]) {
         store.state.leftPanel.routeId = selection.route;
         applied = true;
         const inferredTag = findTagByRoute(selection.route);
@@ -101,11 +81,12 @@ const app = createApp({
 
         const schemasArr = Array.isArray(data.schemas) ? data.schemas : [];
         // Build dict keyed by id for faster lookups and simpler prop passing
-        state.rawSchemasFull = Object.fromEntries(
+        const schemaMap = Object.fromEntries(
           schemasArr.map((s) => [s.id, s])
         );
-        state.rawSchemas = new Set(Object.keys(state.rawSchemasFull));
-        state.routeItems = data.tags
+        store.state.graph.schemaMap = schemaMap
+        store.state.graph.schemaKeys = new Set(Object.keys(schemaMap));
+        store.state.graph.routeItems = data.tags
           .map((t) => t.routes)
           .flat()
           .reduce((acc, r) => {
@@ -151,14 +132,14 @@ const app = createApp({
       } else {
         await onGenerate(false);
         setTimeout(() => {
-          const ele = $(`[data-name='${schemaCodeName.value}'] polygon`);
+          const ele = $(`[data-name='${store.state.schemaDetail.schemaCodeName}'] polygon`);
           ele.dblclick();
         }, 1);
       }
     }
 
     async function onGenerate(resetZoom = true) {
-      const schema_name = store.state.modeControl.focus ? schemaCodeName.value : null;
+      const schema_name = store.state.modeControl.focus ? store.state.schemaDetail.schemaCodeName : null;
       store.state.generating = true;
       try {
         const payload = {
@@ -181,7 +162,7 @@ const app = createApp({
         if (!graphUI) {
           graphUI = new GraphUI("#graph", {
             onSchemaShiftClick: (id) => {
-              if (state.rawSchemas.has(id)) {
+              if (store.state.graph.schemaKeys.has(id)) {
                 resetDetailPanels();
                 store.state.searchDialog.show = true;
                 store.state.searchDialog.schema = id;
@@ -189,13 +170,13 @@ const app = createApp({
             },
             onSchemaClick: (id) => {
               resetDetailPanels();
-              if (state.rawSchemas.has(id)) {
-                schemaCodeName.value = id;
+              if (store.state.graph.schemaKeys.has(id)) {
+                store.state.schemaDetail.schemaCodeName = id;
                 store.state.rightDrawer.drawer = true;
               }
-              if (id in state.routeItems) {
-                routeCodeId.value = id;
-                showRouteDetail.value = true;
+              if (id in store.state.graph.routeItems) {
+                store.state.routeDetail.routeCodeId = id;
+                store.state.routeDetail.show = true;
               }
             },
             resetCb: () => {
@@ -211,63 +192,6 @@ const app = createApp({
       }
     }
 
-    // async function onDumpData() {
-    //   try {
-    //     const payload = {
-    //       tags: state.tag ? [state.tag] : null,
-    //       schema_name: state.schemaId || null,
-    //       route_name: state.routeId || null,
-    //       show_fields: state.showFields,
-    //       brief: state.brief,
-    //     };
-    //     const res = await fetch("dot-core-data", {
-    //       method: "POST",
-    //       headers: { "Content-Type": "application/json" },
-    //       body: JSON.stringify(payload),
-    //     });
-    //     const json = await res.json();
-    //     dumpJson.value = JSON.stringify(json, null, 2);
-    //     showDumpDialog.value = true;
-    //   } catch (e) {
-    //     console.error("Dump data failed", e);
-    //   }
-    // }
-
-    // async function copyDumpJson() {
-    //   try {
-    //     await navigator.clipboard.writeText(dumpJson.value || "");
-    //     if (window.Quasar?.Notify) {
-    //       window.Quasar.Notify.create({ type: "positive", message: "Copied" });
-    //     }
-    //   } catch (e) {
-    //     console.error("Copy failed", e);
-    //   }
-    // }
-
-    // function openImportDialog() {
-    //   importJsonText.value = "";
-    //   showImportDialog.value = true;
-    // }
-
-    // async function onImportConfirm() {
-    //   let payloadObj = null;
-    //   try {
-    //     payloadObj = JSON.parse(importJsonText.value || "{}");
-    //   } catch (e) {
-    //     if (window.Quasar?.Notify) {
-    //       window.Quasar.Notify.create({
-    //         type: "negative",
-    //         message: "Invalid JSON",
-    //       });
-    //     }
-    //     return;
-    //   }
-    //   // Move the request into RenderGraph component: pass the parsed object and let the component call /dot-render-core-data
-    //   renderCoreData.value = payloadObj;
-    //   showRenderGraph.value = true;
-    //   showImportDialog.value = false;
-    // }
-
     function showSearchDialog() {
       store.state.searchDialog.show = true;
       store.state.searchDialog.schema = null;
@@ -275,16 +199,11 @@ const app = createApp({
 
     function resetDetailPanels() {
       store.state.rightDrawer.drawer = false;
-      showRouteDetail.value = false;
-      schemaCodeName.value = "";
+      store.state.routeDetail.show = false
+      store.state.schemaDetail.schemaCodeName = "";
     }
 
     async function onReset() {
-      // state.tag = null;
-      // state._tag = null;
-      // state.routeId = "";
-      // state.schemaId = null;
-
       store.state.leftPanel.tag = null;
       store.state.leftPanel._tag = null;
       store.state.leftPanel.routeId = null;
@@ -293,7 +212,7 @@ const app = createApp({
 
       // state.showFields = "object";
       store.state.modeControl.focus = false;
-      schemaCodeName.value = "";
+      store.state.schemaDetail.schemaCodeName = "";
       onGenerate();
       syncSelectionToUrl();
     }
@@ -305,14 +224,14 @@ const app = createApp({
         store.state.leftPanel.routeId = "";
 
         store.state.modeControl.focus = false;
-        schemaCodeName.value = "";
+        store.state.schemaDetail.schemaCodeName = "";
         onGenerate();
       } else {
         store.state.leftPanel._tag = null;
       }
 
       store.state.rightDrawer.drawer = false;
-      showRouteDetail.value = false;
+      store.state.routeDetail.show = false
       syncSelectionToUrl();
     }
 
@@ -323,9 +242,9 @@ const app = createApp({
         store.state.leftPanel.routeId = routeId;
       }
       store.state.rightDrawer.drawer = false;
-      showRouteDetail.value = false;
+      store.state.routeDetail.show = false
       store.state.modeControl.focus = false;
-      schemaCodeName.value = "";
+      store.state.schemaDetail.schemaCodeName = "";
       onGenerate();
       syncSelectionToUrl();
     }
@@ -382,30 +301,13 @@ const app = createApp({
 
     return {
       store,
-      state,
       toggleTag,
       toggleBrief,
       toggleHidePrimitiveRoute,
       selectRoute,
       onGenerate,
       onReset,
-      showRouteDetail,
-      schemaName,
       showSearchDialog,
-      schemaCodeName,
-      routeCodeId,
-      // dump/import
-      // showDumpDialog,
-      // dumpJson,
-      // copyDumpJson,
-      // onDumpData,
-      // showImportDialog,
-      // importJsonText,
-      // openImportDialog,
-      // onImportConfirm,
-      // render graph dialog
-      showRenderGraph,
-      renderCoreData,
       toggleShowField,
       startDragDrawer,
       onFocusChange,

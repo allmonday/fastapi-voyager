@@ -32,7 +32,10 @@ const state = reactive({
     },
 
     graph: {
-        schemaId: null
+        schemaId: null,
+        schemaKeys: new Set(),
+        schemaMap: {},
+        routeItems: []
     },
 
     leftPanelFiltered: {
@@ -47,12 +50,14 @@ const state = reactive({
 
     // route information
     routeDetail: {  
-        show: false
+        show: false,
+        routeCodeId: ''
     },
 
     // schema information
     schemaDetail: {  
-        show: false
+        show: false,
+        schemaCodeName: '',
     },
 
     searchDialog: {
