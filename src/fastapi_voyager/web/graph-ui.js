@@ -82,9 +82,7 @@ export class GraphUI {
           }
           const set = $();
           set.push(this);
-          // const obj = { set, direction: "bidirectional" };
           const schemaName = event.currentTarget.dataset.name;
-          // self.currentSelection = [obj];
           if (schemaName) {
             try {
               self.options.onSchemaClick(schemaName);
@@ -93,6 +91,17 @@ export class GraphUI {
             }
           }
         });
+
+        self.gv.edges().click(function (event) {
+          // const set = $();
+          // const downStreamNode = event.currentTarget.dataset.name.split("->")[1];
+          // const nodes = self.gv.nodesByName();
+          // set.push(nodes[downStreamNode]);
+          // const obj = { set, direction: "single" };
+          // self.currentSelection = [obj];
+          // todo highlight edge and downstream node
+        })
+
         self.gv.nodes().click(function (event) {
           const set = $();
           set.push(this);
@@ -100,7 +109,6 @@ export class GraphUI {
 
           const schemaName = event.currentTarget.dataset.name;
           if (event.shiftKey && self.options.onSchemaClick) {
-            // try data-name or title text
             if (schemaName) {
               try {
                 self.options.onSchemaShiftClick(schemaName);
@@ -123,19 +131,15 @@ export class GraphUI {
           const set = $();
           set.push(this);
           const obj = { set, direction: "single" };
-          if (event.ctrlKey || event.metaKey || event.shiftKey) {
-            self.currentSelection.push(obj);
-          } else {
-            self.currentSelection = [obj];
-          }
+          self.currentSelection = [obj];
           self._highlight();
         });
 
-        // svg 背景点击高亮清空
+        // click background to reset highlight 
         $(document)
           .off("click.graphui")
           .on("click.graphui", function (evt) {
-            // 如果点击目标不在 graph 容器内，直接退出
+            // if outside container, do nothing
             const graphContainer = $(self.selector)[0];
             if (
               !graphContainer ||
