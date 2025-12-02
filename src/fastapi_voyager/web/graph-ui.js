@@ -17,6 +17,7 @@ export class GraphUI {
     }
     if (this.gv) {
       this.gv.highlight(highlightedNodes, true);
+      this.gv.bringToFront(highlightedNodes);
     }
   }
 
