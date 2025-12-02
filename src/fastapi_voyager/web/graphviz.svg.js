@@ -348,6 +348,18 @@
         return;
       }
       var clone = this.cloneNode(false);
+
+      /**
+       * gtp-5-codex:
+       * Cloning the edge paths without copying D3’s data binding caused those Cannot 
+       * read properties of undefined (reading 'key') errors when d3-graphviz re-rendered. 
+       * I now copy the original path’s bound datum (__data__) onto the transparent hitbox 
+       * clone inside ensureEdgeHitArea, so D3 still finds the expected metadata.
+       */
+      if (this.__data__) {
+        clone.__data__ = this.__data__;
+      }
+
       var $clone = $(clone);
       $clone.attr({
         "data-graphviz-hitbox": "true",

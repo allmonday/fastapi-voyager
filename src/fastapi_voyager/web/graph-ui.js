@@ -82,12 +82,6 @@ export class GraphUI {
     }
   }
 
-  highlightEdge(edge) {
-    const visiblePath = edge.querySelector('path:not([data-graphviz-hitbox="true"])');
-    if (visiblePath) {
-      visiblePath.setAttribute('stroke-width', '3.5');
-    }
-  }
 
   _init() {
     const self = this;
@@ -117,7 +111,6 @@ export class GraphUI {
         });
 
         self.gv.edges().click(function (event) {
-          self.highlightEdge(this)
           const up = $();
           const down = $();
           const edge = $();
@@ -159,14 +152,6 @@ export class GraphUI {
           }
         });
 
-        // self.gv.clusters().click(function (event) {
-        //   const set = $();
-        //   set.push(this);
-        //   const obj = { set, direction: "single" };
-        //   self.currentSelection = [obj];
-        //   self._highlight();
-        // });
-
         $(document)
           .off("click.graphui")
           .on("click.graphui", function (evt) {
@@ -185,7 +170,6 @@ export class GraphUI {
             const node = evt.target.parentNode;
             $everything.each(function () {
               if (this === node) {
-                console.log(this)
                 isNode = true;
               }
             });
