@@ -21,6 +21,8 @@
     url: null,
     svg: null,
     shrink: "0.125pt",
+    edgeHitPadding: 12,
+    pointerCursor: true,
     tooltips: {
       init: function ($graph) {
         var $a = $(this);
@@ -168,9 +170,20 @@
     var that = this;
     var options = this.options;
 
+    if (type === "edge" && options.edgeHitPadding) {
+      this.ensureEdgeHitArea($el, options.edgeHitPadding);
+    }
+
+    if (options.pointerCursor && (type === "edge" || type === "node")) {
+      this.setInteractiveCursor($el, type === "edge");
+    }
+
     // save the colors of the paths, ellipses and polygons
     $el.find("polygon, ellipse, path").each(function () {
       var $this = $(this);
+      if ($this.attr("data-graphviz-hitbox") === "true") {
+        return;
+      }
       // save original colors
       $this.data("graphviz.svg.color", {
         fill: $this.attr("fill"),
@@ -314,6 +327,57 @@
     }
   };
 
+  GraphvizSvg.prototype.ensureEdgeHitArea = function ($edge, padding) {
+    var width = parseFloat(padding);
+    if (!isFinite(width) || width <= 0) {
+      return;
+    }
+    var $paths = $edge
+      .children("path")
+      .filter(function () {
+        return $(this).attr("data-graphviz-hitbox") !== "true";
+      });
+    if (!$paths.length) {
+      return;
+    }
+    $paths.each(function () {
+      var $path = $(this);
+      var $existing = $path.prev('[data-graphviz-hitbox="true"]');
+      if ($existing.length) {
+        $existing.attr("stroke-width", width);
+        return;
+      }
+      var clone = this.cloneNode(false);
+      var $clone = $(clone);
+      $clone.attr({
+        "data-graphviz-hitbox": "true",
+        stroke: "transparent",
+        fill: "none",
+        "stroke-width": width,
+      });
+      $clone.attr("pointer-events", "stroke");
+      $clone.css("pointer-events", "stroke");
+      if (!$clone.attr("stroke-linecap")) {
+        $clone.attr("stroke-linecap", $path.attr("stroke-linecap") || "round");
+      }
+      $clone.insertBefore($path);
+    });
+  };
+
+  GraphvizSvg.prototype.setInteractiveCursor = function ($el, isEdge) {
+    $el.css("cursor", "pointer");
+    var selectors = "path, polygon, ellipse, rect, text";
+    $el.find(selectors).each(function () {
+      $(this).css("cursor", "pointer");
+    });
+    if (isEdge) {
+      $el.children('[data-graphviz-hitbox="true"]').css("cursor", "pointer");
+    }
+    $el.find("a").each(function () {
+      $(this).css("cursor", "pointer");
+    });
+  };
+
   GraphvizSvg.prototype.convertToPx = function (val) {
     var retval = val;
     if (typeof val == "string") {
@@ -372,6 +436,9 @@
     var bg = this.$element.css("background");
     $el.find("polygon, ellipse, path").each(function () {
       var $this = $(this);
+      if ($this.attr("data-graphviz-hitbox") === "true") {
+        return;
+      }
       var color = $this.data("graphviz.svg.color");
       if (color.fill && color.fill != "none") {
         $this.attr("fill", getColor(color.fill, bg)); // don't set  fill if it's a path
@@ -386,6 +453,9 @@
   GraphvizSvg.prototype.restoreElement = function ($el) {
     $el.find("polygon, ellipse, path").each(function () {
       var $this = $(this);
+      if ($this.attr("data-graphviz-hitbox") === "true") {
+        return;
+      }
       var color = $this.data("graphviz.svg.color");
       if (color.fill && color.fill != "none") {
         $this.attr("fill", color.fill); // don't set  fill if it's a path

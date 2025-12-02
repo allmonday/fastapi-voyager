@@ -117,9 +117,11 @@
     - [x] fix duplicated focus toggle
 - 0.12.6
     - [x] fix overlapped edges
+    - [x] click link(edge) to highlight related nodes
+    - [x] on hover cursor effect
+- 0.12.7
     - [ ] refactor render.py
     - [ ] remove search component, integrated into main page
-    - [ ] click link to highlight related nodes
 
 ## 0.13
 - 0.13.2

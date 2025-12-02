@@ -9,12 +9,28 @@ export class GraphUI {
     this._init();
   }
 
-  _highlight() {
+  _highlight(mode = "bidirectional") {
     let highlightedNodes = $();
     for (const selection of this.currentSelection) {
-      const nodes = this._getAffectedNodes(selection.set, "bidirectional");
+      const nodes = this._getAffectedNodes(selection.set, mode);
       highlightedNodes = highlightedNodes.add(nodes);
     }
+    if (this.gv) {
+      this.gv.highlight(highlightedNodes, true);
+      this.gv.bringToFront(highlightedNodes);
+    }
+  }
+
+  _highlightEdgeNodes() {
+    let highlightedNodes = $();
+    const [up, down, edge] = this.currentSelection
+    highlightedNodes = highlightedNodes.add(
+      this._getAffectedNodes(up.set, up.direction)
+    );
+    highlightedNodes = highlightedNodes.add(
+      this._getAffectedNodes(down.set, down.direction)
+    );
+    highlightedNodes = highlightedNodes.add(edge.set)
     if (this.gv) {
       this.gv.highlight(highlightedNodes, true);
       this.gv.bringToFront(highlightedNodes);
@@ -67,7 +83,10 @@ export class GraphUI {
   }
 
   highlightEdge(edge) {
-    edge.querySelector('path').setAttribute('stroke-width', '3.5')
+    const visiblePath = edge.querySelector('path:not([data-graphviz-hitbox="true"])');
+    if (visiblePath) {
+      visiblePath.setAttribute('stroke-width', '3.5');
+    }
   }
 
   _init() {
@@ -99,13 +118,20 @@ export class GraphUI {
 
         self.gv.edges().click(function (event) {
           self.highlightEdge(this)
-          const set = $();
-          const downStreamNode = event.currentTarget.dataset.name.split("->")[1];
+          const up = $();
+          const down = $();
+          const edge = $();
+          const [upStreamNode, downStreamNode] = event.currentTarget.dataset.name.split("->");
           const nodes = self.gv.nodesByName();
-          set.push(nodes[downStreamNode]);
-          const obj = { set, direction: "downstream" };
-          self.currentSelection = [obj];
-          self._highlight();
+          up.push(nodes[upStreamNode]);
+          down.push(nodes[downStreamNode]);
+          edge.push(this)
+          const upObj = { set: up, direction: "upstream" };
+          const downObj = { set: down, direction: "downstream" };
+          const edgeOjb = { set: edge, direction: "single"};
+          self.currentSelection = [upObj, downObj, edgeOjb];
+
+          self._highlightEdgeNodes();
         })
 
         self.gv.nodes().click(function (event) {
