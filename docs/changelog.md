@@ -113,9 +113,10 @@
     - [x] fix logger exception 
 - 0.12.5
     - [x] fix nested cluster with same color
-    - [ ] refactor fe with store based on reactive (wip)
-    - [ ] refactor render.py
+    - [x] refactor fe with store based on reactive
+    - [x] fix duplicated focus toggle
 - 0.12.6
+    - [ ] refactor render.py
     - [ ] remove search component, integrated into main page
     - [ ] click link to highlight related nodes
 
