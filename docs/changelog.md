@@ -116,6 +116,7 @@
     - [x] refactor fe with store based on reactive
     - [x] fix duplicated focus toggle
 - 0.12.6
+    - [x] fix overlapped edges
     - [ ] refactor render.py
     - [ ] remove search component, integrated into main page
     - [ ] click link to highlight related nodes

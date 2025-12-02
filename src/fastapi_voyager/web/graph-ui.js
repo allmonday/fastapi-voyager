@@ -66,6 +66,10 @@ export class GraphUI {
     }
   }
 
+  highlightEdge(edge) {
+    edge.querySelector('path').setAttribute('stroke-width', '3.5')
+  }
+
   _init() {
     const self = this;
     $(this.selector).graphviz({
@@ -94,13 +98,14 @@ export class GraphUI {
         });
 
         self.gv.edges().click(function (event) {
-          // const set = $();
-          // const downStreamNode = event.currentTarget.dataset.name.split("->")[1];
-          // const nodes = self.gv.nodesByName();
-          // set.push(nodes[downStreamNode]);
-          // const obj = { set, direction: "single" };
-          // self.currentSelection = [obj];
-          // todo highlight edge and downstream node
+          self.highlightEdge(this)
+          const set = $();
+          const downStreamNode = event.currentTarget.dataset.name.split("->")[1];
+          const nodes = self.gv.nodesByName();
+          set.push(nodes[downStreamNode]);
+          const obj = { set, direction: "downstream" };
+          self.currentSelection = [obj];
+          self._highlight();
         })
 
         self.gv.nodes().click(function (event) {
@@ -128,15 +133,14 @@ export class GraphUI {
           }
         });
 
-        self.gv.clusters().click(function (event) {
-          const set = $();
-          set.push(this);
-          const obj = { set, direction: "single" };
-          self.currentSelection = [obj];
-          self._highlight();
-        });
+        // self.gv.clusters().click(function (event) {
+        //   const set = $();
+        //   set.push(this);
+        //   const obj = { set, direction: "single" };
+        //   self.currentSelection = [obj];
+        //   self._highlight();
+        // });
 
-        // click background to reset highlight 
         $(document)
           .off("click.graphui")
           .on("click.graphui", function (evt) {
@@ -151,10 +155,11 @@ export class GraphUI {
             }
 
             let isNode = false;
-            const $nodes = self.gv.nodes();
+            const $everything = self.gv.$nodes.add(self.gv.$edges).add(self.gv.$clusters);
             const node = evt.target.parentNode;
-            $nodes.each(function () {
+            $everything.each(function () {
               if (this === node) {
+                console.log(this)
                 isNode = true;
               }
             });
