@@ -64,6 +64,7 @@ const app = createApp({
     function onSearchSchemaChange(val) {
       store.state.search.schemaName = val;
       store.state.search.mode = false;
+      onSearch()
     }
 
     function readQuerySelection() {
@@ -134,15 +135,18 @@ const app = createApp({
       store.state.leftPanel.tag = null;
       store.state.leftPanel._tag = null;
       store.state.leftPanel.routeId = null;
+      syncSelectionToUrl()
       await loadSearchedTags();
       renderBasedOnInitialPolicy()
     }
 
     async function onSearch() {
+      console.log('start search')
       store.state.search.mode = true;
       store.state.leftPanel.tag = null;
       store.state.leftPanel._tag = null;
       store.state.leftPanel.routeId = null;
+      syncSelectionToUrl()
       await loadSearchedTags();
       await onGenerate();
     }
@@ -203,9 +207,10 @@ const app = createApp({
           syncSelectionToUrl();
           onGenerate();
           return;
+        } else {
+          store.state.config.initial_page_policy = data.initial_page_policy
+          renderBasedOnInitialPolicy()
         }
-        store.state.config.initial_page_policy = data.initial_page_policy
-        renderBasedOnInitialPolicy()
 
         // default route options placeholder
       } catch (e) {
@@ -228,6 +233,7 @@ const app = createApp({
                 ? store.state.leftPanel.tags[0].name
                 : null;
             store.state.leftPanel._tag = store.state.leftPanel.tag;
+            syncSelectionToUrl()
             onGenerate();
             return;
         }
@@ -300,20 +306,11 @@ const app = createApp({
     }
 
     async function onReset() {
-      store.state.leftPanel.tag = null;
-      store.state.leftPanel._tag = null;
-      store.state.leftPanel.routeId = null;
-
-      store.state.graph.schemaId = null;
-
-      store.state.search.mode = false;
-      store.state.search.schemaName = null;
-      store.state.search.fieldName = null;
-      store.state.search.fieldOptions = [];
-      store.state.search.schemaOptions = allSchemaOptions.value.slice();
-
-      store.state.schemaDetail.schemaCodeName = "";
-      resetSearch()
+        store.state.leftPanel.tag = null;
+        store.state.leftPanel._tag = null;
+        store.state.leftPanel.routeId = null;
+        syncSelectionToUrl()
+        onGenerate()
     }
 
     function toggleTag(tagName, expanded = null) {

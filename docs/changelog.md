@@ -122,6 +122,8 @@
 - 0.12.7
     - [x] remove search component, integrated into main page
 - 0.12.8
+    - [x] optimize ui elements, change icons, update reset behavior
+- 0.12.9
     - [ ] refactor vue-main.js, move methods to store
     - [ ] refactor render.py
 

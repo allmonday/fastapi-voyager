@@ -55,6 +55,12 @@
       flex: 1 1 auto;
       overflow: auto;
     }
+    .tag-bg {
+      /* background-color: #287e75; */
+      /* border-bottom: 2px solid #009485;
+      border-left: 2px solid #009485;
+      border-top: 0; */
+    }
 
     .adjust-fit {
       height: calc(100vh - 54px);
@@ -107,9 +113,20 @@
               <span> FastAPI Voyager </span>
               <span v-if="store.state.version" style="font-size: 12px; margin-left: 8px; font-weight: normal;">{{ store.state.version }}</span>
             </div>
+            <div class="col-auto">
+              <q-btn
+                style="margin-left: 80px"
+                outline
+                @click="onReset"
+                title="clear tag, route selection"
+                icon="open_in_full"
+                color="primary"
+                flat
+                class="q-mx-md"
+              />
+            </div>
             <div class="col-auto" style="font-size: 16px">
               <q-option-group
-                style="margin-left: 80px"
                 v-model="store.state.filter.showFields"
                 :options="store.state.fieldOptions"
                 @update:model-value="(val) => toggleShowField(val)"
@@ -149,28 +166,11 @@
                 v-model="store.state.search.fieldName"
                 :disable="!store.state.search.schemaName || store.state.search.fieldOptions.length===0"
                 :options="store.state.search.fieldOptions"
+                @update:model-value="onSearch"
                 style="min-width: 180px"
                 clearable
                 label="Select field (optional)"
               ></q-select>
-              <q-btn
-                outline
-                icon="search"
-                flat
-                class="q-mr-none"
-                :disable="!store.state.search.schemaName"
-                :loading="store.state.generating"
-                @click="onSearch"
-              ></q-btn>
-              <q-btn
-                outline
-                @click="onReset"
-                dense
-                title="full graph"
-                icon="border_all"
-                flat
-                class="q-mr-sm"
-              />
             </div>
             <div class="col-auto">
               <q-btn
@@ -179,7 +179,7 @@
                 flat
                 icon="help_outline"
                 aria-label="Help"
-                style="margin-right: 40px"
+                style="margin-right: 50px; margin-left: 20px"
               >
                 <q-tooltip
                   anchor="bottom middle"
@@ -272,7 +272,8 @@
                       expand-separator
                       :model-value="store.state.leftPanel._tag === tag.name || store.state.search.mode"
                       @update:model-value="(val) => toggleTag(tag.name, val)"
-                      :header-class="store.state.leftPanel.tag === tag.name ? 'text-primary text-bold' : ''"
+                      @click="() => toggleTag(tag.name, true)"
+                      :header-class="store.state.leftPanel.tag === tag.name ? 'text-primary text-bold tag-bg' : 'tag-bg'"
                       content-class="q-pa-none"
                     >
                       <template #header>
