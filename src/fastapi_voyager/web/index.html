@@ -120,24 +120,56 @@
               />
             </div>
             <div class="col-auto q-ml-auto">
-              <q-btn
-                outline
-                @click="onReset"
-                title="may be very slow"
-                icon="border_all"
-                flat
-                class="q-mr-sm"
-                label="Full Graph"
-              />
             </div>
-            <div class="col-auto">
+            <div class="col-auto row items-center q-gutter-sm">
+              <q-select
+                dense
+                outlined
+                use-input
+                fill-input
+                hide-selected
+                input-debounce="200"
+                v-model="store.state.search.schemaName"
+                :options="store.state.search.schemaOptions"
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
+                style="min-width: 320px;"
+                clearable
+                label="Select schema"
+                @update:model-value="onSearchSchemaChange"
+                @filter="filterSearchSchemas"
+                @clear="resetSearch"
+              ></q-select>
+              
+              <q-select
+                dense
+                outlined
+                v-model="store.state.search.fieldName"
+                :disable="!store.state.search.schemaName || store.state.search.fieldOptions.length===0"
+                :options="store.state.search.fieldOptions"
+                style="min-width: 180px"
+                clearable
+                label="Select field (optional)"
+              ></q-select>
               <q-btn
                 outline
                 icon="search"
                 flat
-                label="Search"
-                class="q-mr-md"
-                @click="showSearchDialog()"
+                class="q-mr-none"
+                :disable="!store.state.search.schemaName"
+                :loading="store.state.generating"
+                @click="onSearch"
+              ></q-btn>
+              <q-btn
+                outline
+                @click="onReset"
+                dense
+                title="full graph"
+                icon="border_all"
+                flat
+                class="q-mr-sm"
               />
             </div>
             <div class="col-auto">
@@ -164,7 +196,7 @@
                         double click node to view details.
                       </li>
                       <li>
-                        shift + click to see schema's dependencies without unrelated nodes.
+                        shift + click to search the schema and highlight related nodes.
                       </li>
                     </ul>
                   </div>
@@ -183,7 +215,6 @@
           bordered
           overlay
         >
-          <!-- 可拖拽的调整栏 -->
           <div 
             @mousedown="startDragDrawer"
             style="
@@ -239,7 +270,7 @@
                       v-for="tag in store.state.leftPanel.tags"
                       :key="tag.name"
                       expand-separator
-                      :model-value="store.state.leftPanel._tag === tag.name"
+                      :model-value="store.state.leftPanel._tag === tag.name || store.state.search.mode"
                       @update:model-value="(val) => toggleTag(tag.name, val)"
                       :header-class="store.state.leftPanel.tag === tag.name ? 'text-primary text-bold' : ''"
                       content-class="q-pa-none"
@@ -299,7 +330,7 @@
               <div style="position: relative; width: 100%; height: 100%;">
                 <div id="graph" class="adjust-fit"></div>
                 <div style="position: absolute; left: 8px; top: 8px; z-index: 10; background: rgba(255,255,255,0.85); border-radius: 4px; padding: 2px 8px;">
-                  <div class="q-mt-sm">
+                  <div class="q-mt-sm" v-if="store.state.modeControl.briefModeEnabled && store.state.search.mode === false">
                     <q-toggle
                       v-if="store.state.modeControl.briefModeEnabled"
                       dense
@@ -309,7 +340,7 @@
                       title="skip middle classes, config module_prefix to enable it"
                     />
                   </div>
-                  <div class="q-mt-sm">
+                  <div class="q-mt-sm" v-if="store.state.modeControl.briefModeEnabled && store.state.search.mode === false">
                     <q-toggle
                       v-model="store.state.filter.hidePrimitiveRoute"
                       @update:model-value="(val) => toggleHidePrimitiveRoute(val)"
@@ -327,16 +358,6 @@
                       title="show module cluster"
                     />
                   </div>
-                  <div class="q-mt-sm">
-                    <q-toggle
-                      v-model="store.state.modeControl.focus"
-                      v-show="store.state.schemaDetail.schemaCodeName"
-                      @update:model-value="val => onFocusChange(val)"
-                      label="Focus"
-                      dense
-                      title="pick a schema and toggle focus on to display related nodes only"
-                    />
-                </div>
               </div>
             </template>
           </q-splitter>

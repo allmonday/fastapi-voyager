@@ -6,6 +6,9 @@ const state = reactive({
     },
 
     version: '',
+    config: {
+        initial_page_policy: 'first'
+    },
 
     swagger: {
         url: ''
@@ -38,13 +41,14 @@ const state = reactive({
         routeItems: []
     },
 
-    leftPanelFiltered: {
-
-    },
 
     // schema options, schema, fields
     search: {  
-     
+        mode: false,  
+        schemaName: null,
+        fieldName: null,
+        schemaOptions: [],
+        fieldOptions: [],
     },
 
 

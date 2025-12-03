@@ -120,8 +120,10 @@
     - [x] click link(edge) to highlight related nodes
     - [x] on hover cursor effect
 - 0.12.7
+    - [x] remove search component, integrated into main page
+- 0.12.8
+    - [ ] refactor vue-main.js, move methods to store
     - [ ] refactor render.py
-    - [ ] remove search component, integrated into main page
 
 ## 0.13
 - 0.13.2

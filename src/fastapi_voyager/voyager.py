@@ -297,6 +297,22 @@ class Voyager:
         else:
             return tags, routes, links
     
+    def calculate_filtered_tag_and_route(self):
+        _tags, _routes, _, _ = filter_graph(
+            schema=self.schema,
+            schema_field=self.schema_field,
+            tags=self.tags,
+            routes=self.routes,
+            nodes=self.nodes,
+            links=self.links,
+            node_set=self.node_set,
+        )
+        # filter tag.routes based by _routes
+        route_ids = {r.id for r in _routes}
+        for t in _tags:
+            t.routes = [r for r in t.routes if r.id in route_ids]
+        return _tags
+
     def render_dot(self):
         _tags, _routes, _nodes, _links = filter_graph(
             schema=self.schema,

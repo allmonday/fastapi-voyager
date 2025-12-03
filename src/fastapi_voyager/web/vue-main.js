@@ -1,16 +1,70 @@
-import SchemaFieldFilter from "./component/schema-field-filter.js";
 import SchemaCodeDisplay from "./component/schema-code-display.js";
 import RouteCodeDisplay from "./component/route-code-display.js";
-import Demo from './component/demo.js'
+import Demo from "./component/demo.js";
 import RenderGraph from "./component/render-graph.js";
 import { GraphUI } from "./graph-ui.js";
-import { store } from './store.js'
+import { store } from "./store.js";
 
-const { createApp, onMounted, ref } = window.Vue;
+const { createApp, onMounted, ref, watch } = window.Vue;
 
 const app = createApp({
   setup() {
     let graphUI = null;
+    const allSchemaOptions = ref([]);
+
+    const NBSP = String.fromCharCode(160);
+    const formatSchemaLabel = (name, id) =>
+      `${name}${NBSP}${NBSP}${NBSP}-${NBSP}${NBSP}${NBSP}${id}`;
+
+    function rebuildSchemaOptions() {
+      const dict = store.state.graph.schemaMap || {};
+      const opts = Object.values(dict).map((s) => ({
+        label: formatSchemaLabel(s.name, s.id),
+        value: s.id,
+      }));
+      allSchemaOptions.value = opts;
+      store.state.search.schemaOptions = opts.slice();
+      populateFieldOptions(store.state.search.schemaName);
+    }
+
+    function populateFieldOptions(schemaId) {
+      if (!schemaId) {
+        store.state.search.fieldOptions = [];
+        store.state.search.fieldName = null;
+        return;
+      }
+      const schema = store.state.graph.schemaMap?.[schemaId];
+      if (!schema) {
+        store.state.search.fieldOptions = [];
+        store.state.search.fieldName = null;
+        return;
+      }
+      const fields = Array.isArray(schema.fields)
+        ? schema.fields.map((f) => f.name)
+        : [];
+      store.state.search.fieldOptions = fields;
+      if (!fields.includes(store.state.search.fieldName)) {
+        store.state.search.fieldName = null;
+      }
+    }
+
+    function filterSearchSchemas(val, update) {
+      const needle = (val || "").toLowerCase();
+      update(() => {
+        if (!needle) {
+          store.state.search.schemaOptions = allSchemaOptions.value.slice();
+          return;
+        }
+        store.state.search.schemaOptions = allSchemaOptions.value.filter((option) =>
+          option.label.toLowerCase().includes(needle)
+        );
+      });
+    }
+
+    function onSearchSchemaChange(val) {
+      store.state.search.schemaName = val;
+      store.state.search.mode = false;
+    }
 
     function readQuerySelection() {
       if (typeof window === "undefined") {
@@ -55,7 +109,10 @@ const app = createApp({
 
     function applySelectionFromQuery(selection) {
       let applied = false;
-      if (selection.tag && store.state.leftPanel.tags.some((tag) => tag.name === selection.tag)) {
+      if (
+        selection.tag &&
+        store.state.leftPanel.tags.some((tag) => tag.name === selection.tag)
+      ) {
         store.state.leftPanel.tag = selection.tag;
         store.state.leftPanel._tag = selection.tag;
         applied = true;
@@ -72,6 +129,48 @@ const app = createApp({
       return applied;
     }
 
+    async function resetSearch() {
+      store.state.search.mode = false;
+      store.state.leftPanel.tag = null;
+      store.state.leftPanel._tag = null;
+      store.state.leftPanel.routeId = null;
+      await loadSearchedTags();
+      renderBasedOnInitialPolicy()
+    }
+
+    async function onSearch() {
+      store.state.search.mode = true;
+      store.state.leftPanel.tag = null;
+      store.state.leftPanel._tag = null;
+      store.state.leftPanel.routeId = null;
+      await loadSearchedTags();
+      await onGenerate();
+    }
+    async function loadSearchedTags() {
+      try {
+        const payload = {
+          schema_name: store.state.search.schemaName,
+          schema_field: store.state.search.fieldName || null,
+          show_fields: store.state.filter.showFields,
+          brief: store.state.filter.brief,
+          hide_primitive_route: store.state.filter.hidePrimitiveRoute,
+          show_module: store.state.filter.showModule,
+        };
+        const res = await fetch("dot-search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const tags = Array.isArray(data.tags) ? data.tags : [];
+          store.state.leftPanel.tags = tags;
+        }
+      } catch (err) {
+        console.error("dot-search failed", err);
+      }
+    }
+
     async function loadInitial() {
       store.state.initializing = true;
       try {
@@ -81,10 +180,8 @@ const app = createApp({
 
         const schemasArr = Array.isArray(data.schemas) ? data.schemas : [];
         // Build dict keyed by id for faster lookups and simpler prop passing
-        const schemaMap = Object.fromEntries(
-          schemasArr.map((s) => [s.id, s])
-        );
-        store.state.graph.schemaMap = schemaMap
+        const schemaMap = Object.fromEntries(schemasArr.map((s) => [s.id, s]));
+        store.state.graph.schemaMap = schemaMap;
         store.state.graph.schemaKeys = new Set(Object.keys(schemaMap));
         store.state.graph.routeItems = data.tags
           .map((t) => t.routes)
@@ -93,9 +190,12 @@ const app = createApp({
             acc[r.id] = r;
             return acc;
           }, {});
-        store.state.modeControl.briefModeEnabled = data.enable_brief_mode || false;
+        store.state.modeControl.briefModeEnabled =
+          data.enable_brief_mode || false;
         store.state.version = data.version || "";
-        store.state.swagger.url = data.swagger_url || null
+        store.state.swagger.url = data.swagger_url || null;
+
+        rebuildSchemaOptions();
 
         const querySelection = readQuerySelection();
         const restoredFromQuery = applySelectionFromQuery(querySelection);
@@ -104,19 +204,8 @@ const app = createApp({
           onGenerate();
           return;
         }
-
-        switch (data.initial_page_policy) {
-          case "full":
-            onGenerate()
-            return
-          case "empty":
-            return
-          case "first":
-            store.state.leftPanel.tag = store.state.leftPanel.tags.length > 0 ? store.state.leftPanel.tags[0].name : null;
-            store.state.leftPanel._tag = store.state.leftPanel.tag;
-            onGenerate();
-            return
-        }
+        store.state.config.initial_page_policy = data.initial_page_policy
+        renderBasedOnInitialPolicy()
 
         // default route options placeholder
       } catch (e) {
@@ -126,28 +215,40 @@ const app = createApp({
       }
     }
 
-    async function onFocusChange(val) {
-      if (val) {
-        await onGenerate(true); // target could be out of view when switchingfrom big to small
-      } else {
-        await onGenerate(false);
-        setTimeout(() => {
-          const ele = $(`[data-name='${store.state.schemaDetail.schemaCodeName}'] polygon`);
-          ele.dblclick();
-        }, 1);
-      }
+    async function renderBasedOnInitialPolicy() {
+        switch (store.state.config.initial_page_policy) {
+          case "full":
+            onGenerate();
+            return;
+          case "empty":
+            return;
+          case "first":
+            store.state.leftPanel.tag =
+              store.state.leftPanel.tags.length > 0
+                ? store.state.leftPanel.tags[0].name
+                : null;
+            store.state.leftPanel._tag = store.state.leftPanel.tag;
+            onGenerate();
+            return;
+        }
     }
 
     async function onGenerate(resetZoom = true) {
-      const schema_name = store.state.modeControl.focus ? store.state.schemaDetail.schemaCodeName : null;
+      const activeSchema = store.state.search.mode
+        ? store.state.search.schemaName
+        : null;
+      const activeField = store.state.search.mode
+        ? store.state.search.fieldName
+        : null;
       store.state.generating = true;
       try {
         const payload = {
           tags: store.state.leftPanel.tag ? [store.state.leftPanel.tag] : null,
-          schema_name: schema_name || null,
+          schema_name: activeSchema || null,
+          schema_field: activeField || null,
           route_name: store.state.leftPanel.routeId || null,
           show_fields: store.state.filter.showFields,
-          brief: store.state.modeControl.brief,
+          brief: store.state.filter.brief,
           hide_primitive_route: store.state.filter.hidePrimitiveRoute,
           show_module: store.state.filter.showModule,
         };
@@ -163,9 +264,9 @@ const app = createApp({
           graphUI = new GraphUI("#graph", {
             onSchemaShiftClick: (id) => {
               if (store.state.graph.schemaKeys.has(id)) {
-                resetDetailPanels();
-                store.state.searchDialog.show = true;
-                store.state.searchDialog.schema = id;
+                store.state.search.mode = true;
+                store.state.search.schemaName = id;
+                onSearch();
               }
             },
             onSchemaClick: (id) => {
@@ -192,14 +293,9 @@ const app = createApp({
       }
     }
 
-    function showSearchDialog() {
-      store.state.searchDialog.show = true;
-      store.state.searchDialog.schema = null;
-    }
-
     function resetDetailPanels() {
       store.state.rightDrawer.drawer = false;
-      store.state.routeDetail.show = false
+      store.state.routeDetail.show = false;
       store.state.schemaDetail.schemaCodeName = "";
     }
 
@@ -210,11 +306,14 @@ const app = createApp({
 
       store.state.graph.schemaId = null;
 
-      // state.showFields = "object";
-      store.state.modeControl.focus = false;
+      store.state.search.mode = false;
+      store.state.search.schemaName = null;
+      store.state.search.fieldName = null;
+      store.state.search.fieldOptions = [];
+      store.state.search.schemaOptions = allSchemaOptions.value.slice();
+
       store.state.schemaDetail.schemaCodeName = "";
-      onGenerate();
-      syncSelectionToUrl();
+      resetSearch()
     }
 
     function toggleTag(tagName, expanded = null) {
@@ -223,7 +322,6 @@ const app = createApp({
         store.state.leftPanel.tag = tagName;
         store.state.leftPanel.routeId = "";
 
-        store.state.modeControl.focus = false;
         store.state.schemaDetail.schemaCodeName = "";
         onGenerate();
       } else {
@@ -231,7 +329,7 @@ const app = createApp({
       }
 
       store.state.rightDrawer.drawer = false;
-      store.state.routeDetail.show = false
+      store.state.routeDetail.show = false;
       syncSelectionToUrl();
     }
 
@@ -242,8 +340,7 @@ const app = createApp({
         store.state.leftPanel.routeId = routeId;
       }
       store.state.rightDrawer.drawer = false;
-      store.state.routeDetail.show = false
-      store.state.modeControl.focus = false;
+      store.state.routeDetail.show = false;
       store.state.schemaDetail.schemaCodeName = "";
       onGenerate();
       syncSelectionToUrl();
@@ -251,7 +348,7 @@ const app = createApp({
 
     function toggleShowModule(val) {
       store.state.filter.showModule = val;
-      onGenerate()
+      onGenerate();
     }
 
     function toggleShowField(field) {
@@ -260,7 +357,7 @@ const app = createApp({
     }
 
     function toggleBrief(val) {
-      store.state.modeControl.brief = val;
+      store.state.filter.brief = val;
       onGenerate();
     }
 
@@ -293,24 +390,45 @@ const app = createApp({
       e.preventDefault();
     }
 
+    watch(
+      () => store.state.graph.schemaMap,
+      () => {
+        rebuildSchemaOptions();
+      },
+      { deep: false }
+    );
+
+    watch(
+      () => store.state.search.schemaName,
+      (schemaId) => {
+        store.state.search.schemaOptions = allSchemaOptions.value.slice();
+        populateFieldOptions(schemaId);
+        if (!schemaId) {
+          store.state.search.mode = false;
+        }
+      }
+    );
+
     onMounted(async () => {
-      document.body.classList.remove("app-loading")
+      document.body.classList.remove("app-loading");
       await loadInitial();
       // Reveal app content only after initial JS/data is ready
     });
 
     return {
       store,
+      onSearch,
+      resetSearch,
+      filterSearchSchemas,
+      onSearchSchemaChange,
       toggleTag,
       toggleBrief,
       toggleHidePrimitiveRoute,
       selectRoute,
       onGenerate,
       onReset,
-      showSearchDialog,
       toggleShowField,
       startDragDrawer,
-      onFocusChange,
       toggleShowModule,
     };
   },
@@ -323,10 +441,9 @@ if (window.Quasar && typeof window.Quasar.setCssVar === "function") {
   window.Quasar.setCssVar("primary", "#009485");
 }
 
-app.component("schema-field-filter", SchemaFieldFilter);  // shift click and see relationships
-app.component("schema-code-display", SchemaCodeDisplay);  // double click to see node details
-app.component("route-code-display", RouteCodeDisplay);  // double click to see route details
-app.component("render-graph", RenderGraph);   // for debug, render pasted dot content
-app.component('demo-component', Demo)
+app.component("schema-code-display", SchemaCodeDisplay); // double click to see node details
+app.component("route-code-display", RouteCodeDisplay); // double click to see route details
+app.component("render-graph", RenderGraph); // for debug, render pasted dot content
+app.component("demo-component", Demo);
 
 app.mount("#q-app");

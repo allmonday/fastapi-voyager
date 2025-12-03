@@ -34,6 +34,8 @@ def _build_ga_snippet(ga_id: str | None) -> str:
 
 INITIAL_PAGE_POLICY = Literal['first', 'full', 'empty']
 
+# ---------- setup ----------
+
 class OptionParam(BaseModel):
 	tags: list[Tag]
 	schemas: list[SchemaNode]
@@ -49,11 +51,21 @@ class Payload(BaseModel):
 	schema_field: str | None = None
 	route_name: str | None = None
 	show_fields: str = 'object'
-	show_meta: bool = False
 	brief: bool = False
 	hide_primitive_route: bool = False
 	show_module: bool = True
 
+# ---------- search ----------
+class SearchResultOptionParam(BaseModel):
+	tags: list[Tag]
+
+class SchemaSearchPayload(BaseModel):  # leave tag, route out
+	schema_name: str | None = None
+	schema_field: str | None = None
+	show_fields: str = 'object'
+	brief: bool = False
+	hide_primitive_route: bool = False
+	show_module: bool = True
 
 def create_voyager(
 	target_app: FastAPI,
@@ -90,6 +102,25 @@ def create_voyager(
 			version=__version__,
 			swagger_url=swagger_url,
 			initial_page_policy=initial_page_policy)
+
+	@router.post("/dot-search", response_model=SearchResultOptionParam)
+	def get_search_dot(payload: SchemaSearchPayload):
+		voyager = Voyager(
+			schema=payload.schema_name,
+			schema_field=payload.schema_field,
+			show_fields=payload.show_fields,
+			module_color=module_color,
+			hide_primitive_route=payload.hide_primitive_route,
+			show_module=payload.show_module,
+		)
+		voyager.analysis(target_app)
+		tags = voyager.calculate_filtered_tag_and_route()
+
+		for t in tags:
+			t.routes.sort(key=lambda r: r.name)
+		tags.sort(key=lambda t: t.name)
+
+		return SearchResultOptionParam(tags=tags)
 
 	@router.post("/dot", response_class=PlainTextResponse)
 	def get_filtered_dot(payload: Payload) -> str:
