@@ -2,7 +2,7 @@ import inspect
 import logging
 import os
 from types import UnionType
-from typing import Annotated, Any, Generic, Union, get_args, get_origin
+from typing import Annotated, Any, Generic, Union, get_args, get_origin, ForwardRef
 
 import pydantic_resolve.constant as const
 from pydantic import BaseModel
@@ -237,7 +237,11 @@ def safe_issubclass(kls, target_kls):
     try:
         return issubclass(kls, target_kls)
     except TypeError:
-        logger.debug(f'{kls.__module__}:{kls.__qualname__} is not subclass of {target_kls.__module__}:{target_kls.__qualname__}')  
+        # if kls is ForwardRef, log it
+        if isinstance(kls, ForwardRef):
+            logger.error(f'{str(kls)} is a ForwardRef, not a subclass of {target_kls.__module__}:{target_kls.__qualname__}')
+        else:
+            logger.debug(f'{kls.__module__}:{kls.__qualname__} is not subclass of {target_kls.__module__}:{target_kls.__qualname__}')  
         return False
 
 

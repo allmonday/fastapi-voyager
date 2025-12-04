@@ -124,6 +124,8 @@
 - 0.12.8
     - [x] optimize ui elements, change icons, update reset behavior
 - 0.12.9
+    - [x] fix: handle logging exception for forward ref info, preventing crash
+- 0.12.10
     - [ ] fix: pick tag and then pick route directly from another tag will render nothing
     - [ ] refactor vue-main.js, move methods to store
     - [ ] refactor render.py
