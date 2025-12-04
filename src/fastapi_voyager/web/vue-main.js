@@ -64,7 +64,11 @@ const app = createApp({
     function onSearchSchemaChange(val) {
       store.state.search.schemaName = val;
       store.state.search.mode = false;
-      onSearch()
+      if (!val) {
+        // Clearing the select should only run resetSearch via @clear
+        return;
+      }
+      onSearch();
     }
 
     function readQuerySelection() {
