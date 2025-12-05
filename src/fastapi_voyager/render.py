@@ -57,7 +57,7 @@ class Renderer:
         header_color = 'tomato' if node.id == self.schema else default_color
         header = f"""<tr><td cellpadding="6" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">    {node.name}    </font></td> </tr>"""
         field_content = ''.join(fields_parts) if fields_parts else ''
-        return f"""<<table border="1" cellborder="0" cellpadding="0" bgcolor="white"> {header} {field_content}   </table>>"""
+        return f"""<<table border="0" cellborder="1" cellpadding="0" cellspacing="0" bgcolor="white"> {header} {field_content}   </table>>"""
 
     def _handle_schema_anchor(self, source: str) -> str:
         if '::' in source:

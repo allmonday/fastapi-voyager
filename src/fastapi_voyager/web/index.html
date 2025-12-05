@@ -281,7 +281,6 @@
                       expand-separator
                       :model-value="store.state.leftPanel._tag === tag.name || store.state.search.mode"
                       @update:model-value="(val) => toggleTag(tag.name, val)"
-                      @click="() => toggleTag(tag.name, true)"
                       :header-class="store.state.leftPanel.tag === tag.name ? 'text-primary text-bold tag-bg' : 'tag-bg'"
                       content-class="q-pa-none"
                     >

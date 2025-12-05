@@ -3,7 +3,6 @@
 [![PyPI Downloads](https://static.pepy.tech/badge/fastapi-voyager/month)](https://pepy.tech/projects/fastapi-voyager)
 
 
-
 Visualize your FastAPI endpoints, and explore them interactively.
 
 > This repo is still in early stage, it supports pydantic v2 only
@@ -21,7 +20,7 @@ app.mount('/voyager',
             module_color={'src.services': 'tomato'}, 
             module_prefix='src.services', 
             swagger_url="/docs",
-            ga_id="G-R64S7Q49VL",
+            ga_id="G-XXXXXXXXVL",
             initial_page_policy='first',
             online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master'))
 ```

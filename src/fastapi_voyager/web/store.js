@@ -9,6 +9,12 @@ const state = reactive({
     config: {
         initial_page_policy: 'first'
     },
+    
+    previousTagRoute: {  // for shift + click, store previous tag/route, and populate back when needed
+        hasValue: false,
+        tag: null,
+        routeId: null
+    },
 
     swagger: {
         url: ''

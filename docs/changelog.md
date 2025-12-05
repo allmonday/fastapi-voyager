@@ -128,7 +128,11 @@
 - 0.12.10
     - [x] fix: double trigger on reset search
 - 0.12.11
-    - [ ] fix: pick tag and then pick route directly from another tag will render nothing
+    - [x] better ui for schema select
+    - [x] fix: pick tag and then pick route directly from another tag will render nothing
+    - [x] feat: cancel search schema triggered by shift click will redirect back to previous tag, route selection
+    - [x] optimize the node style
+- 0.12.12
     - [ ] refactor vue-main.js, move methods to store
     - [ ] refactor render.py
 

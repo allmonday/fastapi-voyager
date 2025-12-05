@@ -12,14 +12,9 @@ const app = createApp({
     let graphUI = null;
     const allSchemaOptions = ref([]);
 
-    const NBSP = String.fromCharCode(160);
-    const formatSchemaLabel = (name, id) =>
-      `${name}${NBSP}${NBSP}${NBSP}-${NBSP}${NBSP}${NBSP}${id}`;
-
     function rebuildSchemaOptions() {
       const dict = store.state.graph.schemaMap || {};
       const opts = Object.values(dict).map((s) => ({
-        // label: formatSchemaLabel(s.name, s.id),
         label: s.name,
         desc: s.id,
         value: s.id,
@@ -138,9 +133,19 @@ const app = createApp({
 
     async function resetSearch() {
       store.state.search.mode = false;
-      store.state.leftPanel.tag = null;
-      store.state.leftPanel._tag = null;
-      store.state.leftPanel.routeId = null;
+      console.log(store.state.previousTagRoute.hasValue)
+      console.log(store.state.previousTagRoute)
+      if (store.state.previousTagRoute.hasValue) {
+        store.state.leftPanel.tag = store.state.previousTagRoute.tag;
+        store.state.leftPanel._tag = store.state.previousTagRoute.tag;
+        store.state.leftPanel.routeId = store.state.previousTagRoute.routeId;
+        store.state.previousTagRoute.hasValue = false;
+      } else {
+        store.state.leftPanel.tag = null;
+        store.state.leftPanel._tag = null;
+        store.state.leftPanel.routeId = null;
+      }
+
       syncSelectionToUrl()
       await loadSearchedTags();
       renderBasedOnInitialPolicy()
@@ -276,12 +281,19 @@ const app = createApp({
           graphUI = new GraphUI("#graph", {
             onSchemaShiftClick: (id) => {
               if (store.state.graph.schemaKeys.has(id)) {
+
+                console.log(store.state.leftPanel)
+                store.state.previousTagRoute.tag = store.state.leftPanel.tag;
+                store.state.previousTagRoute.routeId = store.state.leftPanel.routeId;
+                store.state.previousTagRoute.hasValue = true;
+
                 store.state.search.mode = true;
                 store.state.search.schemaName = id;
                 onSearch();
               }
             },
             onSchemaClick: (id) => {
+              console.log("schema clicked:", id);
               resetDetailPanels();
               if (store.state.graph.schemaKeys.has(id)) {
                 store.state.schemaDetail.schemaCodeName = id;
@@ -320,7 +332,7 @@ const app = createApp({
     }
 
     function toggleTag(tagName, expanded = null) {
-      if (expanded === true) {
+      if (expanded === true || store.state.search.mode === true) {
         store.state.leftPanel._tag = tagName;
         store.state.leftPanel.tag = tagName;
         store.state.leftPanel.routeId = "";
@@ -337,16 +349,24 @@ const app = createApp({
     }
 
     function selectRoute(routeId) {
+      // find belonging tag
+      const belongingTag = findTagByRoute(routeId);
+      if (belongingTag) {
+        store.state.leftPanel.tag = belongingTag;
+        store.state.leftPanel._tag = belongingTag;
+      }
+
       if (store.state.leftPanel.routeId === routeId) {
         store.state.leftPanel.routeId = "";
       } else {
         store.state.leftPanel.routeId = routeId;
       }
+
       store.state.rightDrawer.drawer = false;
       store.state.routeDetail.show = false;
       store.state.schemaDetail.schemaCodeName = "";
-      onGenerate();
       syncSelectionToUrl();
+      onGenerate();
     }
 
     function toggleShowModule(val) {

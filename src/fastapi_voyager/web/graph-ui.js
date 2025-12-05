@@ -91,7 +91,13 @@ export class GraphUI {
       ready: function () {
         self.gv = this;
 
-        self.gv.nodes().dblclick(function (event) {
+        const nodes = self.gv.nodes();
+        const edges = self.gv.edges();
+
+        nodes.off(".graphui");
+        edges.off(".graphui");
+
+        nodes.on("dblclick.graphui", function (event) {
           event.stopPropagation();
           try {
             self.highlightSchemaBanner(this)
@@ -110,7 +116,7 @@ export class GraphUI {
           }
         });
 
-        self.gv.edges().click(function (event) {
+        edges.on("click.graphui", function (event) {
           const up = $();
           const down = $();
           const edge = $();
@@ -127,13 +133,14 @@ export class GraphUI {
           self._highlightEdgeNodes();
         })
 
-        self.gv.nodes().click(function (event) {
+        nodes.on("click.graphui", function (event) {
           const set = $();
           set.push(this);
           const obj = { set, direction: "bidirectional" };
 
           const schemaName = event.currentTarget.dataset.name;
-          if (event.shiftKey && self.options.onSchemaClick) {
+          console.log("shift click detected");
+          if (event.shiftKey && self.options.onSchemaShiftClick) {
             if (schemaName) {
               try {
                 self.options.onSchemaShiftClick(schemaName);
