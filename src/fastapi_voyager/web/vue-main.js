@@ -19,7 +19,9 @@ const app = createApp({
     function rebuildSchemaOptions() {
       const dict = store.state.graph.schemaMap || {};
       const opts = Object.values(dict).map((s) => ({
-        label: formatSchemaLabel(s.name, s.id),
+        // label: formatSchemaLabel(s.name, s.id),
+        label: s.name,
+        desc: s.id,
         value: s.id,
       }));
       allSchemaOptions.value = opts;

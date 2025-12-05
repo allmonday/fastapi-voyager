@@ -158,7 +158,16 @@
                 @update:model-value="onSearchSchemaChange"
                 @filter="filterSearchSchemas"
                 @clear="resetSearch"
-              ></q-select>
+              >
+               <template v-slot:option="scope">
+                <q-item v-bind="scope.itemProps">
+                  <q-item-section>
+                    <q-item-label>{{ scope.opt.label }}</q-item-label>
+                    <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
               
               <q-select
                 dense
