@@ -133,8 +133,7 @@
     - [x] feat: cancel search schema triggered by shift click will redirect back to previous tag, route selection
     - [x] optimize the node style
 - 0.12.12
-    - [ ] refactor vue-main.js, move methods to store
-    - [ ] refactor render.py
+    - [x] disable `show module cluster` by default
 
 ## 0.13
 - 0.13.2
@@ -144,5 +143,8 @@
         - [ ] show hint for resolve, post fields
         - [ ] display loader as edges
     - [ ] add tests
+- 0.13.2
+    - [ ] refactor vue-main.js, move methods to store
+    - [ ] refactor render.py
 
 

@@ -93,7 +93,7 @@ const state = reactive({
         hidePrimitiveRoute: false,
         showFields: 'object',
         brief: false,
-        showModule: true,
+        showModule: false,
     }
 
 })
