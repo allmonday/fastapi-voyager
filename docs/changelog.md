@@ -136,8 +136,8 @@
     - [x] disable `show module cluster` by default
 
 ## 0.13
-- 0.13.2
-    - [ ] if er diagram is provided, show it first.
+- 0.13.0
+    - [x] if er diagram is provided, show it first.
 - 0.13.1
     - [ ] integration with pydantic-resolve
         - [ ] show hint for resolve, post fields
