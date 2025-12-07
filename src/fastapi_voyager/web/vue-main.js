@@ -243,6 +243,7 @@ const app = createApp({
           data.enable_brief_mode || false;
         store.state.version = data.version || "";
         store.state.swagger.url = data.swagger_url || null;
+        store.state.config.has_er_diagram = data.has_er_diagram || false;
 
         rebuildSchemaOptions();
 

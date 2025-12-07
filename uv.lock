@@ -103,7 +103,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.110" },
-    { name = "pydantic-resolve", specifier = ">=2.2.2" },
+    { name = "pydantic-resolve", specifier = ">=2.2.3" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
@@ -259,14 +259,14 @@ wheels = [
 
 [[package]]
 name = "pydantic-resolve"
-version = "2.2.2"
+version = "2.2.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiodataloader" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/32/d2/b9e44c1a95b97b00a4e8b27f427a514122c76815ca2033f4560d8ff3d63b/pydantic_resolve-2.2.2.tar.gz", hash = "sha256:f167dc8cdb2fa25c879af6a78db6f83e63c9c174954124fae8a2bdb2807ed0fe", size = 32788, upload-time = "2025-12-06T12:17:46.115Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/9f/56e1960a479c63b572146826806bf0c408e9e094402a56cb5743627e76ea/pydantic_resolve-2.2.3.tar.gz", hash = "sha256:969ca1541930dd0395a31b8bd8939cc18ea6503f73a9ac96a2394ad423445e35", size = 33144, upload-time = "2025-12-07T12:37:38.841Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/9d/a092fac5d8df6c21933033c99a7b26b3fa638d85abdf311430f945f7b3eb/pydantic_resolve-2.2.2-py3-none-any.whl", hash = "sha256:d2c5522984b95bd5effc2ecd0cf6bc9f6768aacb43aeb56becb5974b17e950aa", size = 34775, upload-time = "2025-12-06T12:17:44.472Z" },
+    { url = "https://files.pythonhosted.org/packages/09/b5/10204c33c2b3f9555ca21d6ded56baf7b9b0bb4733687cb3e0bde42e5f19/pydantic_resolve-2.2.3-py3-none-any.whl", hash = "sha256:05aaf82f4e403dd0cef4e45bb42d59719ccf903b029102730a32a80fa47e6ac2", size = 35149, upload-time = "2025-12-07T12:37:37.146Z" },
 ]
 
 [[package]]

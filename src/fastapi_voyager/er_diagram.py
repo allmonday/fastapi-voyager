@@ -4,7 +4,6 @@ from fastapi_voyager.type import PK, FieldType, Link, LinkType, SchemaNode
 from fastapi_voyager.type_helper import (
     update_forward_refs,
     full_class_name,
-    get_pydantic_fields,
     get_core_types,
     get_type_name
 )

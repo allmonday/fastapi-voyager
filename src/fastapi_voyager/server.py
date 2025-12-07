@@ -46,6 +46,7 @@ class OptionParam(BaseModel):
 	version: str
 	initial_page_policy: INITIAL_PAGE_POLICY
 	swagger_url: str | None = None
+	has_er_diagram: bool = False
 
 class Payload(BaseModel):
 	tags: list[str] | None = None
@@ -119,7 +120,8 @@ def create_voyager(
 			enable_brief_mode=bool(module_prefix),
 			version=__version__,
 			swagger_url=swagger_url,
-			initial_page_policy=initial_page_policy)
+			initial_page_policy=initial_page_policy,
+			has_er_diagram=er_diagram is not None)
 
 
 	@router.post("/dot-search", response_model=SearchResultOptionParam)

@@ -7,7 +7,8 @@ const state = reactive({
 
     version: '',
     config: {
-        initial_page_policy: 'first'
+        initial_page_policy: 'first',
+        has_er_diagram: false,
     },
 
     mode: 'voyager', // voyager / er-diagram
@@ -100,6 +101,7 @@ const state = reactive({
     }
 
 })
+
 
 const mutations = {
     increment() {

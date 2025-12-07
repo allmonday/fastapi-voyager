@@ -114,18 +114,6 @@
               <span v-if="store.state.version" style="font-size: 12px; margin-left: 8px; font-weight: normal;">{{ store.state.version }}</span>
             </div>
             <div class="col-auto">
-              <q-btn-toggle
-                class="q-ml-md"
-                v-model="store.state.mode"
-                push
-                toggle-color="primary"
-                :options="[
-                  {label: 'Voyager', value: 'voyager'},
-                  {label: 'ER diagram', value: 'er-diagram'},
-                ]"
-              />
-            </div>
-            <div class="col-auto">
               <q-btn
                 style="margin-left: 80px"
                 outline
@@ -192,6 +180,18 @@
                 clearable
                 label="Select field (optional)"
               ></q-select>
+            </div>
+            <div class="col-auto" v-if="store.state.config.has_er_diagram">
+              <q-btn-toggle
+                class="q-ml-lg"
+                v-model="store.state.mode"
+                push
+                toggle-color="primary"
+                :options="[
+                  {label: 'Voyager', value: 'voyager'},
+                  {label: 'ER diagram', value: 'er-diagram'},
+                ]"
+              />
             </div>
             <div class="col-auto">
               <q-btn

@@ -13,7 +13,8 @@ class Member(BaseModel):
 
 class Task(BaseModel, BaseEntity):
     __pydantic_resolve_relationships__ = [
-         Relationship(field='owner_id', target_kls=Member),
+        Relationship(field='owner_id', target_kls=Member),
+        Relationship(field='story_id', target_kls='Story'),
     ]
     id: int
     story_id: int
@@ -21,7 +22,9 @@ class Task(BaseModel, BaseEntity):
     owner_id: int
 
 class Story(BaseModel, BaseEntity):
-    __pydantic_resolve_relationships__ = [Relationship(field='id', target_kls=list[Task]) ]
+    __pydantic_resolve_relationships__ = [
+        Relationship(field='id', target_kls=list[Task]),
+    ]
     id: int
     type: Literal['feature', 'bugfix']
     dct: dict
@@ -30,6 +33,8 @@ class Story(BaseModel, BaseEntity):
     description: str
 
 class Sprint(BaseModel, BaseEntity):
-    __pydantic_resolve_relationships__ = [Relationship(field='id', target_kls=list[Story]) ]
+    __pydantic_resolve_relationships__ = [
+        Relationship(field='id', target_kls=list[Story]) 
+    ]
     id: int
     name: str
