@@ -69,6 +69,12 @@ class SchemaSearchPayload(BaseModel):  # leave tag, route out
 	hide_primitive_route: bool = False
 	show_module: bool = True
 
+
+# ---------- er diagram ----------
+class ErDiagramPayload(BaseModel):
+	show_fields: str = 'object'
+	show_module: bool = True
+
 def create_voyager(
 	target_app: FastAPI,
 	module_color: dict[str, str] | None = None,
@@ -82,10 +88,13 @@ def create_voyager(
 ) -> FastAPI:
 	router = APIRouter(tags=['fastapi-voyager'])
 
-	@router.get("/er-diagram", response_class=PlainTextResponse)
-	def get_er_diagram() -> str:
+	@router.post("/er-diagram", response_class=PlainTextResponse)
+	def get_er_diagram(payload: ErDiagramPayload) -> str:
 		if er_diagram:
-			return VoyagerErDiagram(er_diagram).render_dot()
+			return VoyagerErDiagram(
+				er_diagram,
+				show_fields=payload.show_fields,
+				show_module=payload.show_module ).render_dot()
 		return ''
 
 	@router.get("/dot", response_model=OptionParam)

@@ -114,6 +114,18 @@
               <span v-if="store.state.version" style="font-size: 12px; margin-left: 8px; font-weight: normal;">{{ store.state.version }}</span>
             </div>
             <div class="col-auto">
+              <q-btn-toggle
+                class="q-ml-md"
+                v-model="store.state.mode"
+                push
+                toggle-color="primary"
+                :options="[
+                  {label: 'Voyager', value: 'voyager'},
+                  {label: 'ER diagram', value: 'er-diagram'},
+                ]"
+              />
+            </div>
+            <div class="col-auto">
               <q-btn
                 style="margin-left: 80px"
                 outline
@@ -259,7 +271,7 @@
           <q-splitter
             v-model="store.state.leftPanel.width"
             unit="px"
-            :limits="[200, 800]"
+            :limits="store.state.mode === 'voyager' ? [200, 800] : [0, 0]"
             class="adjust-fit"
           >
             <template #before>
@@ -272,6 +284,7 @@
                 minHeight: 0,
                 height: '100%'
               }"
+                v-show="store.state.mode === 'voyager'"
               >
                 <q-scroll-area class="fit">
                   <q-list dense separator>

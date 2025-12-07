@@ -9,6 +9,8 @@ const state = reactive({
     config: {
         initial_page_policy: 'first'
     },
+
+    mode: 'voyager', // voyager / er-diagram
     
     previousTagRoute: {  // for shift + click, store previous tag/route, and populate back when needed
         hasValue: false,
@@ -34,6 +36,7 @@ const state = reactive({
     // tags and routes
     leftPanel: {  
         width: 300,
+        previousWidth: 300,
         tags: null,
         tag: null,
         _tag: null,

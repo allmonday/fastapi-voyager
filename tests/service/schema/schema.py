@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Literal
 from pydantic import BaseModel
 from pydantic_resolve import Relationship
@@ -11,7 +12,9 @@ class Member(BaseModel):
     last_name: str
 
 class Task(BaseModel, BaseEntity):
-    __pydantic_resolve_relationships__ = [ Relationship(field='owner_id', target_kls=Member) ]
+    __pydantic_resolve_relationships__ = [
+         Relationship(field='owner_id', target_kls=Member),
+    ]
     id: int
     story_id: int
     description: str

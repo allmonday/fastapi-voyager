@@ -11,6 +11,40 @@ const app = createApp({
   setup() {
     let graphUI = null;
     const allSchemaOptions = ref([]);
+    const erDiagramLoading = ref(false);
+    const erDiagramCache = ref("");
+
+    function initGraphUI() {
+      if (graphUI) {
+        return;
+      }
+      graphUI = new GraphUI("#graph", {
+        onSchemaShiftClick: (id) => {
+          if (store.state.graph.schemaKeys.has(id)) {
+            store.state.previousTagRoute.tag = store.state.leftPanel.tag;
+            store.state.previousTagRoute.routeId = store.state.leftPanel.routeId;
+            store.state.previousTagRoute.hasValue = true;
+            store.state.search.mode = true;
+            store.state.search.schemaName = id;
+            onSearch();
+          }
+        },
+        onSchemaClick: (id) => {
+          resetDetailPanels();
+          if (store.state.graph.schemaKeys.has(id)) {
+            store.state.schemaDetail.schemaCodeName = id;
+            store.state.rightDrawer.drawer = true;
+          }
+          if (id in store.state.graph.routeItems) {
+            store.state.routeDetail.routeCodeId = id;
+            store.state.routeDetail.show = true;
+          }
+        },
+        resetCb: () => {
+          resetDetailPanels();
+        },
+      });
+    }
 
     function rebuildSchemaOptions() {
       const dict = store.state.graph.schemaMap || {};
@@ -251,6 +285,17 @@ const app = createApp({
     }
 
     async function onGenerate(resetZoom = true) {
+      switch (store.state.mode) {
+        case "voyager":
+          await renderVoyager(resetZoom);
+          break;
+        case "er-diagram":
+          await renderErDiagram(resetZoom);
+          break;
+      }
+    }
+
+    async function renderVoyager(resetZoom = true) {
       const activeSchema = store.state.search.mode
         ? store.state.search.schemaName
         : null;
@@ -269,6 +314,7 @@ const app = createApp({
           hide_primitive_route: store.state.filter.hidePrimitiveRoute,
           show_module: store.state.filter.showModule,
         };
+        initGraphUI();
         const res = await fetch("dot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -276,39 +322,6 @@ const app = createApp({
         });
         const dotText = await res.text();
 
-        // create graph instance once
-        if (!graphUI) {
-          graphUI = new GraphUI("#graph", {
-            onSchemaShiftClick: (id) => {
-              if (store.state.graph.schemaKeys.has(id)) {
-
-                console.log(store.state.leftPanel)
-                store.state.previousTagRoute.tag = store.state.leftPanel.tag;
-                store.state.previousTagRoute.routeId = store.state.leftPanel.routeId;
-                store.state.previousTagRoute.hasValue = true;
-
-                store.state.search.mode = true;
-                store.state.search.schemaName = id;
-                onSearch();
-              }
-            },
-            onSchemaClick: (id) => {
-              console.log("schema clicked:", id);
-              resetDetailPanels();
-              if (store.state.graph.schemaKeys.has(id)) {
-                store.state.schemaDetail.schemaCodeName = id;
-                store.state.rightDrawer.drawer = true;
-              }
-              if (id in store.state.graph.routeItems) {
-                store.state.routeDetail.routeCodeId = id;
-                store.state.routeDetail.show = true;
-              }
-            },
-            resetCb: () => {
-              resetDetailPanels();
-            },
-          });
-        }
         await graphUI.render(dotText, resetZoom);
       } catch (e) {
         console.error("Generate failed", e);
@@ -329,6 +342,46 @@ const app = createApp({
         store.state.leftPanel.routeId = null;
         syncSelectionToUrl()
         onGenerate()
+    }
+
+    async function renderErDiagram(resetZoom = true) {
+      initGraphUI();
+      erDiagramLoading.value = true;
+      const payload = {
+        show_fields: store.state.filter.showFields,
+        show_module: store.state.filter.showModule,
+      };
+      try {
+        const res = await fetch("er-diagram", { 
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+         });
+        if (!res.ok) {
+          throw new Error(`failed with status ${res.status}`);
+        }
+        const dot = await res.text();
+        erDiagramCache.value = dot;
+        await graphUI.render(dot, resetZoom);
+      } catch (err) {
+        console.error(err)
+      } finally {
+        erDiagramLoading.value = false;
+      }
+    }
+
+    async function onModeChange(val) {
+      if (val === "er-diagram") {
+        if (store.state.leftPanel.width > 0) {
+          store.state.leftPanel.previousWidth = store.state.leftPanel.width;
+        }
+        store.state.leftPanel.width = 0;
+        await renderErDiagram();
+      } else {
+        const fallbackWidth = store.state.leftPanel.previousWidth || 300;
+        store.state.leftPanel.width = fallbackWidth;
+        await onGenerate();
+      }
     }
 
     function toggleTag(tagName, expanded = null) {
@@ -422,6 +475,22 @@ const app = createApp({
     );
 
     watch(
+      () => store.state.leftPanel.width,
+      (val) => {
+        if (store.state.mode === "voyager" && typeof val === "number" && val > 0) {
+          store.state.leftPanel.previousWidth = val;
+        }
+      }
+    );
+
+    watch(
+      () => store.state.mode,
+      (mode) => {
+        onModeChange(mode);
+      }
+    );
+
+    watch(
       () => store.state.search.schemaName,
       (schemaId) => {
         store.state.search.schemaOptions = allSchemaOptions.value.slice();
@@ -453,6 +522,8 @@ const app = createApp({
       toggleShowField,
       startDragDrawer,
       toggleShowModule,
+      onModeChange,
+      renderErDiagram,
     };
   },
 });
