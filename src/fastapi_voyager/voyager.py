@@ -62,11 +62,6 @@ class Voyager:
             if isinstance(route, routing.APIRoute):
                 yield route
 
-    def analysis_route(self, route: routing.APIRoute):
-        ...
-    
-    def analysis_tags(self, tag: str):
-        ...
 
     def analysis(self, app: FastAPI):
         """

@@ -1,13 +1,24 @@
 from typing import Literal
-
 from pydantic import BaseModel
+from pydantic_resolve import Relationship
+from .base_entity import BaseEntity
 
 
-class Sprint(BaseModel):
+
+class Member(BaseModel):
     id: int
-    name: str
+    first_name: str
+    last_name: str
 
-class Story(BaseModel):
+class Task(BaseModel, BaseEntity):
+    __pydantic_resolve_relationships__ = [ Relationship(field='owner_id', target_kls=Member) ]
+    id: int
+    story_id: int
+    description: str
+    owner_id: int
+
+class Story(BaseModel, BaseEntity):
+    __pydantic_resolve_relationships__ = [Relationship(field='id', target_kls=list[Task]) ]
     id: int
     type: Literal['feature', 'bugfix']
     dct: dict
@@ -15,14 +26,7 @@ class Story(BaseModel):
     title: str
     description: str
 
-class Task(BaseModel):
+class Sprint(BaseModel, BaseEntity):
+    __pydantic_resolve_relationships__ = [Relationship(field='id', target_kls=list[Story]) ]
     id: int
-    story_id: int
-    description: str
-    owner_id: int
-
-class Member(BaseModel):
-    id: int
-    first_name: str
-    last_name: str
-
+    name: str

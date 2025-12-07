@@ -12,6 +12,8 @@ from fastapi_voyager.type import CoreData, SchemaNode, Tag
 from fastapi_voyager.type_helper import get_source, get_vscode_link
 from fastapi_voyager.version import __version__
 from fastapi_voyager.voyager import Voyager
+from pydantic_resolve import ErDiagram
+from fastapi_voyager.er_diagram import VoyagerErDiagram
 
 WEB_DIR = Path(__file__).parent / "web"
 WEB_DIR.mkdir(exist_ok=True)
@@ -76,8 +78,15 @@ def create_voyager(
 	online_repo_url: str | None = None,
 	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
 	ga_id: str | None = None,
+	er_diagram: ErDiagram | None = None,
 ) -> FastAPI:
 	router = APIRouter(tags=['fastapi-voyager'])
+
+	@router.get("/er-diagram", response_class=PlainTextResponse)
+	def get_er_diagram() -> str:
+		if er_diagram:
+			return VoyagerErDiagram(er_diagram).render_dot()
+		return ''
 
 	@router.get("/dot", response_model=OptionParam)
 	def get_dot() -> str:
@@ -102,6 +111,7 @@ def create_voyager(
 			version=__version__,
 			swagger_url=swagger_url,
 			initial_page_policy=initial_page_policy)
+
 
 	@router.post("/dot-search", response_model=SearchResultOptionParam)
 	def get_search_dot(payload: SchemaSearchPayload):
