@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Literal
 from pydantic import BaseModel
-from pydantic_resolve import Relationship
+from pydantic_resolve import Relationship, MultipleRelationship, Link
 from .base_entity import BaseEntity
 
 
@@ -34,7 +34,10 @@ class Story(BaseModel, BaseEntity):
 
 class Sprint(BaseModel, BaseEntity):
     __pydantic_resolve_relationships__ = [
-        Relationship(field='id', target_kls=list[Story]) 
+        MultipleRelationship(field='id', target_kls=list[Story], links=[
+            Link(biz='all'),
+            Link(biz='done'),
+        ]) 
     ]
     id: int
     name: str

@@ -67,6 +67,7 @@ class Link:
     source_origin: str
     target_origin: str
     type: LinkType
+    label: str | None = None
 
 FieldType = Literal['single', 'object', 'all']
 PK = "PK"
