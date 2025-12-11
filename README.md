@@ -7,11 +7,12 @@ Visualize your FastAPI endpoints, and explore them interactively.
 
 > This repo is still in early stage, it supports pydantic v2 only
 
-[live demo](https://www.newsyeah.fun/voyager/) of project: [composition oriented development pattern](https://github.com/allmonday/composition-oriented-development-pattern)
+visit [live demo](https://www.newsyeah.fun/voyager/) 
+source code:[composition oriented development pattern](https://github.com/allmonday/composition-oriented-development-pattern)
 
-<img width="1600" height="986" alt="image" src="https://github.com/user-attachments/assets/8829cda0-f42d-4c84-be2f-b019bb5fe7e1" />
+<img width="1597" height="933" alt="image" src="https://github.com/user-attachments/assets/020bf5b2-6c69-44bf-ba1f-39389d388d27" />
 
-with configuration:
+with simple configuration it can be embedded into FastAPI.
 
 ```python
 app.mount('/voyager', 
@@ -39,6 +40,8 @@ pip install fastapi-voyager
 uv add fastapi-voyager
 ```
 
+run with cli:
+
 ```shell
 voyager -m path.to.your.app.module --server
 ```
@@ -49,39 +52,21 @@ voyager -m path.to.your.app.module --server
 voyager -m path.to.your.app.module --server --app api
 ```
 
-## Mount into project
-
-```python
-from fastapi import FastAPI
-from fastapi_voyager import create_voyager
-from tests.demo import app
-
-app.mount('/voyager', create_voyager(
-    app, 
-    module_color={"tests.service": "red"}, 
-    module_prefix="tests.service"),
-    swagger_url="/docs")
-```
 
 ## Features
 
 For scenarios of using FastAPI as internal API integration endpoints, `fastapi-voyager` helps to visualize the dependencies.
 
-It is also an architecture inspection tool that can identify issues in data relationships during design phase before turly implemtatioin.
+It is also an architecture tool that can identify issues inside implementation, finding out wrong relationships, overfetchs, or anything else.
 
-If the process of building the view model follows the ER model, the full potential of fastapi-voyager can be realized. It allows for quick identification of APIs  that use entities, as well as which entities are used by a specific API
+**If the process of building the view model follows the ER model**, the full potential of fastapi-voyager can be realized. It allows for quick identification of APIs  that use entities, as well as which entities are used by a specific API
+
+Given ErDiagram defined by pydantic-resolve, application level entity relationship diagram can be visualized too.
 
 ### highlight nodes and links
 click a node to highlight it's upperstream and downstream nodes. figure out the related models of one page, or homw many pages are related with one model.
 
-
 <img width="1100" height="700" alt="image" src="https://github.com/user-attachments/assets/3e0369ea-5fa4-469a-82c1-ed57d407e53d" />
-
-### focus on nodes
-
-Double click a node, and then toggle focus to hide irrelevant nodes.
-
-<img width="1061" height="937" alt="image" src="https://github.com/user-attachments/assets/79709b02-7571-43fc-abc9-17a287a97515" />
 
 ### view source code
 
@@ -89,7 +74,59 @@ double click a node or route to show source code or open file in vscode.
 
 <img width="1297" height="940" alt="image" src="https://github.com/user-attachments/assets/c8bb2e7d-b727-42a6-8c9e-64dce297d2d8" />
 
-<img width="1132" height="824" alt="image" src="https://github.com/user-attachments/assets/b706e879-e4fc-48dd-ace1-99bf97e3ed6a" />
+### quick search
+
+seach schemas by name and dispaly it's upstream and downstreams.
+
+shift + click can quickly search current one
+
+<img width="1587" height="873" alt="image" src="https://github.com/user-attachments/assets/ee4716f3-233d-418f-bc0e-3b214d1498f7" />
+
+### display ER diagram
+
+ER diagram is a new feature from pydantic-resolve which provide a solid expression for business descritpions. 
+
+```python
+diagram = ErDiagram(
+    configs=[
+        Entity(
+            kls=Team,
+            relationships=[
+                Relationship( field='id', target_kls=list[Sprint], loader=sprint_loader.team_to_sprint_loader),
+                Relationship( field='id', target_kls=list[User], loader=user_loader.team_to_user_loader)
+            ]
+        ),
+        Entity(
+            kls=Sprint,
+            relationships=[
+                Relationship( field='id', target_kls=list[Story], loader=story_loader.sprint_to_story_loader)
+            ]
+        ),
+        Entity(
+            kls=Story,
+            relationships=[
+                Relationship( field='id', target_kls=list[Task], loader=task_loader.story_to_task_loader),
+                Relationship( field='owner_id', target_kls=User, loader=user_loader.user_batch_loader)
+            ]
+        ),
+        Entity(
+            kls=Task,
+            relationships=[
+                Relationship( field='owner_id', target_kls=User, loader=user_loader.user_batch_loader)
+            ]
+        )
+    ]
+)
+
+# display in voyager
+app.mount('/voyager', 
+          create_voyager(
+            app,
+            er_diagram=diagram)
+```
+
+<img width="1276" height="613" alt="image" src="https://github.com/user-attachments/assets/ea0091bb-ee11-4f71-8be3-7129d956c910" />
+
 
 
 ## Command Line Usage
