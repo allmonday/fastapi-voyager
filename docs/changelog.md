@@ -140,12 +140,14 @@
     - [x] if er diagram is provided, show it first.
 - 0.13.1
     - [x] show more details in er diagram
-- 0.13.2
+- 0.13.3
+    - [ ] show field description
+- 0.13.4
     - [ ] integration with pydantic-resolve
         - [ ] show hint for resolve, post fields
         - [ ] display loader as edges
     - [ ] add tests
-- 0.13.3
+- 0.13.5
     - [ ] refactor vue-main.js, move methods to store
     - [ ] refactor render.py
 
