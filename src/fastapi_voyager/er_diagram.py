@@ -70,7 +70,7 @@ class DiagramRenderer:
     def render_link(self, link: Link) -> str:
         h = self._handle_schema_anchor
         if link.type == 'schema':
-            return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "solid", label = "{link.label}", minlen=3];"""
+            return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "{link.style}", label = "{link.label}", minlen=3];"""
         else:
             raise ValueError(f'Unknown link type: {link.type}')
 
@@ -154,6 +154,7 @@ class VoyagerErDiagram:
                  er_diagram: ErDiagram, 
                  show_fields: FieldType = 'single',
                  show_module: bool = False):
+
         self.er_diagram = er_diagram
         self.nodes: list[SchemaNode] = []
         self.node_set: dict[str, SchemaNode] = {}
@@ -186,7 +187,9 @@ class VoyagerErDiagram:
                         target=self.generate_node_head(full_class_name(anno)),
                         target_origin=full_class_name(anno),
                         type='schema',
-                        label=get_type_name(relationship.target_kls))
+                        label=get_type_name(relationship.target_kls),
+                        style='solid' if relationship.loader else 'solid, dashed'
+                        )
 
                 elif isinstance(relationship, MultipleRelationship):
                     for link in relationship.links:
@@ -197,7 +200,8 @@ class VoyagerErDiagram:
                             target_origin=full_class_name(anno),
                             type='schema',
                             biz=link.biz,
-                            label=f'{get_type_name(relationship.target_kls)} / {link.biz} '
+                            label=f'{get_type_name(relationship.target_kls)} / {link.biz} ',
+                            style='solid' if link.loader else 'solid, dashed'
                         )
 
     def add_to_node_set(self, schema, fk_set: set[str] | None = None) -> str:
@@ -226,6 +230,7 @@ class VoyagerErDiagram:
             target_origin: str,
             type: LinkType,
             label: str,
+            style: str,
             biz: str | None = None
         ) -> bool:
         """
@@ -241,7 +246,8 @@ class VoyagerErDiagram:
                 target=target,
                 target_origin=target_origin,
                 type=type,
-                label=label
+                label=label,
+                style=style
             ))
         return result
 

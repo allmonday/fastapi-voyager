@@ -140,6 +140,8 @@
     - [x] if er diagram is provided, show it first.
 - 0.13.1
     - [x] show more details in er diagram
+- 0.13.2
+    - [x] show dashed line for link without dataloader
 - 0.13.3
     - [ ] show field description
 - 0.13.4

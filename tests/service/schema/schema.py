@@ -35,8 +35,8 @@ class Story(BaseModel, BaseEntity):
 class Sprint(BaseModel, BaseEntity):
     __pydantic_resolve_relationships__ = [
         MultipleRelationship(field='id', target_kls=list[Story], links=[
-            Link(biz='all'),
-            Link(biz='done'),
+            Link(biz='all', loader=lambda x: x),
+            Link(biz='done', loader=lambda x: x),
         ]) 
     ]
     id: int
