@@ -143,7 +143,7 @@
 - 0.13.2
     - [x] show dashed line for link without dataloader
 - 0.13.3
-    - [ ] show field description
+    - [x] show field description
 - 0.13.4
     - [ ] integration with pydantic-resolve
         - [ ] show hint for resolve, post fields

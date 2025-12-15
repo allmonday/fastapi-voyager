@@ -179,6 +179,7 @@ export default defineComponent({
                 <tr>
                   <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Field</th>
                   <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Type</th>
+                  <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Description</th>
                   <th style="text-align:left; border-bottom:1px solid #ddd; padding:4px 6px;">Inherited</th>
                 </tr>
               </thead>
@@ -186,6 +187,7 @@ export default defineComponent({
                 <tr v-for="f in fields" :key="f.name">
                   <td style="padding:4px 6px; border-bottom:1px solid #f0f0f0;">{{ f.name }}</td>
                   <td style="padding:4px 6px; border-bottom:1px solid #f0f0f0; white-space:nowrap;">{{ f.type_name }}</td>
+                  <td style="padding:4px 6px; border-bottom:1px solid #f0f0f0; max-width: 200px;">{{ f.desc }}</td>
                   <td style="padding:4px 6px; border-bottom:1px solid #f0f0f0; text-align:left;">{{ f.from_base ? '✔︎' : '' }}</td>
                 </tr>
                 <tr v-if="!fields.length">

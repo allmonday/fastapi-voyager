@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_resolve import Relationship, MultipleRelationship, Link
 from .base_entity import BaseEntity
 
@@ -16,7 +16,7 @@ class Task(BaseModel, BaseEntity):
         Relationship(field='owner_id', target_kls=Member),
         Relationship(field='story_id', target_kls='Story'),
     ]
-    id: int
+    id: int = Field(description="The unique identifier of the task")
     story_id: int
     description: str
     owner_id: int

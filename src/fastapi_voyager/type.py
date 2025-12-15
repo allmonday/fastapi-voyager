@@ -16,6 +16,7 @@ class FieldInfo:
     from_base: bool = False
     is_object: bool = False
     is_exclude: bool = False
+    desc: str = ''
 
 @dataclass
 class Tag(NodeBase):
