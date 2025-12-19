@@ -144,13 +144,19 @@
     - [x] show dashed line for link without dataloader
 - 0.13.3
     - [x] show field description
-- 0.13.4
-    - [ ] integration with pydantic-resolve
-        - [ ] show hint for resolve, post fields
-        - [ ] display loader as edges
-    - [ ] add tests
-- 0.13.5
+
+## 0.14, integration with pydantic-resolve
+- 0.14.0
+    - [ ] show hint for resolve (>), post fields (<), post default handler (* at title)
+- 0.14.1
+    - [ ] show expose and collect info
+
+## 0.15, internal refactor
+- 0.15.0
     - [ ] refactor vue-main.js, move methods to store
     - [ ] refactor render.py
+    - [ ] add tests
+
+## 1.0, release 
 
 
