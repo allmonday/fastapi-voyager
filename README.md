@@ -5,6 +5,8 @@
 
 Visualize your FastAPI endpoints, and explore them interactively.
 
+Its vision is to make code easier to read and understand, serving as an ideal documentation tool.
+
 > This repo is still in early stage, it supports pydantic v2 only
 
 visit [live demo](https://www.newsyeah.fun/voyager/) 
@@ -62,6 +64,7 @@ It is also an architecture tool that can identify issues inside implementation, 
 **If the process of building the view model follows the ER model**, the full potential of fastapi-voyager can be realized. It allows for quick identification of APIs  that use entities, as well as which entities are used by a specific API
 
 Given ErDiagram defined by pydantic-resolve, application level entity relationship diagram can be visualized too.
+
 
 ### highlight nodes and links
 click a node to highlight it's upperstream and downstream nodes. figure out the related models of one page, or homw many pages are related with one model.
@@ -162,9 +165,9 @@ voyager --help
 
 ## About pydantic-resolve
 
-pydantic-resolve's `@ensure_subset` decorator helps safely pick fields from the 'source class' while **indicating the reference** from the current class to the base class.
+pydantic-resolve is a lightweight tool designed to build complex, nested data in a simple, declarative way. In v2 it introduced an important feature: ER Diagram, and fastapi-voyager has supported this feature, allowing for a clearer understanding of the business relationships.
 
-pydantic-resolve is a lightweight tool designed to build complex, nested data in a simple, declarative way. In version 2.0.0alpha, it will introduce an important feature: ER Diagram, and fastapi-voyager will support this feature, allowing for a clearer understanding of the business relationships between the data.
+pydantic-resolve's ~~`@ensure_subset` decorator~~ `DefineSubset` metaclass helps safely pick fields from the 'source class' while **indicating the reference** from the current class to the base class.
 
 Developers can use fastapi-voyager without needing to know anything about pydantic-resolve, but I still highly recommend everyone to give it a try.
 
