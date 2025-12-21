@@ -5,6 +5,7 @@ from fastapi_voyager.type import (
     PK,
     FieldType,
     Link,
+    FieldInfo,
     ModuleNode,
     ModuleRoute,
     Route,
@@ -31,6 +32,23 @@ class Renderer:
 
         logger.info(f'show_module: {self.show_module}')
         logger.info(f'module_color: {self.module_color}')
+    
+    def render_pydantic_related_markup(self, field: FieldInfo):
+        parts: list[str] = []
+        if field.is_resolve:
+            parts.append('<font color="green">  ● resolve</font>')
+        if field.is_post:
+            parts.append('<font color="blue">  ● post</font>')
+        if field.expose_as_info:
+            parts.append(f'<font>expose as:{field.expose_as_info}</font>')
+        if field.send_to_info:
+            collectors = ','.join(field.send_to_info)
+            parts.append(f'<font>C:{collectors}</font>')
+
+        if not parts:
+            return ''
+
+        return ''.join(parts)
 
     def render_schema_label(self, node: SchemaNode, color: str | None=None) -> str:
         has_base_fields = any(f.from_base for f in node.fields)
@@ -49,8 +67,8 @@ class Renderer:
 
         for field in _fields:
             type_name = field.type_name[:25] + '..' if len(field.type_name) > 25 else field.type_name
-            display_xml = f'<s align="left">{field.name}: {type_name}</s>' if field.is_exclude else f'{field.name}: {type_name}'
-            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>  {display_xml}    </font></td></tr>"""
+            display_xml = f'<s align="left">{field.name}: {type_name} </s>' if field.is_exclude else f'{field.name}: {type_name}'
+            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>  {display_xml}  </font> {self.render_pydantic_related_markup(field)}  </td></tr>"""
             fields_parts.append(field_str)
 
         default_color = '#009485' if color is None else color

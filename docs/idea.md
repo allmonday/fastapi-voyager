@@ -14,8 +14,11 @@
 - [ ] set max limit for fields in nodes (? need further thinking)
 - [ ] minimap (good to have)
     - ref: https://observablehq.com/@rabelais/d3-js-zoom-minimap
-- [ ] debug mode
+- [ ] ~~debug mode~~
     - [ ] export dot content, load dot content
+- [ ] abstract voyager-core
+    - [ ] support fastapi-voyager
+    - [ ] support django-ninja-voyager
 
 
 ## in analysis

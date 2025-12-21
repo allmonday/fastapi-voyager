@@ -9,7 +9,7 @@ requires-python = ">=3.10"
 keywords = ["fastapi", "visualization", "routing", "openapi"]
 dependencies = [
   "fastapi>=0.110",
-  "pydantic-resolve>=2.2.3"
+  "pydantic-resolve>=2.3.1"
 ]
 classifiers = [
   "Programming Language :: Python :: 3",

@@ -18,6 +18,13 @@ class FieldInfo:
     is_exclude: bool = False
     desc: str = ''
 
+    # pydantic resolve specific fields
+    is_resolve: bool = False
+    is_post: bool = False
+    expose_as_info: str | None = None
+    send_to_info: list[str] | None = None
+    collect_info: list[str] | None = None
+
 @dataclass
 class Tag(NodeBase):
     routes: list['Route']  # route.id

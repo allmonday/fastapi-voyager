@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Annotated
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
-from pydantic_resolve import Resolver, ensure_subset
+from pydantic_resolve import Resolver, DefineSubset, ExposeAs
 
 
 from tests.service.schema.schema import Member, Sprint, Story, Task
@@ -39,18 +39,28 @@ type TaskUnion = TaskA | TaskB
 class PageTask(Task):
     owner: PageMember | None
 
-@ensure_subset(Story)
-class PageStory(BaseModel):
-    id: int
-    sprint_id: int
-    title: str = Field(exclude=True)
+class MiddleStory(DefineSubset):
+    __subset__ = (Story, ('id', 'sprint_id', 'title'))
+
+class PageStory(DefineSubset):
+    __subset__ = (Story, ('id', 'sprint_id'))
+    # __subset__ = (Story, ('id', 'sprint_id', 'title:exclude')) # expected behavior, but not supported yet
+
+    title: Annotated[str, ExposeAs('story_title')] = Field(exclude=True)
 
     desc: str = ''
+    def resolve_desc(self):
+        return self.desc
+
     def post_desc(self):
         return self.title + ' (processed ........................)'
+    
+    
 
     tasks: list[PageTask] = []
     owner: PageMember | None = None
+    def resolve_owner(self):
+        return None
     union_tasks: list[TaskUnion] = []
 
 class PageSprint(Sprint):

@@ -8,6 +8,7 @@ import pydantic_resolve.constant as const
 from pydantic import BaseModel
 
 from fastapi_voyager.type import FieldInfo
+from fastapi_voyager.resolve_util import analysis_pydantic_resolve_fields
 
 logger = logging.getLogger(__name__)
 
@@ -177,13 +178,15 @@ def get_pydantic_fields(schema: type[BaseModel], bases_fields: set[str]) -> list
     fields: list[FieldInfo] = []
     for k, v in schema.model_fields.items():
         anno = v.annotation
+        pydantic_resolve_specific_params = analysis_pydantic_resolve_fields(schema, k)
         fields.append(FieldInfo(
             is_object=_is_object(anno),
             name=k,
             from_base=k in bases_fields,
             type_name=get_type_name(anno),
             is_exclude=bool(v.exclude),
-            desc=v.description or ''
+            desc=v.description or '',
+            **pydantic_resolve_specific_params
         ))
     return fields
 
