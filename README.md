@@ -25,7 +25,8 @@ app.mount('/voyager',
             swagger_url="/docs",
             ga_id="G-XXXXXXXXVL",
             initial_page_policy='first',
-            online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master'))
+            online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master',
+            enable_pydantic_resolve_meta=True))
 ```
 
 https://github.com/allmonday/composition-oriented-development-pattern/blob/master/src/main.py#L48
@@ -130,6 +131,11 @@ app.mount('/voyager',
 
 <img width="1276" height="613" alt="image" src="https://github.com/user-attachments/assets/ea0091bb-ee11-4f71-8be3-7129d956c910" />
 
+### Show pydantic resolve meta info
+
+setting `enable_pydantic_resolve_meta=True` in `create_voyager`, toggle `pydantic resolve meta`. 
+
+<img width="1604" height="535" alt="image" src="https://github.com/user-attachments/assets/d1639555-af41-4a08-9970-4b8ef314596a" />
 
 
 ## Command Line Usage
