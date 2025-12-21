@@ -12,4 +12,5 @@ app.mount(
         swagger_url="/docs",
         initial_page_policy='first',
         ga_id='G-R64S7Q49VL',
-        online_repo_url="https://github.com/allmonday/fastapi-voyager/blob/main"))
+        online_repo_url="https://github.com/allmonday/fastapi-voyager/blob/main", 
+        enable_pydantic_resolve_meta=True))

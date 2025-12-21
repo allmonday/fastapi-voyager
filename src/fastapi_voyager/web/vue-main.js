@@ -244,6 +244,7 @@ const app = createApp({
         store.state.version = data.version || "";
         store.state.swagger.url = data.swagger_url || null;
         store.state.config.has_er_diagram = data.has_er_diagram || false;
+        store.state.config.enable_pydantic_resolve_meta = data.enable_pydantic_resolve_meta || false;
 
         rebuildSchemaOptions();
 
@@ -314,6 +315,7 @@ const app = createApp({
           brief: store.state.filter.brief,
           hide_primitive_route: store.state.filter.hidePrimitiveRoute,
           show_module: store.state.filter.showModule,
+          show_pydantic_resolve_meta: store.state.modeControl.pydanticResolveMetaEnabled
         };
         initGraphUI();
         const res = await fetch("dot", {
@@ -343,6 +345,11 @@ const app = createApp({
         store.state.leftPanel.routeId = null;
         syncSelectionToUrl()
         onGenerate()
+    }
+
+    async function togglePydanticResolveMeta(val) {
+      store.state.modeControl.pydanticResolveMetaEnabled = val;
+      onGenerate();
     }
 
     async function renderErDiagram(resetZoom = true) {
@@ -525,6 +532,7 @@ const app = createApp({
       toggleShowModule,
       onModeChange,
       renderErDiagram,
+      togglePydanticResolveMeta
     };
   },
 });

@@ -147,9 +147,8 @@
 
 ## 0.14, integration with pydantic-resolve
 - 0.14.0
-    - [ ] show hint for resolve (>), post fields (<), post default handler (* at title)
-- 0.14.1
-    - [ ] show expose and collect info
+    - [x] show hint for resolve (>), post fields (<), post default handler (* at title)
+    - [x] show expose and collect info
 
 ## 0.15, internal refactor
 - 0.15.0

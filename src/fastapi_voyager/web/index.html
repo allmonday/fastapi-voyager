@@ -380,6 +380,15 @@
                       title="show module cluster"
                     />
                   </div>
+                  <div class="q-mt-sm" v-if="store.state.config.enable_pydantic_resolve_meta">
+                    <q-toggle
+                      v-model="store.state.modeControl.pydanticResolveMetaEnabled"
+                      @update:model-value="(val) => togglePydanticResolveMeta(val)"
+                      label="Pydantic Resolve Meta"
+                      dense
+                      title="show fields with pydantic resolve/post/expose/collector info"
+                    />
+                  </div>
               </div>
             </template>
           </q-splitter>

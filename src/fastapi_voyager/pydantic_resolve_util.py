@@ -1,9 +1,10 @@
+import inspect
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_resolve.utils.er_diagram import LoaderInfo
 import pydantic_resolve.constant as const
 from pydantic_resolve.utils.expose import ExposeInfo
-from pydantic_resolve.utils.collector import SendToInfo
+from pydantic_resolve.utils.collector import SendToInfo, ICollector
 
 def analysis_pydantic_resolve_fields(schema: type[BaseModel], field: str):
     """
@@ -26,7 +27,10 @@ def analysis_pydantic_resolve_fields(schema: type[BaseModel], field: str):
     - check field in schema.__pydantic_resolve_collect__ (const.COLLECTOR_CONFIGURATION)
 
     collect_info: list[str] | None = None
-    - do not implement now
+    - 1. check existence of def post_{field} method
+    - 2. get the signature of this method
+    - 3. extrace the collector names from the parameters with ICollector metadata
+    
 
 
     return dict in form of 
@@ -35,12 +39,14 @@ def analysis_pydantic_resolve_fields(schema: type[BaseModel], field: str):
         ...
     }
     """
+    has_meta = False
     field_info: FieldInfo = schema.model_fields.get(field)
     
     is_resolve = hasattr(schema, f'{const.RESOLVE_PREFIX}{field}')
     is_post = hasattr(schema, f'{const.POST_PREFIX}{field}')
     expose_as_info = None
     send_to_info = None
+    post_collector = []
 
     send_to_info_list = []
 
@@ -74,11 +80,20 @@ def analysis_pydantic_resolve_fields(schema: type[BaseModel], field: str):
     
     if send_to_info_list:
         send_to_info = list(set(send_to_info_list))  # unique collectors
+    
+    if is_post:
+        post_method = getattr(schema, f'{const.POST_PREFIX}{field}')
+        for _, param in inspect.signature(post_method).parameters.items():
+            if isinstance(param.default, ICollector):
+                post_collector.append(param.default.alias)
+    
+    has_meta = any([is_resolve, is_post, expose_as_info, send_to_info])
 
     return {
+        "has_pydantic_resolve_meta": has_meta,
         "is_resolve": is_resolve,
         "is_post": is_post,
         "expose_as_info": expose_as_info,
         "send_to_info": send_to_info,
-        "collect_info": None
+        "collect_info": None if len(post_collector) == 0 else post_collector
     }

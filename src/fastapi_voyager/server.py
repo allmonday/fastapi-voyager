@@ -47,6 +47,7 @@ class OptionParam(BaseModel):
 	initial_page_policy: INITIAL_PAGE_POLICY
 	swagger_url: str | None = None
 	has_er_diagram: bool = False
+	enable_pydantic_resolve_meta: bool = False
 
 class Payload(BaseModel):
 	tags: list[str] | None = None
@@ -57,6 +58,7 @@ class Payload(BaseModel):
 	brief: bool = False
 	hide_primitive_route: bool = False
 	show_module: bool = True
+	show_pydantic_resolve_meta: bool = False
 
 # ---------- search ----------
 class SearchResultOptionParam(BaseModel):
@@ -86,6 +88,7 @@ def create_voyager(
 	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
 	ga_id: str | None = None,
 	er_diagram: ErDiagram | None = None,
+	enable_pydantic_resolve_meta: bool = False,
 ) -> FastAPI:
 	router = APIRouter(tags=['fastapi-voyager'])
 
@@ -121,7 +124,8 @@ def create_voyager(
 			version=__version__,
 			swagger_url=swagger_url,
 			initial_page_policy=initial_page_policy,
-			has_er_diagram=er_diagram is not None)
+			has_er_diagram=er_diagram is not None, 
+			enable_pydantic_resolve_meta=enable_pydantic_resolve_meta)
 
 
 	@router.post("/dot-search", response_model=SearchResultOptionParam)
@@ -133,6 +137,7 @@ def create_voyager(
 			module_color=module_color,
 			hide_primitive_route=payload.hide_primitive_route,
 			show_module=payload.show_module,
+			show_pydantic_resolve_meta=payload.show_pydantic_resolve_meta,
 		)
 		voyager.analysis(target_app)
 		tags = voyager.calculate_filtered_tag_and_route()
@@ -154,6 +159,7 @@ def create_voyager(
 			route_name=payload.route_name,
 			hide_primitive_route=payload.hide_primitive_route,
 			show_module=payload.show_module,
+			show_pydantic_resolve_meta=payload.show_pydantic_resolve_meta,
 		)
 		voyager.analysis(target_app)
 		if payload.brief:
@@ -179,7 +185,10 @@ def create_voyager(
 
 	@router.post('/dot-render-core-data', response_class=PlainTextResponse)
 	def render_dot_from_core_data(core_data: CoreData) -> str:
-		renderer = Renderer(show_fields=core_data.show_fields, module_color=core_data.module_color, schema=core_data.schema)
+		renderer = Renderer(
+			show_fields=core_data.show_fields,
+			module_color=core_data.module_color,
+			schema=core_data.schema)
 		return renderer.render_dot(core_data.tags, core_data.routes, core_data.nodes, core_data.links)
 
 	@router.get("/", response_class=HTMLResponse)

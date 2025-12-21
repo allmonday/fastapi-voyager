@@ -33,6 +33,7 @@ class Voyager:
             route_name: str | None = None,
             hide_primitive_route: bool = False,
             show_module: bool = True,
+            show_pydantic_resolve_meta: bool = False,
         ):
 
         self.routes: list[Route] = []
@@ -55,6 +56,7 @@ class Voyager:
         self.route_name = route_name
         self.hide_primitive_route = hide_primitive_route
         self.show_module = show_module
+        self.show_pydantic_resolve_meta = show_pydantic_resolve_meta
     
 
     def _get_available_route(self, app: FastAPI):
@@ -319,7 +321,12 @@ class Voyager:
             node_set=self.node_set,
         )
 
-        renderer = Renderer(show_fields=self.show_fields, module_color=self.module_color, schema=self.schema, show_module=self.show_module)
+        renderer = Renderer(
+            show_fields=self.show_fields,
+            module_color=self.module_color, 
+            schema=self.schema, 
+            show_module=self.show_module,
+            show_pydantic_resolve_meta=self.show_pydantic_resolve_meta)
 
         _tags, _routes, _links = self.handle_hide(_tags, _routes, _links)
         return renderer.render_dot(_tags, _routes, _nodes, _links)

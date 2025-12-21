@@ -23,41 +23,62 @@ class Renderer:
         show_fields: FieldType = 'single',
         module_color: dict[str, str] | None = None,
         schema: str | None = None,
-        show_module: bool = True
+        show_module: bool = True,
+        show_pydantic_resolve_meta: bool = False,
     ) -> None:
         self.show_fields = show_fields if show_fields in ('single', 'object', 'all') else 'single'
         self.module_color = module_color or {}
         self.schema = schema
         self.show_module = show_module
+        self.show_pydantic_resolve_meta = show_pydantic_resolve_meta
 
         logger.info(f'show_module: {self.show_module}')
         logger.info(f'module_color: {self.module_color}')
     
     def render_pydantic_related_markup(self, field: FieldInfo):
+        if self.show_pydantic_resolve_meta is False:
+            return ''
+
         parts: list[str] = []
         if field.is_resolve:
-            parts.append('<font color="green">  ● resolve</font>')
+            parts.append('<font color="#47a80f">  ● resolve</font>')
         if field.is_post:
-            parts.append('<font color="blue">  ● post</font>')
+            parts.append('<font color="#427fa4">  ● post</font>')
         if field.expose_as_info:
-            parts.append(f'<font>expose as:{field.expose_as_info}</font>')
+            parts.append(f'<font color="#895cb9">  ● expose as: {field.expose_as_info}</font>')
         if field.send_to_info:
-            collectors = ','.join(field.send_to_info)
-            parts.append(f'<font>C:{collectors}</font>')
+            to_collectors = ', '.join(field.send_to_info)
+            parts.append(f'<font color="#ca6d6d">  ● send to: {to_collectors}</font>')
+        if field.collect_info:
+            defined_collectors = ', '.join(field.collect_info)
+            parts.append(f'<font color="#777">  ● collectors: {defined_collectors}</font>')
 
         if not parts:
             return ''
-
-        return ''.join(parts)
+        
+        return '<br align="left"/><br align="left"/>' + '<br align="left"/>'.join(parts) + '<br align="left"/>'
 
     def render_schema_label(self, node: SchemaNode, color: str | None=None) -> str:
+        """
+        TODO: should improve the logic with show_pydantic_resolve_meta
+        """
+
         has_base_fields = any(f.from_base for f in node.fields)
-        fields = [n for n in node.fields if n.from_base is False]
+
+        # if self.show_pydantic_resolve_meta, show all fields with resolve/post/expose/collector info
+        if self.show_pydantic_resolve_meta:
+            fields = [n for n in node.fields if n.has_pydantic_resolve_meta is True or n.from_base is False]
+        else:
+            fields = [n for n in node.fields if n.from_base is False]
 
         if self.show_fields == 'all':
             _fields = fields
         elif self.show_fields == 'object':
-            _fields = [f for f in fields if f.is_object is True]
+            if self.show_pydantic_resolve_meta:
+                # to better display resolve meta info
+                _fields = [f for f in fields if f.is_object is True or f.has_pydantic_resolve_meta is True]
+            else:
+                _fields = [f for f in fields if f.is_object is True]
         else:  # 'single'
             _fields = []
 

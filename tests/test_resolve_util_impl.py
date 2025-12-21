@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import Annotated
+from pydantic_resolve import Collector
 from pydantic_resolve.utils.er_diagram import LoaderInfo
-from fastapi_voyager.resolve_util import analysis_pydantic_resolve_fields
+from fastapi_voyager.pydantic_resolve_util import analysis_pydantic_resolve_fields
 
 
 class SchemaA(BaseModel):
@@ -33,35 +34,35 @@ class SchemaA(BaseModel):
     def post_post_field(self):
         return "posted"
 
+    collector: list[str] = []
+    def post_collector(self, collector=Collector(alias="top_collector")):    
+        return collector.values()
+
 def test_resolve_util():
     # Test resolved field
     res = analysis_pydantic_resolve_fields(SchemaA, "resolved_field")
-    print("resolved_field:", res)
     assert res["is_resolve"] is True
 
     # Test exposed field
     res = analysis_pydantic_resolve_fields(SchemaA, "exposed_field")
-    print("exposed_field:", res)
     assert res["expose_as_info"] == "alias_name"
 
     # Test collected field
     res = analysis_pydantic_resolve_fields(SchemaA, "collected_field")
-    print("collected_field:", res)
     assert set(res["send_to_info"]) == {"collector_name", "collector_u", "collector_v"}
 
     # Test collected field a (tuple key)
     res = analysis_pydantic_resolve_fields(SchemaA, "collected_field_a")
-    print("collected_field_a:", res)
     assert set(res["send_to_info"]) == {"collector_x"}
 
     # Test collected field c (tuple key and tuple value)
     res = analysis_pydantic_resolve_fields(SchemaA, "collected_field_c")
-    print("collected_field_c:", res)
     assert set(res["send_to_info"]) == {"collector_y", "collector_z", "collector_u", "collector_v"}
 
     # Test post field
     res = analysis_pydantic_resolve_fields(SchemaA, "post_field")
-    print("post_field:", res)
     assert res["is_post"] is True
 
-    print("All tests passed!")
+
+    res = analysis_pydantic_resolve_fields(SchemaA, "collector")
+    assert set(res["collect_info"]) == {"top_collector"}

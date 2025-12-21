@@ -8,7 +8,7 @@ import pydantic_resolve.constant as const
 from pydantic import BaseModel
 
 from fastapi_voyager.type import FieldInfo
-from fastapi_voyager.resolve_util import analysis_pydantic_resolve_fields
+from fastapi_voyager.pydantic_resolve_util import analysis_pydantic_resolve_fields
 
 logger = logging.getLogger(__name__)
 

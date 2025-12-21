@@ -19,6 +19,7 @@ class FieldInfo:
     desc: str = ''
 
     # pydantic resolve specific fields
+    has_pydantic_resolve_meta: bool = False  # overall flag
     is_resolve: bool = False
     is_post: bool = False
     expose_as_info: str | None = None

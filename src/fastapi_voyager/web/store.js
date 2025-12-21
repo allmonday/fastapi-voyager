@@ -9,6 +9,7 @@ const state = reactive({
     config: {
         initial_page_policy: 'first',
         has_er_diagram: false,
+        enable_pydantic_resolve_meta: false,
     },
 
     mode: 'voyager', // voyager / er-diagram
@@ -90,6 +91,7 @@ const state = reactive({
     modeControl: {  
         focus: false,  // control the schema param
         briefModeEnabled: false,  // show brief mode toggle
+        pydanticResolveMetaEnabled: false,  // show pydantic resolve meta toggle
     },
 
     // api filters

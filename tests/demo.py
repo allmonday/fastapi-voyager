@@ -3,7 +3,7 @@ from typing import Generic, TypeVar, Annotated
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
-from pydantic_resolve import Resolver, DefineSubset, ExposeAs
+from pydantic_resolve import Resolver, DefineSubset, ExposeAs, SendTo, Collector
 
 
 from tests.service.schema.schema import Member, Sprint, Story, Task
@@ -47,8 +47,10 @@ class PageStory(DefineSubset):
     # __subset__ = (Story, ('id', 'sprint_id', 'title:exclude')) # expected behavior, but not supported yet
 
     title: Annotated[str, ExposeAs('story_title')] = Field(exclude=True)
+    def post_title(self):
+        return self.title + ' (processed)'
 
-    desc: str = ''
+    desc: Annotated[str, ExposeAs('story_desc')] = ''
     def resolve_desc(self):
         return self.desc
 
@@ -57,11 +59,15 @@ class PageStory(DefineSubset):
     
     
 
-    tasks: list[PageTask] = []
+    tasks: Annotated[list[PageTask], SendTo("SomeCollector")] = []
     owner: PageMember | None = None
     def resolve_owner(self):
         return None
     union_tasks: list[TaskUnion] = []
+
+    coll: list[str] = []
+    def post_coll(self, c=Collector(alias="top_collector")):
+        return c.values()
 
 class PageSprint(Sprint):
     stories: list[PageStory]
