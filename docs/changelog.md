@@ -152,6 +152,7 @@
 
 ## 0.15, internal refactor
 - 0.15.0
+    - [ ] left panel can be toggled.
     - [ ] refactor vue-main.js, move methods to store
     - [ ] refactor render.py
     - [ ] add tests
