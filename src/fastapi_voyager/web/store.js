@@ -56,6 +56,7 @@ const state = reactive({
     // schema options, schema, fields
     search: {  
         mode: false,  
+        invisible: false,
         schemaName: null,
         fieldName: null,
         schemaOptions: [],

@@ -62,6 +62,15 @@
       border-top: 0; */
     }
 
+    .inherit-flow {
+      /* stroke-width:2; */
+      stroke-dasharray: 8 6;          /* dash pattern */
+      stroke-linecap: round;
+      animation: dash 2s linear infinite;
+      animation-direction: reverse;
+    }
+    @keyframes dash { to { stroke-dashoffset: -14; } }
+
     .adjust-fit {
       height: calc(100vh - 54px);
     }
@@ -140,6 +149,7 @@
             </div>
             <div class="col-auto row items-center q-gutter-sm">
               <q-select
+                v-show="!store.state.search.invisible"
                 dense
                 outlined
                 use-input
@@ -170,6 +180,7 @@
             </q-select>
               
               <q-select
+                v-show="!store.state.search.invisible"
                 dense
                 outlined
                 v-model="store.state.search.fieldName"
@@ -380,7 +391,7 @@
                       title="show module cluster"
                     />
                   </div>
-                  <div class="q-mt-sm" v-if="store.state.config.enable_pydantic_resolve_meta">
+                  <div class="q-mt-sm" v-if="store.state.mode == 'voyager' && store.state.config.enable_pydantic_resolve_meta">
                     <q-toggle
                       v-model="store.state.modeControl.pydanticResolveMetaEnabled"
                       @update:model-value="(val) => togglePydanticResolveMeta(val)"

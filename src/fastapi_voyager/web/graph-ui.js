@@ -151,11 +151,6 @@ export class GraphUI {
           } else {
             self.currentSelection = [obj];
             self._highlight();
-            try {
-              self.options.resetCb();
-            } catch (e) {
-              console.warn("resetCb callback failed", e);
-            }
           }
         });
 

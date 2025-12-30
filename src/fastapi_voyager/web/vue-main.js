@@ -380,12 +380,19 @@ const app = createApp({
 
     async function onModeChange(val) {
       if (val === "er-diagram") {
+        // clear search 
+        store.state.search.schemaName = null
+        store.state.search.fieldName = null
+        store.state.search.invisible = true
+
         if (store.state.leftPanel.width > 0) {
           store.state.leftPanel.previousWidth = store.state.leftPanel.width;
         }
         store.state.leftPanel.width = 0;
         await renderErDiagram();
       } else {
+        store.state.search.invisible = false
+        
         const fallbackWidth = store.state.leftPanel.previousWidth || 300;
         store.state.leftPanel.width = fallbackWidth;
         await onGenerate();

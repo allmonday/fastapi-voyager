@@ -149,6 +149,8 @@
 - 0.14.0
     - [x] show hint for resolve (>), post fields (<), post default handler (* at title)
     - [x] show expose and collect info
+- 0.14.1
+    - [x] minor ui enhancement
 
 ## 0.15, internal refactor
 - 0.15.0
