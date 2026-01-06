@@ -1,0 +1,10 @@
+subgraph cluster_{{ cluster_id }} {
+    tooltip="{{ tooltip }}"
+    color = "{{ border_color }}"
+    style="rounded"
+    label = "  {{ label }}"
+    labeljust = "l"
+    {% if pen_color %}pencolor = "{{ pen_color }}"{% endif %}
+    {% if pen_width %}penwidth = {{ pen_width }}{% endif %}
+    {{ content }}
+}

@@ -1,0 +1,25 @@
+digraph world {
+    pad="{{ pad }}"
+    nodesep={{ nodesep }}
+    {% if spline %}splines={{ spline }}{% endif %}
+    fontname="{{ font }}"
+    node [fontname="{{ font }}"]
+    edge [
+        fontname="{{ font }}"
+        color="gray"
+    ]
+    graph [
+        rankdir = "LR"
+    ];
+    node [
+        fontsize = {{ node_fontsize }}
+    ];
+
+    {{ tags_cluster }}
+
+    {{ routes_cluster }}
+
+    {{ schemas_cluster }}
+
+    {{ links }}
+}
