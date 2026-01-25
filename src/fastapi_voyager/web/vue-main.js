@@ -42,9 +42,13 @@ const app = createApp({
       graphUI = new GraphUI("#graph", {
         onSchemaShiftClick: (id) => {
           if (store.state.graph.schemaKeys.has(id)) {
-            store.state.previousTagRoute.tag = store.state.leftPanel.tag
-            store.state.previousTagRoute.routeId = store.state.leftPanel.routeId
-            store.state.previousTagRoute.hasValue = true
+            // Only save current tag/route if we're not already in search mode
+            // This prevents overwriting the saved state with null values
+            if (!store.state.previousTagRoute.hasValue && !store.state.search.mode) {
+              store.state.previousTagRoute.tag = store.state.leftPanel.tag
+              store.state.previousTagRoute.routeId = store.state.leftPanel.routeId
+              store.state.previousTagRoute.hasValue = true
+            }
             store.state.search.mode = true
             store.state.search.schemaName = id
             onSearch()
@@ -183,9 +187,9 @@ const app = createApp({
 
     async function resetSearch() {
       store.state.search.mode = false
-      console.log(store.state.previousTagRoute.hasValue)
-      console.log(store.state.previousTagRoute)
-      if (store.state.previousTagRoute.hasValue) {
+      const hadPreviousValue = store.state.previousTagRoute.hasValue
+
+      if (hadPreviousValue) {
         store.state.leftPanel.tag = store.state.previousTagRoute.tag
         store.state.leftPanel._tag = store.state.previousTagRoute.tag
         store.state.leftPanel.routeId = store.state.previousTagRoute.routeId
@@ -197,12 +201,25 @@ const app = createApp({
       }
 
       syncSelectionToUrl()
-      await loadSearchedTags()
-      renderBasedOnInitialPolicy()
+
+      // Load the full tags from cache (not search results) since we're resetting search
+      loadFullTags()
+
+      // If we restored a previous tag/route, generate with it
+      // Otherwise, fall back to initial policy
+      if (hadPreviousValue) {
+        onGenerate()
+      } else {
+        renderBasedOnInitialPolicy()
+      }
+    }
+
+    function loadFullTags() {
+      // Restore from cache (set by loadInitial)
+      store.state.leftPanel.tags = store.state.leftPanel.fullTagsCache
     }
 
     async function onSearch() {
-      console.log("start search")
       store.state.search.mode = true
       store.state.leftPanel.tag = null
       store.state.leftPanel._tag = null
@@ -241,7 +258,10 @@ const app = createApp({
       try {
         const res = await fetch("dot")
         const data = await res.json()
-        store.state.leftPanel.tags = Array.isArray(data.tags) ? data.tags : []
+        const tags = Array.isArray(data.tags) ? data.tags : []
+        store.state.leftPanel.tags = tags
+        // Cache the full tags for later use (e.g., resetSearch)
+        store.state.leftPanel.fullTagsCache = tags
 
         const schemasArr = Array.isArray(data.schemas) ? data.schemas : []
         // Build dict keyed by id for faster lookups and simpler prop passing

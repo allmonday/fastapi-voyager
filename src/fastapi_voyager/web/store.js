@@ -41,6 +41,7 @@ const state = reactive({
     width: 300,
     previousWidth: 300,
     tags: null,
+    fullTagsCache: null, // Cache for full tags (before search)
     tag: null,
     _tag: null,
     routeId: null,
