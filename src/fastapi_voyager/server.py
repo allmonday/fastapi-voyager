@@ -71,6 +71,7 @@ class SchemaSearchPayload(BaseModel):  # leave tag, route out
 	brief: bool = False
 	hide_primitive_route: bool = False
 	show_module: bool = True
+	show_pydantic_resolve_meta: bool = False
 
 
 # ---------- er diagram ----------

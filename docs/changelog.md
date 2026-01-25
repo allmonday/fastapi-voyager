@@ -158,6 +158,8 @@
 - 0.15.1
     - [x] add prettier (npx prettier --write .) and pre-commit hooks
     - [x] add localstorage for toggle items
+    - [x] refactor er diagram renderer
+    - [x] fix error in search function
 - 0.15.2
     - [ ] add tests
     - [ ] left panel can be toggled.

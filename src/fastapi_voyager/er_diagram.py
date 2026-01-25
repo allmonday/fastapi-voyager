@@ -47,6 +47,30 @@ class DiagramRenderer(Renderer):
         )
         logger.info(f'show_module: {self.show_module}')
 
+    def render_link(self, link: Link) -> str:
+        """Override to increase link length by 40% for ER diagrams."""
+        source = self._handle_schema_anchor(link.source)
+        target = self._handle_schema_anchor(link.target)
+
+        # Build link attributes
+        if link.style is not None:
+            attrs = {'style': link.style}
+            if link.label:
+                attrs['label'] = link.label
+            # Increase minlen by 40% (3 * 1.4 = 4.2, round to 4)
+            attrs['minlen'] = 4
+        else:
+            attrs = self.style.get_link_attributes(link.type)
+            if link.label:
+                attrs['label'] = link.label
+
+        return self.template_renderer.render_template(
+            'dot/link.j2',
+            source=source,
+            target=target,
+            attributes=self._format_link_attributes(attrs)
+        )
+
     def render_dot(self, nodes: list[SchemaNode], links: list[Link], spline_line=False) -> str:
         """
         Render ER diagram as DOT format.

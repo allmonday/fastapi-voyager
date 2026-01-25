@@ -83,7 +83,7 @@ class PageOverallWrap(PageOverall):
     def post_all_tasks(self, collector=Collector(alias="SomeCollector")):
         return collector.values()
 
-@app.get("/page_overall", tags=['for-page'], response_model=PageOverallWrap)
+@app.get("/page_overall", tags=['for-ui-page'], response_model=PageOverallWrap)
 async def get_page_info():
     page_overall = PageOverallWrap(content="Page Overall Content", sprints=[]) # focus on schema only
     return await Resolver().resolve(page_overall)
@@ -91,7 +91,7 @@ async def get_page_info():
 class PageStories(BaseModel):
     stories: list[PageStory] 
 
-@app.get("/page_info/", tags=['for-page'], response_model=PageStories)
+@app.get("/page_info/", tags=['for-ui-page'], response_model=PageStories)
 def get_page_stories():
 
 
@@ -118,19 +118,19 @@ class DataModel(BaseModel, Generic[T]):
 
 type DataModelPageStory = DataModel[PageStory]
 
-@app.get("/page_test_1/", tags=['for-page'], response_model=DataModelPageStory)
+@app.get("/page_test_1/", tags=['for-ui-page'], response_model=DataModelPageStory)
 def get_page_test_1():
     return {} # no implementation
 
-@app.get("/page_test_2/", tags=['for-page'], response_model=A)
+@app.get("/page_test_2/", tags=['for-ui-page'], response_model=A)
 def get_page_test_2():
     return {}
 
-@app.get("/page_test_3/", tags=['for-page'], response_model=bool)
+@app.get("/page_test_3/", tags=['for-ui-page'], response_model=bool)
 def get_page_test_3_long_long_long_name():
     return True
 
-@app.get("/page_test_4/", tags=['for-page'])
+@app.get("/page_test_4/", tags=['for-ui-page'])
 def get_page_test_3_no_response_model():
     return True
 
