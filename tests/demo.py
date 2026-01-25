@@ -79,6 +79,10 @@ class PageOverall(BaseModel):
 class PageOverallWrap(PageOverall):
     content: str
 
+    all_tasks: list[PageTask] = []
+    def post_all_tasks(self, collector=Collector(alias="SomeCollector")):
+        return collector.values()
+
 @app.get("/page_overall", tags=['for-page'], response_model=PageOverallWrap)
 async def get_page_info():
     page_overall = PageOverallWrap(content="Page Overall Content", sprints=[]) # focus on schema only

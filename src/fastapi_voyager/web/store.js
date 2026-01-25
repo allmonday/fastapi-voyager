@@ -89,7 +89,7 @@ const state = reactive({
     },
 
     // brief, hide primitive ...
-    modeControl: {  
+    modeControl: {
         focus: false,  // control the schema param
         briefModeEnabled: false,  // show brief mode toggle
         pydanticResolveMetaEnabled: false,  // show pydantic resolve meta toggle

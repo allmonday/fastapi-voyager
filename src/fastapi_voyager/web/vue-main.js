@@ -7,12 +7,31 @@ import { store } from "./store.js";
 
 const { createApp, onMounted, ref, watch } = window.Vue;
 
+    // Load toggle states from localStorage
+    function loadToggleState(key, defaultValue = false) {
+      if (typeof window === "undefined") return defaultValue;
+      try {
+        const saved = localStorage.getItem(key);
+        return saved !== null ? JSON.parse(saved) : defaultValue;
+      } catch (e) {
+        console.warn(`Failed to load ${key} from localStorage`, e);
+        return defaultValue;
+      }
+    }
+
 const app = createApp({
   setup() {
     let graphUI = null;
     const allSchemaOptions = ref([]);
     const erDiagramLoading = ref(false);
     const erDiagramCache = ref("");
+
+
+    // Initialize toggle states from localStorage
+    store.state.modeControl.pydanticResolveMetaEnabled = loadToggleState('pydantic_resolve_meta', false);
+    store.state.filter.hidePrimitiveRoute = loadToggleState('hide_primitive', false);
+    store.state.filter.brief = loadToggleState('brief_mode', false);
+    store.state.filter.showModule = loadToggleState('show_module_cluster', false);
 
     function initGraphUI() {
       if (graphUI) {
@@ -349,6 +368,11 @@ const app = createApp({
 
     async function togglePydanticResolveMeta(val) {
       store.state.modeControl.pydanticResolveMetaEnabled = val;
+      try {
+        localStorage.setItem('pydantic_resolve_meta', JSON.stringify(val));
+      } catch (e) {
+        console.warn('Failed to save pydantic_resolve_meta to localStorage', e);
+      }
       onGenerate();
     }
 
@@ -439,6 +463,11 @@ const app = createApp({
 
     function toggleShowModule(val) {
       store.state.filter.showModule = val;
+      try {
+        localStorage.setItem('show_module_cluster', JSON.stringify(val));
+      } catch (e) {
+        console.warn('Failed to save show_module_cluster to localStorage', e);
+      }
       onGenerate();
     }
 
@@ -449,11 +478,21 @@ const app = createApp({
 
     function toggleBrief(val) {
       store.state.filter.brief = val;
+      try {
+        localStorage.setItem('brief_mode', JSON.stringify(val));
+      } catch (e) {
+        console.warn('Failed to save brief_mode to localStorage', e);
+      }
       onGenerate();
     }
 
     function toggleHidePrimitiveRoute(val) {
       store.state.filter.hidePrimitiveRoute = val;
+      try {
+        localStorage.setItem('hide_primitive', JSON.stringify(val));
+      } catch (e) {
+        console.warn('Failed to save hide_primitive to localStorage', e);
+      }
       onGenerate(false);
     }
 
