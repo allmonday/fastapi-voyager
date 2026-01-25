@@ -1,4 +1,4 @@
-const { defineComponent, ref, watch, onMounted } = window.Vue;
+const { defineComponent, ref, watch, onMounted } = window.Vue
 
 // Component: SchemaCodeDisplay
 // Props:
@@ -18,55 +18,52 @@ export default defineComponent({
     modelValue: { type: Boolean, default: true },
   },
   setup(props, { emit }) {
-    const code = ref("");
-    const link = ref("");
-    const error = ref("");
-    const fields = ref([]); // schema fields list
-    const tab = ref("fields");
-    const loading = ref(false);
-
+    const code = ref("")
+    const link = ref("")
+    const error = ref("")
+    const fields = ref([]) // schema fields list
+    const tab = ref("fields")
+    const loading = ref(false)
 
     async function highlightLater() {
       // wait a tick for DOM update
       requestAnimationFrame(() => {
         try {
           if (window.hljs) {
-            const block = document.querySelector(
-              ".frv-code-display pre code.language-python"
-            );
+            const block = document.querySelector(".frv-code-display pre code.language-python")
             if (block) {
               // If already highlighted by highlight.js, remove the flag so it can be highlighted again
               if (block.dataset && block.dataset.highlighted) {
-                block.removeAttribute("data-highlighted");
+                block.removeAttribute("data-highlighted")
               }
-              window.hljs.highlightElement(block);
+              window.hljs.highlightElement(block)
             }
           }
         } catch (e) {
-          console.warn("highlight failed", e);
+          console.warn("highlight failed", e)
         }
-      });
+      })
     }
 
     function resetState() {
-      code.value = "";
-      link.value = "";
-      error.value = null;
-      fields.value = [];
+      code.value = ""
+      link.value = ""
+      error.value = null
+      fields.value = []
       // tab.value = "fields";
-      loading.value = true;
+      loading.value = true
     }
 
     async function loadSource() {
-      if (!props.schemaName) return;
+      if (!props.schemaName) return
 
-      error.value = null;
-      code.value = "";
-      link.value = "";
-      loading.value = true;
+      error.value = null
+      code.value = ""
+      link.value = ""
+      loading.value = true
 
       // try to fetch from server: /source/{schema_name}
-      const payload = { schema_name: props.schemaName };
+      const payload = { schema_name: props.schemaName }
       try {
         // validate input: ensure we have a non-empty schemaName
         const resp = await fetch(`source`, {
@@ -76,13 +73,13 @@ export default defineComponent({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        });
+        })
         // surface server-side validation message for bad request
-        const data = await resp.json().catch(() => ({}));
+        const data = await resp.json().catch(() => ({}))
         if (resp.ok) {
-          code.value = data.source_code || "// no source code available";
+          code.value = data.source_code || "// no source code available"
         } else {
-          error.value = (data && data.error) || "Failed to load source";
+          error.value = (data && data.error) || "Failed to load source"
         }
 
         const resp2 = await fetch(`vscode-link`, {
@@ -92,24 +89,24 @@ export default defineComponent({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        });
-        const data2 = await resp2.json().catch(() => ({}));
+        })
+        const data2 = await resp2.json().catch(() => ({}))
         if (resp2.ok) {
-          link.value = data2.link || "// no vscode link available";
+          link.value = data2.link || "// no vscode link available"
         } else {
-          error.value = (error.value || "") + ((data2 && data2.error) || "Failed to load source");
+          error.value = (error.value || "") + ((data2 && data2.error) || "Failed to load source")
         }
       } catch (e) {
-        error.value = "Failed to load source";
+        error.value = "Failed to load source"
       } finally {
-        loading.value = false;
+        loading.value = false
       }
 
-      const schema = props.schemas && props.schemas[props.schemaName];
-      fields.value = Array.isArray(schema?.fields) ? schema.fields : [];
+      const schema = props.schemas && props.schemas[props.schemaName]
+      fields.value = Array.isArray(schema?.fields) ? schema.fields : []
 
       if (tab.value === "source") {
-        highlightLater();
+        highlightLater()
       }
     }
 
@@ -118,38 +115,38 @@ export default defineComponent({
       () => tab.value,
       (val) => {
         if (val === "source") {
-          highlightLater();
+          highlightLater()
         }
       }
-    );
+    )
 
     watch(
       () => props.schemaName,
       () => {
-        resetState();
-        loadSource();
-      },
-    );
+        resetState()
+        loadSource()
+      }
+    )
 
     // respond to visibility changes: when shown, clear old data and reload
     watch(
       () => props.modelValue,
       (val) => {
         if (val) {
-          resetState();
-          loadSource();
+          resetState()
+          loadSource()
         }
       }
-    );
+    )
 
     onMounted(() => {
       if (props.modelValue) {
-        resetState();
-        loadSource();
+        resetState()
+        loadSource()
       }
-    });
+    })
 
-    return { link, code, error, fields, tab, loading };
+    return { link, code, error, fields, tab, loading }
   },
   template: `
   <div class="frv-code-display" style="border: 1px solid #ccc; border-left: none; position:relative; height:100%; background:#fff;">
@@ -203,4 +200,4 @@ export default defineComponent({
       </div>
 	</div>
 	`,
-});
+})

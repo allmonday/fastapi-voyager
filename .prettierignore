@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Static assets
+*.min.js
+*.min.css
+
+# Generated files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Cache
+.ruff_cache/
+.pytest_cache/
+.vscode/
+
+# Git
+.git/
+.github/
+
+# Misc
+*.md
+.env
+.env.*

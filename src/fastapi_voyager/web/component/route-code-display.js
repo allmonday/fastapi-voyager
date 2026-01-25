@@ -1,4 +1,4 @@
-const { defineComponent, ref, watch, onMounted } = window.Vue;
+const { defineComponent, ref, watch, onMounted } = window.Vue
 
 // Component: RouteCodeDisplay
 // Props:
@@ -10,45 +10,43 @@ export default defineComponent({
   },
   emits: ["close"],
   setup(props, { emit }) {
-    const loading = ref(false);
-    const code = ref("");
-    const error = ref("");
-    const link = ref("");
+    const loading = ref(false)
+    const code = ref("")
+    const error = ref("")
+    const link = ref("")
 
     function close() {
-      emit("close");
+      emit("close")
     }
 
     function highlightLater() {
       requestAnimationFrame(() => {
         try {
           if (window.hljs) {
-            const block = document.querySelector(
-              ".frv-route-code-display pre code.language-python"
-            );
+            const block = document.querySelector(".frv-route-code-display pre code.language-python")
             if (block) {
-              window.hljs.highlightElement(block);
+              window.hljs.highlightElement(block)
             }
           }
         } catch (e) {
-          console.warn("highlight failed", e);
+          console.warn("highlight failed", e)
         }
-      });
+      })
     }
 
     async function load() {
       if (!props.routeId) {
-        code.value = "";
-        return;
+        code.value = ""
+        return
       }
 
-      loading.value = true;
-      error.value = null;
-      code.value = "";
-      link.value = "";
+      loading.value = true
+      error.value = null
+      code.value = ""
+      link.value = ""
 
       // try to fetch from server: POST /source with { schema_name: routeId }
-      const payload = { schema_name: props.routeId };
+      const payload = { schema_name: props.routeId }
       try {
         const resp = await fetch(`source`, {
           method: "POST",
@@ -57,18 +55,18 @@ export default defineComponent({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        });
+        })
 
-        const data = await resp.json().catch(() => ({}));
+        const data = await resp.json().catch(() => ({}))
         if (resp.ok) {
-          code.value = data.source_code || "// no source code available";
+          code.value = data.source_code || "// no source code available"
         } else {
-          error.value = (data && data.error) || "Failed to load source";
+          error.value = (data && data.error) || "Failed to load source"
         }
       } catch (e) {
-        error.value = e && e.message ? e.message : "Failed to load source";
+        error.value = e && e.message ? e.message : "Failed to load source"
       } finally {
-        loading.value = false;
+        loading.value = false
       }
 
       try {
@@ -79,36 +77,36 @@ export default defineComponent({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        });
+        })
 
-        const data = await resp.json().catch(() => ({}));
+        const data = await resp.json().catch(() => ({}))
         if (resp.ok) {
-          link.value = data.link || "// no source code available";
+          link.value = data.link || "// no source code available"
         } else {
-          error.value += (data && data.error) || "Failed to load vscode link";
+          error.value += (data && data.error) || "Failed to load vscode link"
         }
       } catch (e) {
       } finally {
-        loading.value = false;
+        loading.value = false
       }
 
       if (!error.value) {
-        highlightLater();
+        highlightLater()
       }
     }
 
     watch(
       () => props.routeId,
       () => {
-        load();
+        load()
       }
-    );
+    )
 
     onMounted(() => {
-      load();
-    });
+      load()
+    })
 
-    return { loading, code, error, close, link };
+    return { loading, code, error, close, link }
   },
   template: `
   <div class="frv-route-code-display" style="border:1px solid #ccc; position:relative; background:#fff;">
@@ -122,4 +120,4 @@ export default defineComponent({
       <pre v-else style="margin:0;"><code class="language-python">{{ code }}</code></pre>
     </div>
   </div>`,
-});
+})
