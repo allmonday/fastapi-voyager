@@ -1,0 +1,27 @@
+#!/bin/sh
+# Git pre-commit hook to run Prettier on staged files
+
+# Get the project root directory
+PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$PROJECT_ROOT" || exit 1
+
+# Check if npx is available
+if ! command -v npx >/dev/null 2>&1; then
+  echo "Warning: npx not found. Skipping Prettier formatting."
+  echo "Please install Node.js and npm to use pre-commit formatting."
+  exit 0
+fi
+
+echo "Running Prettier on staged files..."
+
+# Run Prettier on all files (or only staged files)
+# Option 1: Format all files (simpler, ensures consistency)
+npx prettier --write . --log-level=warn
+
+# Option 2: Only format staged JavaScript/HTML/CSS files (faster)
+# npx prettier --write $(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|jsx|ts|tsx|css|html|json|md)$' | tr '\n' ' ') --log-level=warn
+
+# Add any newly formatted files to the staging area
+git add .
+
+echo "Prettier formatting complete."

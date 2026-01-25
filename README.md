@@ -203,13 +203,25 @@ uv pip install ".[dev]"
 uvicorn tests.programatic:app  --reload
 ```
 
+### Setup Git Hooks (Optional)
+
+Enable automatic code formatting before commits:
+
+```shell
+./setup-hooks.sh
+# or manually:
+git config core.hooksPath .githooks
+```
+
+This will run Prettier automatically before each commit. See [`.githooks/README.md`](./.githooks/README.md) for details.
+
 open `localhost:8000/voyager`
 
 
-frontend: 
-- `src/web/vue-main.js`: main js
+frontend:
+- `src/fastapi_voyager/web/vue-main.js`: main js
 
-backend: 
+backend:
 - `voyager.py`: main entry
 - `render.py`: generate dot file
 - `server.py`: serve mode

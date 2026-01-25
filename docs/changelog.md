@@ -156,6 +156,9 @@
 - 0.15.0
     - [x] refactor render.py
 - 0.15.1
+    - [x] add prettier (npx prettier --write .)
+    - [ ] add localstorage for toggle items
+- 0.15.2
     - [ ] add tests
     - [ ] left panel can be toggled.
     - [ ] refactor vue-main.js, move methods to store
