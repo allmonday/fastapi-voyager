@@ -14,12 +14,14 @@ fi
 
 echo "Running Prettier on staged files..."
 
-# Run Prettier on all files (or only staged files)
-# Option 1: Format all files (simpler, ensures consistency)
-npx prettier --write . --log-level=warn
-
-# Option 2: Only format staged JavaScript/HTML/CSS files (faster)
-# npx prettier --write $(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|jsx|ts|tsx|css|html|json|md)$' | tr '\n' ' ') --log-level=warn
+# Check if .prettierignore exists
+if [ -f ".prettierignore" ]; then
+  echo "Found .prettierignore, applying rules..."
+  npx prettier --write . --log-level=warn --ignore-path=.prettierignore
+else
+  echo "No .prettierignore found, formatting all files..."
+  npx prettier --write . --log-level=warn
+fi
 
 # Add any newly formatted files to the staging area
 git add .
