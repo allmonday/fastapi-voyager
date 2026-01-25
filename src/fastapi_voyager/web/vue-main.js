@@ -430,6 +430,22 @@ const app = createApp({
       syncSelectionToUrl()
     }
 
+    function toggleTagNavigatorCollapse() {
+      if (store.state.leftPanel.collapsed) {
+        // Expand: restore previous width
+        const fallbackWidth = store.state.leftPanel.previousWidth || 300
+        store.state.leftPanel.width = fallbackWidth
+        store.state.leftPanel.collapsed = false
+      } else {
+        // Collapse: save current width and set to 0
+        if (store.state.leftPanel.width > 0) {
+          store.state.leftPanel.previousWidth = store.state.leftPanel.width
+        }
+        store.state.leftPanel.width = 0
+        store.state.leftPanel.collapsed = true
+      }
+    }
+
     function selectRoute(routeId) {
       // find belonging tag
       const belongingTag = findTagByRoute(routeId)
@@ -558,6 +574,7 @@ const app = createApp({
       filterSearchSchemas,
       onSearchSchemaChange,
       toggleTag,
+      toggleTagNavigatorCollapse,
       toggleBrief,
       toggleHidePrimitiveRoute,
       selectRoute,

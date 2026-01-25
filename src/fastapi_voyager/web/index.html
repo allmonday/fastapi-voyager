@@ -101,6 +101,30 @@
       }
     }
 
+    /* Tag Navigator Collapse Button */
+    .tag-navigator-collapse-btn-right {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #009485;
+      color: white;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: all 0.2s ease;
+    }
+    .tag-navigator-collapse-btn-right:hover {
+      background: #007a6d;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+
     /* App boot loading overlay & gating */
     #app-loading-overlay {
       position: fixed;
@@ -352,7 +376,7 @@
           <q-splitter
             v-model="store.state.leftPanel.width"
             unit="px"
-            :limits="store.state.mode === 'voyager' ? [200, 800] : [0, 0]"
+            :limits="store.state.mode === 'voyager' ? [0, 800] : [0, 0]"
             class="adjust-fit"
           >
             <template #before>
@@ -508,6 +532,19 @@
                       title="show fields with pydantic resolve/post/expose/collector info"
                     />
                   </div>
+                </div>
+
+                <!-- Collapse toggle button for tag navigator - at bottom-left of right panel -->
+                <div
+                  v-show="store.state.mode === 'voyager'"
+                  class="tag-navigator-collapse-btn-right"
+                  @click="toggleTagNavigatorCollapse"
+                  :title="store.state.leftPanel.collapsed ? 'Expand tag navigator' : 'Collapse tag navigator'"
+                >
+                  <q-icon
+                    :name="store.state.leftPanel.collapsed ? 'chevron_right' : 'chevron_left'"
+                    size="18px"
+                  />
                 </div>
               </div>
             </template>

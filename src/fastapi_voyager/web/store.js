@@ -44,6 +44,7 @@ const state = reactive({
     tag: null,
     _tag: null,
     routeId: null,
+    collapsed: false,
   },
 
   graph: {
