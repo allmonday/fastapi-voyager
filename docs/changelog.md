@@ -156,8 +156,8 @@
 - 0.15.0
     - [x] refactor render.py
 - 0.15.1
-    - [x] add prettier (npx prettier --write .)
-    - [ ] add localstorage for toggle items
+    - [x] add prettier (npx prettier --write .) and pre-commit hooks
+    - [x] add localstorage for toggle items
 - 0.15.2
     - [ ] add tests
     - [ ] left panel can be toggled.
