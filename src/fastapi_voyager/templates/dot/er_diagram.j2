@@ -1,0 +1,29 @@
+digraph world {
+    pad="{{ pad }}"
+    nodesep={{ nodesep }}
+    {% if spline %}splines={{ spline }}{% endif %}
+    fontname="{{ font }}"
+    node [fontname="{{ font }}"]
+    edge [
+        fontname="{{ font }}"
+        color="gray"
+    ]
+    graph [
+        rankdir = "LR"
+    ];
+    node [
+        fontsize = {{ node_fontsize }}
+    ];
+
+    subgraph cluster_schema {
+        color = "#aaa"
+        margin=18
+        style="dashed"
+        label="  ER Diagram"
+        labeljust="l"
+        fontsize="20"
+        {{ er_cluster }}
+    }
+
+    {{ links }}
+}

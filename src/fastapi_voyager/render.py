@@ -262,8 +262,18 @@ class Renderer:
         source = self._handle_schema_anchor(link.source)
         target = self._handle_schema_anchor(link.target)
 
-        # Get link style attributes
-        attrs = self.style.get_link_attributes(link.type)
+        # Build link attributes
+        # If link.style is explicitly set (e.g., 'solid, dashed' for ER diagrams), use it
+        # Otherwise, get default style from configuration based on link.type
+        if link.style is not None:
+            attrs = {'style': link.style}
+            if link.label:
+                attrs['label'] = link.label
+            # attrs['minlen'] = 3
+        else:
+            attrs = self.style.get_link_attributes(link.type)
+            if link.label:
+                attrs['label'] = link.label
 
         return self.template_renderer.render_template(
             'dot/link.j2',

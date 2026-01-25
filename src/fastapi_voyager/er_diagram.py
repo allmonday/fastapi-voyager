@@ -15,138 +15,62 @@ from fastapi_voyager.type import (
     ModuleNode,
     SchemaNode,
 )
+from fastapi_voyager.render import Renderer
+from fastapi_voyager.render_style import RenderConfig
 from pydantic import BaseModel
 from pydantic_resolve import ErDiagram, Entity, Relationship, MultipleRelationship
 from logging import getLogger
-from fastapi_voyager.module import build_module_schema_tree
 
 logger = getLogger(__name__)
 
 
-class DiagramRenderer:
+class DiagramRenderer(Renderer):
+    """
+    Renderer for Entity-Relationship diagrams.
+
+    Inherits from Renderer to reuse template system and styling.
+    ER diagrams have simpler structure (no tags/routes), so we only
+    need to customize the top-level DOT structure.
+    """
+
     def __init__(
         self,
         *,
         show_fields: FieldType = 'single',
         show_module: bool = True
     ) -> None:
-        self.show_fields = show_fields if show_fields in ('single', 'object', 'all') else 'single'
-        self.show_module = show_module
-
+        # Initialize parent Renderer with shared config
+        super().__init__(
+            show_fields=show_fields,
+            show_module=show_module,
+            config=RenderConfig()  # Use unified style configuration
+        )
         logger.info(f'show_module: {self.show_module}')
 
-    def render_schema_label(self, node: SchemaNode, color: str | None=None) -> str:
-        has_base_fields = any(f.from_base for f in node.fields)
-        fields = [n for n in node.fields if n.from_base is False]
-
-        if self.show_fields == 'all':
-            _fields = fields
-        elif self.show_fields == 'object':
-            _fields = [f for f in fields if f.is_object is True]
-        else:  # 'single'
-            _fields = []
-
-        fields_parts: list[str] = []
-        if self.show_fields == 'all' and has_base_fields:
-            fields_parts.append('<tr><td align="left" cellpadding="8"><font color="#999">  Inherited Fields ... </font></td></tr>')
-
-        for field in _fields:
-            type_name = field.type_name[:25] + '..' if len(field.type_name) > 25 else field.type_name
-            display_xml = f'<s align="left">{field.name}: {type_name}</s>' if field.is_exclude else f'{field.name}: {type_name}'
-            field_str = f"""<tr><td align="left" port="f{field.name}" cellpadding="8"><font>  {display_xml}    </font></td></tr>"""
-            fields_parts.append(field_str)
-
-        header_color = '#009485' if color is None else color
-        header = f"""<tr><td cellpadding="6" bgcolor="{header_color}" align="center" colspan="1" port="{PK}"> <font color="white">    {node.name}    </font></td> </tr>"""
-        field_content = ''.join(fields_parts) if fields_parts else ''
-        return f"""<<table border="0" cellborder="1" cellpadding="0" cellspacing="0" bgcolor="white"> {header} {field_content}   </table>>"""
-
-    def _handle_schema_anchor(self, source: str) -> str:
-        if '::' in source:
-            a, b = source.split('::', 1)
-            return f'"{a}":{b}'
-        return f'"{source}"'
-
-    def render_link(self, link: Link) -> str:
-        h = self._handle_schema_anchor
-        if link.type == 'schema':
-            return f"""{h(link.source)}:e -> {h(link.target)}:w [style = "{link.style}", label = "{link.label}", minlen=3];"""
-        else:
-            raise ValueError(f'Unknown link type: {link.type}')
-
-    def render_module_schema_content(self, nodes: list[SchemaNode]) -> str:
-        def render_node(node: SchemaNode, color: str | None=None) -> str:
-            return f'''
-                "{node.id}" [
-                    label = {self.render_schema_label(node, color)}
-                    shape = "plain"
-                    margin="0.5,0.1"
-                ];'''
-
-        def render_module_schema(mod: ModuleNode, show_cluster:bool=True) -> str:
-            inner_nodes = [ render_node(node) for node in mod.schema_nodes ]
-            inner_nodes_str = '\n'.join(inner_nodes)
-            child_str = '\n'.join(render_module_schema(mod=m, show_cluster=show_cluster) for m in mod.modules)
-
-            if show_cluster:
-                return f'''
-                    subgraph cluster_module_{mod.fullname.replace('.', '_')} {{
-                        tooltip="{mod.fullname}"
-                        color = "#666"
-                        style="rounded"
-                        label = "  {mod.name}"
-                        labeljust = "l"
-                        pencolor="#ccc"
-                        penwidth=""
-                        {inner_nodes_str}
-                        {child_str}
-                    }}'''
-            else:
-                return f'''
-                    {inner_nodes_str}
-                    {child_str}
-                '''
-
-        # if self.show_module:
-        module_schemas = build_module_schema_tree(nodes)
-        return '\n'.join(render_module_schema(mod=m, show_cluster=self.show_module) for m in module_schemas)
-
     def render_dot(self, nodes: list[SchemaNode], links: list[Link], spline_line=False) -> str:
+        """
+        Render ER diagram as DOT format.
+
+        Reuses parent's render_module_schema_content and render_link methods.
+        Only customizes the top-level digraph structure.
+        """
+        # Reuse parent's module schema rendering
         module_schemas_str = self.render_module_schema_content(nodes)
+
+        # Reuse parent's link rendering
         link_str = '\n'.join(self.render_link(link) for link in links)
 
-        dot_str = f'''
-        digraph world {{
-            pad="0.5"
-            nodesep=0.8
-            {'splines=line' if spline_line else ''}
-            fontname="Helvetica,Arial,sans-serif"
-            node [fontname="Helvetica,Arial,sans-serif"]
-            edge [
-                fontname="Helvetica,Arial,sans-serif"
-                color="gray"
-            ]
-            graph [
-                rankdir = "LR"
-            ];
-            node [
-                fontsize = "16"
-            ];
-
-            subgraph cluster_schema {{
-                color = "#aaa"
-                margin=18
-                style="dashed"
-                label="  ER Diagram"
-                labeljust="l"
-                fontsize="20"
-                    {module_schemas_str}
-            }}
-
-            {link_str}
-            }}
-        '''
-        return dot_str
+        # Render using ER diagram template
+        return self.template_renderer.render_template(
+            'dot/er_diagram.j2',
+            pad=self.style.pad,
+            nodesep=self.style.nodesep,
+            font=self.style.font,
+            node_fontsize=self.style.node_fontsize,
+            spline='line' if spline_line else None,
+            er_cluster=module_schemas_str,
+            links=link_str
+        )
 
 
 class VoyagerErDiagram:
