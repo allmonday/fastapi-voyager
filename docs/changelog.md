@@ -161,9 +161,11 @@
     - [x] refactor er diagram renderer
     - [x] fix error in search function
 - 0.15.2
-    - [ ] add tests
-    - [ ] left panel can be toggled.
+    - [x] fix resetSearch issue: fail to go back previous tag/router after reset.
+    - [x] left panel can be toggled.
+- 0.15.3
     - [ ] refactor vue-main.js, move methods to store
+    - [ ] add tests
 
 ## 1.0, release 
 
