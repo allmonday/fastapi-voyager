@@ -22,7 +22,6 @@ function loadToggleState(key, defaultValue = false) {
 const app = createApp({
   setup() {
     let graphUI = null
-    const allSchemaOptions = ref([])
     const erDiagramLoading = ref(false)
     const erDiagramCache = ref("")
 
@@ -71,45 +70,14 @@ const app = createApp({
       })
     }
 
-    function rebuildSchemaOptions() {
-      const dict = store.state.graph.schemaMap || {}
-      const opts = Object.values(dict).map((s) => ({
-        label: s.name,
-        desc: s.id,
-        value: s.id,
-      }))
-      allSchemaOptions.value = opts
-      store.state.search.schemaOptions = opts.slice()
-      populateFieldOptions(store.state.search.schemaName)
-    }
-
-    function populateFieldOptions(schemaId) {
-      if (!schemaId) {
-        store.state.search.fieldOptions = []
-        store.state.search.fieldName = null
-        return
-      }
-      const schema = store.state.graph.schemaMap?.[schemaId]
-      if (!schema) {
-        store.state.search.fieldOptions = []
-        store.state.search.fieldName = null
-        return
-      }
-      const fields = Array.isArray(schema.fields) ? schema.fields.map((f) => f.name) : []
-      store.state.search.fieldOptions = fields
-      if (!fields.includes(store.state.search.fieldName)) {
-        store.state.search.fieldName = null
-      }
-    }
-
     function filterSearchSchemas(val, update) {
       const needle = (val || "").toLowerCase()
       update(() => {
         if (!needle) {
-          store.state.search.schemaOptions = allSchemaOptions.value.slice()
+          store.state.search.schemaOptions = store.state.allSchemaOptions.slice()
           return
         }
-        store.state.search.schemaOptions = allSchemaOptions.value.filter((option) =>
+        store.state.search.schemaOptions = store.state.allSchemaOptions.filter((option) =>
           option.label.toLowerCase().includes(needle)
         )
       })
@@ -143,7 +111,7 @@ const app = createApp({
       store.actions.syncSelectionToUrl()
 
       // Load the full tags from cache (not search results) since we're resetting search
-      loadFullTags()
+      store.actions.loadFullTags()
 
       // If we restored a previous tag/route, generate with it
       // Otherwise, fall back to initial policy
@@ -154,92 +122,18 @@ const app = createApp({
       }
     }
 
-    function loadFullTags() {
-      // Restore from cache (set by loadInitial)
-      store.state.leftPanel.tags = store.state.leftPanel.fullTagsCache
-    }
-
     async function onSearch() {
       store.state.search.mode = true
       store.state.leftPanel.tag = null
       store.state.leftPanel._tag = null
       store.state.leftPanel.routeId = null
       store.actions.syncSelectionToUrl()
-      await loadSearchedTags()
+      await store.actions.loadSearchedTags()
       await onGenerate()
-    }
-    async function loadSearchedTags() {
-      try {
-        const payload = {
-          schema_name: store.state.search.schemaName,
-          schema_field: store.state.search.fieldName || null,
-          show_fields: store.state.filter.showFields,
-          brief: store.state.filter.brief,
-          hide_primitive_route: store.state.filter.hidePrimitiveRoute,
-          show_module: store.state.filter.showModule,
-        }
-        const res = await fetch("dot-search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          const tags = Array.isArray(data.tags) ? data.tags : []
-          store.state.leftPanel.tags = tags
-        }
-      } catch (err) {
-        console.error("dot-search failed", err)
-      }
     }
 
     async function loadInitial() {
-      store.state.initializing = true
-      try {
-        const res = await fetch("dot")
-        const data = await res.json()
-        const tags = Array.isArray(data.tags) ? data.tags : []
-        store.state.leftPanel.tags = tags
-        // Cache the full tags for later use (e.g., resetSearch)
-        store.state.leftPanel.fullTagsCache = tags
-
-        const schemasArr = Array.isArray(data.schemas) ? data.schemas : []
-        // Build dict keyed by id for faster lookups and simpler prop passing
-        const schemaMap = Object.fromEntries(schemasArr.map((s) => [s.id, s]))
-        store.state.graph.schemaMap = schemaMap
-        store.state.graph.schemaKeys = new Set(Object.keys(schemaMap))
-        store.state.graph.routeItems = data.tags
-          .map((t) => t.routes)
-          .flat()
-          .reduce((acc, r) => {
-            acc[r.id] = r
-            return acc
-          }, {})
-        store.state.modeControl.briefModeEnabled = data.enable_brief_mode || false
-        store.state.version = data.version || ""
-        store.state.swagger.url = data.swagger_url || null
-        store.state.config.has_er_diagram = data.has_er_diagram || false
-        store.state.config.enable_pydantic_resolve_meta = data.enable_pydantic_resolve_meta || false
-
-        rebuildSchemaOptions()
-
-        const querySelection = store.actions.readQuerySelection()
-        const restoredFromQuery = store.actions.applySelectionFromQuery(querySelection)
-        if (restoredFromQuery) {
-          store.actions.syncSelectionToUrl()
-          onGenerate()
-          return
-        } else {
-          store.state.config.initial_page_policy = data.initial_page_policy
-          renderBasedOnInitialPolicy()
-        }
-
-        // default route options placeholder
-      } catch (e) {
-        console.error("Initial load failed", e)
-      } finally {
-        store.state.initializing = false
-      }
+      await store.actions.loadInitial(onGenerate, renderBasedOnInitialPolicy)
     }
 
     async function renderBasedOnInitialPolicy() {
@@ -489,7 +383,7 @@ const app = createApp({
     watch(
       () => store.state.graph.schemaMap,
       () => {
-        rebuildSchemaOptions()
+        store.actions.rebuildSchemaOptions()
       },
       { deep: false }
     )
@@ -513,8 +407,8 @@ const app = createApp({
     watch(
       () => store.state.search.schemaName,
       (schemaId) => {
-        store.state.search.schemaOptions = allSchemaOptions.value.slice()
-        populateFieldOptions(schemaId)
+        store.state.search.schemaOptions = store.state.allSchemaOptions.slice()
+        store.actions.populateFieldOptions(schemaId)
         if (!schemaId) {
           store.state.search.mode = false
         }
