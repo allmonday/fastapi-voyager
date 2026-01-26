@@ -1,10 +1,6 @@
 const { reactive } = window.Vue
 
 const state = reactive({
-  item: {
-    count: 0,
-  },
-
   version: "",
   config: {
     initial_page_policy: "first",
@@ -105,13 +101,91 @@ const state = reactive({
   },
 })
 
-const mutations = {
-  increment() {
-    state.item.count += 1
+const getters = {
+  /**
+   * Find tag name by route ID
+   * Used to determine which tag a route belongs to
+   */
+  findTagByRoute(routeId) {
+    return (
+      state.leftPanel.tags.find((tag) => (tag.routes || []).some((route) => route.id === routeId))
+        ?.name || null
+    )
   },
 }
 
+const actions = {
+  /**
+   * Read tag and route from URL query parameters
+   * @returns {{ tag: string|null, route: string|null }}
+   */
+  readQuerySelection() {
+    if (typeof window === "undefined") {
+      return { tag: null, route: null }
+    }
+    const params = new URLSearchParams(window.location.search)
+    return {
+      tag: params.get("tag") || null,
+      route: params.get("route") || null,
+    }
+  },
+
+  /**
+   * Sync current tag and route selection to URL
+   * Updates browser URL without reloading the page
+   */
+  syncSelectionToUrl() {
+    if (typeof window === "undefined") {
+      return
+    }
+    const params = new URLSearchParams(window.location.search)
+    if (state.leftPanel.tag) {
+      params.set("tag", state.leftPanel.tag)
+    } else {
+      params.delete("tag")
+    }
+    if (state.leftPanel.routeId) {
+      params.set("route", state.leftPanel.routeId)
+    } else {
+      params.delete("route")
+    }
+    const hash = window.location.hash || ""
+    const search = params.toString()
+    const base = window.location.pathname
+    const newUrl = search ? `${base}?${search}${hash}` : `${base}${hash}`
+    window.history.replaceState({}, "", newUrl)
+  },
+
+  /**
+   * Apply selection from URL query parameters to state
+   * @param {{ tag: string|null, route: string|null }} selection
+   * @returns {boolean} - true if any selection was applied
+   */
+  applySelectionFromQuery(selection) {
+    let applied = false
+    if (selection.tag && state.leftPanel.tags.some((tag) => tag.name === selection.tag)) {
+      state.leftPanel.tag = selection.tag
+      state.leftPanel._tag = selection.tag
+      applied = true
+    }
+    if (selection.route && state.graph.routeItems?.[selection.route]) {
+      state.leftPanel.routeId = selection.route
+      applied = true
+      const inferredTag = getters.findTagByRoute(selection.route)
+      if (inferredTag) {
+        state.leftPanel.tag = inferredTag
+        state.leftPanel._tag = inferredTag
+      }
+    }
+    return applied
+  },
+}
+
+const mutations = {}
+
 export const store = {
   state,
+  getters,
+  actions,
   mutations,
 }

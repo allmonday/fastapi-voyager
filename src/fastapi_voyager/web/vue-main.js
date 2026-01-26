@@ -125,66 +125,6 @@ const app = createApp({
       onSearch()
     }
 
-    function readQuerySelection() {
-      if (typeof window === "undefined") {
-        return { tag: null, route: null }
-      }
-      const params = new URLSearchParams(window.location.search)
-      return {
-        tag: params.get("tag") || null,
-        route: params.get("route") || null,
-      }
-    }
-
-    function findTagByRoute(routeId) {
-      return (
-        store.state.leftPanel.tags.find((tag) =>
-          (tag.routes || []).some((route) => route.id === routeId)
-        )?.name || null
-      )
-    }
-
-    function syncSelectionToUrl() {
-      if (typeof window === "undefined") {
-        return
-      }
-      const params = new URLSearchParams(window.location.search)
-      if (store.state.leftPanel.tag) {
-        params.set("tag", store.state.leftPanel.tag)
-      } else {
-        params.delete("tag")
-      }
-      if (store.state.leftPanel.routeId) {
-        params.set("route", store.state.leftPanel.routeId)
-      } else {
-        params.delete("route")
-      }
-      const hash = window.location.hash || ""
-      const search = params.toString()
-      const base = window.location.pathname
-      const newUrl = search ? `${base}?${search}${hash}` : `${base}${hash}`
-      window.history.replaceState({}, "", newUrl)
-    }
-
-    function applySelectionFromQuery(selection) {
-      let applied = false
-      if (selection.tag && store.state.leftPanel.tags.some((tag) => tag.name === selection.tag)) {
-        store.state.leftPanel.tag = selection.tag
-        store.state.leftPanel._tag = selection.tag
-        applied = true
-      }
-      if (selection.route && store.state.graph.routeItems?.[selection.route]) {
-        store.state.leftPanel.routeId = selection.route
-        applied = true
-        const inferredTag = findTagByRoute(selection.route)
-        if (inferredTag) {
-          store.state.leftPanel.tag = inferredTag
-          store.state.leftPanel._tag = inferredTag
-        }
-      }
-      return applied
-    }
-
     async function resetSearch() {
       store.state.search.mode = false
       const hadPreviousValue = store.state.previousTagRoute.hasValue
@@ -200,7 +140,7 @@ const app = createApp({
         store.state.leftPanel.routeId = null
       }
 
-      syncSelectionToUrl()
+      store.actions.syncSelectionToUrl()
 
       // Load the full tags from cache (not search results) since we're resetting search
       loadFullTags()
@@ -224,7 +164,7 @@ const app = createApp({
       store.state.leftPanel.tag = null
       store.state.leftPanel._tag = null
       store.state.leftPanel.routeId = null
-      syncSelectionToUrl()
+      store.actions.syncSelectionToUrl()
       await loadSearchedTags()
       await onGenerate()
     }
@@ -283,10 +223,10 @@ const app = createApp({
 
         rebuildSchemaOptions()
 
-        const querySelection = readQuerySelection()
-        const restoredFromQuery = applySelectionFromQuery(querySelection)
+        const querySelection = store.actions.readQuerySelection()
+        const restoredFromQuery = store.actions.applySelectionFromQuery(querySelection)
         if (restoredFromQuery) {
-          syncSelectionToUrl()
+          store.actions.syncSelectionToUrl()
           onGenerate()
           return
         } else {
@@ -313,7 +253,7 @@ const app = createApp({
           store.state.leftPanel.tag =
             store.state.leftPanel.tags.length > 0 ? store.state.leftPanel.tags[0].name : null
           store.state.leftPanel._tag = store.state.leftPanel.tag
-          syncSelectionToUrl()
+          store.actions.syncSelectionToUrl()
           onGenerate()
           return
       }
@@ -372,7 +312,7 @@ const app = createApp({
       store.state.leftPanel.tag = null
       store.state.leftPanel._tag = null
       store.state.leftPanel.routeId = null
-      syncSelectionToUrl()
+      store.actions.syncSelectionToUrl()
       onGenerate()
     }
 
@@ -447,7 +387,7 @@ const app = createApp({
 
       store.state.rightDrawer.drawer = false
       store.state.routeDetail.show = false
-      syncSelectionToUrl()
+      store.actions.syncSelectionToUrl()
     }
 
     function toggleTagNavigatorCollapse() {
@@ -468,7 +408,7 @@ const app = createApp({
 
     function selectRoute(routeId) {
       // find belonging tag
-      const belongingTag = findTagByRoute(routeId)
+      const belongingTag = store.getters.findTagByRoute(routeId)
       if (belongingTag) {
         store.state.leftPanel.tag = belongingTag
         store.state.leftPanel._tag = belongingTag
@@ -483,7 +423,7 @@ const app = createApp({
       store.state.rightDrawer.drawer = false
       store.state.routeDetail.show = false
       store.state.schemaDetail.schemaCodeName = ""
-      syncSelectionToUrl()
+      store.actions.syncSelectionToUrl()
       onGenerate()
     }
 
