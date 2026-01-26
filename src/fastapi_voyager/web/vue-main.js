@@ -41,13 +41,6 @@ const app = createApp({
       graphUI = new GraphUI("#graph", {
         onSchemaShiftClick: (id) => {
           if (store.state.graph.schemaKeys.has(id)) {
-            // Only save current tag/route if we're not already in search mode
-            // This prevents overwriting the saved state with null values
-            if (!store.state.previousTagRoute.hasValue && !store.state.search.mode) {
-              store.state.previousTagRoute.tag = store.state.leftPanel.tag
-              store.state.previousTagRoute.routeId = store.state.leftPanel.routeId
-              store.state.previousTagRoute.hasValue = true
-            }
             store.state.search.mode = true
             store.state.search.schemaName = id
             onSearch()
@@ -83,6 +76,13 @@ const app = createApp({
     }
 
     async function onSearch() {
+      // Save current state before entering search mode (only if not already saved)
+      if (!store.state.previousTagRoute.hasValue) {
+        store.state.previousTagRoute.tag = store.state.leftPanel.tag
+        store.state.previousTagRoute.routeId = store.state.leftPanel.routeId
+        store.state.previousTagRoute.hasValue = true
+      }
+
       store.state.search.mode = true
       store.state.leftPanel.tag = null
       store.state.leftPanel._tag = null

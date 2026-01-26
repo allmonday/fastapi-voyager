@@ -11,7 +11,8 @@ const state = reactive({
   mode: "voyager", // voyager / er-diagram
 
   previousTagRoute: {
-    // for shift + click, store previous tag/route, and populate back when needed
+    // Store the last non-search tag/route selection for restoration when clearing search
+    // Used by resetSearch to return to the state before entering search mode
     hasValue: false,
     tag: null,
     routeId: null,
@@ -503,6 +504,7 @@ const actions = {
       state.leftPanel.tag = state.previousTagRoute.tag
       state.leftPanel._tag = state.previousTagRoute.tag
       state.leftPanel.routeId = state.previousTagRoute.routeId
+      // Clear the saved state
       state.previousTagRoute.hasValue = false
     } else {
       state.leftPanel.tag = null

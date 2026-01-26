@@ -164,7 +164,9 @@
     - [x] fix resetSearch issue: fail to go back previous tag/router after reset.
     - [x] left panel can be toggled.
 - 0.15.3
-    - [ ] refactor vue-main.js, move methods to store
+    - [x] refactor vue-main.js, move methods to store
+    - [x] optimize search flow
+- 0.15.4
     - [ ] add tests
 
 ## 1.0, release 
