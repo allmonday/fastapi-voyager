@@ -54,7 +54,7 @@ const app = createApp({
           }
         },
         onSchemaClick: (id) => {
-          resetDetailPanels()
+          store.actions.resetDetailPanels()
           if (store.state.graph.schemaKeys.has(id)) {
             store.state.schemaDetail.schemaCodeName = id
             store.state.rightDrawer.drawer = true
@@ -65,32 +65,9 @@ const app = createApp({
           }
         },
         resetCb: () => {
-          resetDetailPanels()
+          store.actions.resetDetailPanels()
         },
       })
-    }
-
-    function filterSearchSchemas(val, update) {
-      const needle = (val || "").toLowerCase()
-      update(() => {
-        if (!needle) {
-          store.state.search.schemaOptions = store.state.allSchemaOptions.slice()
-          return
-        }
-        store.state.search.schemaOptions = store.state.allSchemaOptions.filter((option) =>
-          option.label.toLowerCase().includes(needle)
-        )
-      })
-    }
-
-    function onSearchSchemaChange(val) {
-      store.state.search.schemaName = val
-      store.state.search.mode = false
-      if (!val) {
-        // Clearing the select should only run resetSearch via @clear
-        return
-      }
-      onSearch()
     }
 
     async function resetSearch() {
@@ -196,30 +173,6 @@ const app = createApp({
       }
     }
 
-    function resetDetailPanels() {
-      store.state.rightDrawer.drawer = false
-      store.state.routeDetail.show = false
-      store.state.schemaDetail.schemaCodeName = ""
-    }
-
-    async function onReset() {
-      store.state.leftPanel.tag = null
-      store.state.leftPanel._tag = null
-      store.state.leftPanel.routeId = null
-      store.actions.syncSelectionToUrl()
-      onGenerate()
-    }
-
-    async function togglePydanticResolveMeta(val) {
-      store.state.modeControl.pydanticResolveMetaEnabled = val
-      try {
-        localStorage.setItem("pydantic_resolve_meta", JSON.stringify(val))
-      } catch (e) {
-        console.warn("Failed to save pydantic_resolve_meta to localStorage", e)
-      }
-      onGenerate()
-    }
-
     async function renderErDiagram(resetZoom = true) {
       initGraphUI()
       erDiagramLoading.value = true
@@ -321,41 +274,6 @@ const app = createApp({
       onGenerate()
     }
 
-    function toggleShowModule(val) {
-      store.state.filter.showModule = val
-      try {
-        localStorage.setItem("show_module_cluster", JSON.stringify(val))
-      } catch (e) {
-        console.warn("Failed to save show_module_cluster to localStorage", e)
-      }
-      onGenerate()
-    }
-
-    function toggleShowField(field) {
-      store.state.filter.showFields = field
-      onGenerate(false)
-    }
-
-    function toggleBrief(val) {
-      store.state.filter.brief = val
-      try {
-        localStorage.setItem("brief_mode", JSON.stringify(val))
-      } catch (e) {
-        console.warn("Failed to save brief_mode to localStorage", e)
-      }
-      onGenerate()
-    }
-
-    function toggleHidePrimitiveRoute(val) {
-      store.state.filter.hidePrimitiveRoute = val
-      try {
-        localStorage.setItem("hide_primitive", JSON.stringify(val))
-      } catch (e) {
-        console.warn("Failed to save hide_primitive to localStorage", e)
-      }
-      onGenerate(false)
-    }
-
     function startDragDrawer(e) {
       const startX = e.clientX
       const startWidth = store.state.rightDrawer.width
@@ -425,21 +343,22 @@ const app = createApp({
       store,
       onSearch,
       resetSearch,
-      filterSearchSchemas,
-      onSearchSchemaChange,
+      filterSearchSchemas: (val, update) => store.actions.filterSearchSchemas(val, update),
+      onSearchSchemaChange: (val) => store.actions.onSearchSchemaChange(val, onSearch),
       toggleTag,
       toggleTagNavigatorCollapse,
-      toggleBrief,
-      toggleHidePrimitiveRoute,
+      toggleBrief: (val) => store.actions.toggleBrief(val, onGenerate),
+      toggleHidePrimitiveRoute: (val) => store.actions.toggleHidePrimitiveRoute(val, onGenerate),
       selectRoute,
       onGenerate,
-      onReset,
-      toggleShowField,
+      onReset: () => store.actions.onReset(onGenerate),
+      toggleShowField: (field) => store.actions.toggleShowField(field, onGenerate),
       startDragDrawer,
-      toggleShowModule,
+      toggleShowModule: (val) => store.actions.toggleShowModule(val, onGenerate),
       onModeChange,
       renderErDiagram,
-      togglePydanticResolveMeta,
+      togglePydanticResolveMeta: (val) => store.actions.togglePydanticResolveMeta(val, onGenerate),
+      resetDetailPanels: () => store.actions.resetDetailPanels(),
     }
   },
 })

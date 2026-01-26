@@ -313,6 +313,132 @@ const actions = {
       state.initializing = false
     }
   },
+
+  /**
+   * Filter schema options based on search text
+   * Used by Quasar select component's filter function
+   * @param {string} val - Search text
+   * @param {Function} update - Quasar update callback
+   */
+  filterSearchSchemas(val, update) {
+    const needle = (val || "").toLowerCase()
+    update(() => {
+      if (!needle) {
+        state.search.schemaOptions = state.allSchemaOptions.slice()
+        return
+      }
+      state.search.schemaOptions = state.allSchemaOptions.filter((option) =>
+        option.label.toLowerCase().includes(needle)
+      )
+    })
+  },
+
+  /**
+   * Handle schema selection change
+   * Updates state and triggers search if a schema is selected
+   * @param {string} val - Selected schema ID
+   * @param {Function} onSearch - Callback to trigger search
+   */
+  onSearchSchemaChange(val, onSearch) {
+    state.search.schemaName = val
+    state.search.mode = false
+    if (!val) {
+      // Clearing the select should only run resetSearch via @clear
+      return
+    }
+    onSearch()
+  },
+
+  /**
+   * Reset detail panels (right drawer and route detail)
+   */
+  resetDetailPanels() {
+    state.rightDrawer.drawer = false
+    state.routeDetail.show = false
+    state.schemaDetail.schemaCodeName = ""
+  },
+
+  /**
+   * Reset left panel selection and regenerate
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  onReset(onGenerate) {
+    state.leftPanel.tag = null
+    state.leftPanel._tag = null
+    state.leftPanel.routeId = null
+    this.syncSelectionToUrl()
+    onGenerate()
+  },
+
+  /**
+   * Toggle pydantic resolve meta visibility
+   * @param {boolean} val - New value
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  togglePydanticResolveMeta(val, onGenerate) {
+    state.modeControl.pydanticResolveMetaEnabled = val
+    try {
+      localStorage.setItem("pydantic_resolve_meta", JSON.stringify(val))
+    } catch (e) {
+      console.warn("Failed to save pydantic_resolve_meta to localStorage", e)
+    }
+    onGenerate()
+  },
+
+  /**
+   * Toggle show module clustering
+   * @param {boolean} val - New value
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  toggleShowModule(val, onGenerate) {
+    state.filter.showModule = val
+    try {
+      localStorage.setItem("show_module_cluster", JSON.stringify(val))
+    } catch (e) {
+      console.warn("Failed to save show_module_cluster to localStorage", e)
+    }
+    onGenerate()
+  },
+
+  /**
+   * Toggle show fields option
+   * @param {string} field - Field display option ("single", "object", "all")
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  toggleShowField(field, onGenerate) {
+    state.filter.showFields = field
+    onGenerate(false)
+  },
+
+  /**
+   * Toggle brief mode
+   * @param {boolean} val - New value
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  toggleBrief(val, onGenerate) {
+    state.filter.brief = val
+    try {
+      localStorage.setItem("brief_mode", JSON.stringify(val))
+    } catch (e) {
+      console.warn("Failed to save brief_mode to localStorage", e)
+    }
+    onGenerate()
+  },
+
+  /**
+   * Toggle hide primitive route
+   * @param {boolean} val - New value
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  toggleHidePrimitiveRoute(val, onGenerate) {
+    state.filter.hidePrimitiveRoute = val
+    try {
+      localStorage.setItem("hide_primitive", JSON.stringify(val))
+    } catch (e) {
+      console.warn("Failed to save hide_primitive to localStorage", e)
+    }
+    onGenerate(false)
+  },
 }
 
 const mutations = {}
