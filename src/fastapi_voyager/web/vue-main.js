@@ -71,31 +71,14 @@ const app = createApp({
     }
 
     async function resetSearch() {
-      store.state.search.mode = false
-      const hadPreviousValue = store.state.previousTagRoute.hasValue
-
-      if (hadPreviousValue) {
-        store.state.leftPanel.tag = store.state.previousTagRoute.tag
-        store.state.leftPanel._tag = store.state.previousTagRoute.tag
-        store.state.leftPanel.routeId = store.state.previousTagRoute.routeId
-        store.state.previousTagRoute.hasValue = false
-      } else {
-        store.state.leftPanel.tag = null
-        store.state.leftPanel._tag = null
-        store.state.leftPanel.routeId = null
-      }
-
-      store.actions.syncSelectionToUrl()
-
-      // Load the full tags from cache (not search results) since we're resetting search
-      store.actions.loadFullTags()
+      const hadPreviousValue = store.actions.resetSearchState()
 
       // If we restored a previous tag/route, generate with it
       // Otherwise, fall back to initial policy
       if (hadPreviousValue) {
         onGenerate()
       } else {
-        renderBasedOnInitialPolicy()
+        store.actions.renderBasedOnInitialPolicy(onGenerate)
       }
     }
 
@@ -110,24 +93,9 @@ const app = createApp({
     }
 
     async function loadInitial() {
-      await store.actions.loadInitial(onGenerate, renderBasedOnInitialPolicy)
-    }
-
-    async function renderBasedOnInitialPolicy() {
-      switch (store.state.config.initial_page_policy) {
-        case "full":
-          onGenerate()
-          return
-        case "empty":
-          return
-        case "first":
-          store.state.leftPanel.tag =
-            store.state.leftPanel.tags.length > 0 ? store.state.leftPanel.tags[0].name : null
-          store.state.leftPanel._tag = store.state.leftPanel.tag
-          store.actions.syncSelectionToUrl()
-          onGenerate()
-          return
-      }
+      await store.actions.loadInitial(onGenerate, (cb) =>
+        store.actions.renderBasedOnInitialPolicy(cb)
+      )
     }
 
     async function onGenerate(resetZoom = true) {
@@ -142,21 +110,9 @@ const app = createApp({
     }
 
     async function renderVoyager(resetZoom = true) {
-      const activeSchema = store.state.search.mode ? store.state.search.schemaName : null
-      const activeField = store.state.search.mode ? store.state.search.fieldName : null
       store.state.generating = true
       try {
-        const payload = {
-          tags: store.state.leftPanel.tag ? [store.state.leftPanel.tag] : null,
-          schema_name: activeSchema || null,
-          schema_field: activeField || null,
-          route_name: store.state.leftPanel.routeId || null,
-          show_fields: store.state.filter.showFields,
-          brief: store.state.filter.brief,
-          hide_primitive_route: store.state.filter.hidePrimitiveRoute,
-          show_module: store.state.filter.showModule,
-          show_pydantic_resolve_meta: store.state.modeControl.pydanticResolveMetaEnabled,
-        }
+        const payload = store.actions.buildVoyagerPayload()
         initGraphUI()
         const res = await fetch("dot", {
           method: "POST",
@@ -176,10 +132,7 @@ const app = createApp({
     async function renderErDiagram(resetZoom = true) {
       initGraphUI()
       erDiagramLoading.value = true
-      const payload = {
-        show_fields: store.state.filter.showFields,
-        show_module: store.state.filter.showModule,
-      }
+      const payload = store.actions.buildErDiagramPayload()
       try {
         const res = await fetch("er-diagram", {
           method: "POST",

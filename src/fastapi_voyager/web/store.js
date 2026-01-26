@@ -439,6 +439,82 @@ const actions = {
     }
     onGenerate(false)
   },
+
+  /**
+   * Render based on initial page policy
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  renderBasedOnInitialPolicy(onGenerate) {
+    switch (state.config.initial_page_policy) {
+      case "full":
+        onGenerate()
+        return
+      case "empty":
+        return
+      case "first":
+        state.leftPanel.tag = state.leftPanel.tags.length > 0 ? state.leftPanel.tags[0].name : null
+        state.leftPanel._tag = state.leftPanel.tag
+        this.syncSelectionToUrl()
+        onGenerate()
+        return
+    }
+  },
+
+  /**
+   * Build payload for Voyager rendering
+   * @returns {Object} Payload for dot API
+   */
+  buildVoyagerPayload() {
+    const activeSchema = state.search.mode ? state.search.schemaName : null
+    const activeField = state.search.mode ? state.search.fieldName : null
+    return {
+      tags: state.leftPanel.tag ? [state.leftPanel.tag] : null,
+      schema_name: activeSchema || null,
+      schema_field: activeField || null,
+      route_name: state.leftPanel.routeId || null,
+      show_fields: state.filter.showFields,
+      brief: state.filter.brief,
+      hide_primitive_route: state.filter.hidePrimitiveRoute,
+      show_module: state.filter.showModule,
+      show_pydantic_resolve_meta: state.modeControl.pydanticResolveMetaEnabled,
+    }
+  },
+
+  /**
+   * Build payload for ER Diagram rendering
+   * @returns {Object} Payload for er-diagram API
+   */
+  buildErDiagramPayload() {
+    return {
+      show_fields: state.filter.showFields,
+      show_module: state.filter.showModule,
+    }
+  },
+
+  /**
+   * Restore search state and return whether to regenerate
+   * @returns {boolean} - true if should regenerate with previous selection
+   */
+  resetSearchState() {
+    state.search.mode = false
+    const hadPreviousValue = state.previousTagRoute.hasValue
+
+    if (hadPreviousValue) {
+      state.leftPanel.tag = state.previousTagRoute.tag
+      state.leftPanel._tag = state.previousTagRoute.tag
+      state.leftPanel.routeId = state.previousTagRoute.routeId
+      state.previousTagRoute.hasValue = false
+    } else {
+      state.leftPanel.tag = null
+      state.leftPanel._tag = null
+      state.leftPanel.routeId = null
+    }
+
+    this.syncSelectionToUrl()
+    this.loadFullTags()
+
+    return hadPreviousValue
+  },
 }
 
 const mutations = {}
