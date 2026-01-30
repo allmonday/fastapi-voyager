@@ -163,12 +163,14 @@ const app = createApp({
           store.state.leftPanel.previousWidth = store.state.leftPanel.width
         }
         store.state.leftPanel.width = 0
+        store.actions.syncSelectionToUrl()
         await renderErDiagram()
       } else {
         store.state.search.invisible = false
 
         const fallbackWidth = store.state.leftPanel.previousWidth || 300
         store.state.leftPanel.width = fallbackWidth
+        store.actions.syncSelectionToUrl()
         await onGenerate()
       }
     }

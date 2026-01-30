@@ -120,22 +120,23 @@ const getters = {
 
 const actions = {
   /**
-   * Read tag and route from URL query parameters
-   * @returns {{ tag: string|null, route: string|null }}
+   * Read tag, route and mode from URL query parameters
+   * @returns {{ tag: string|null, route: string|null, mode: string|null }}
    */
   readQuerySelection() {
     if (typeof window === "undefined") {
-      return { tag: null, route: null }
+      return { tag: null, route: null, mode: null }
     }
     const params = new URLSearchParams(window.location.search)
     return {
       tag: params.get("tag") || null,
       route: params.get("route") || null,
+      mode: params.get("mode") || null,
     }
   },
 
   /**
-   * Sync current tag and route selection to URL
+   * Sync current tag, route and mode selection to URL
    * Updates browser URL without reloading the page
    */
   syncSelectionToUrl() {
@@ -153,6 +154,12 @@ const actions = {
     } else {
       params.delete("route")
     }
+    // Always sync mode to URL for consistency
+    if (state.mode) {
+      params.set("mode", state.mode)
+    } else {
+      params.delete("mode")
+    }
     const hash = window.location.hash || ""
     const search = params.toString()
     const base = window.location.pathname
@@ -162,7 +169,7 @@ const actions = {
 
   /**
    * Apply selection from URL query parameters to state
-   * @param {{ tag: string|null, route: string|null }} selection
+   * @param {{ tag: string|null, route: string|null, mode: string|null }} selection
    * @returns {boolean} - true if any selection was applied
    */
   applySelectionFromQuery(selection) {
@@ -180,6 +187,11 @@ const actions = {
         state.leftPanel.tag = inferredTag
         state.leftPanel._tag = inferredTag
       }
+    }
+    // Apply mode from URL if it's valid
+    if (selection.mode === "voyager" || selection.mode === "er-diagram") {
+      state.mode = selection.mode
+      applied = true
     }
     return applied
   },
@@ -304,6 +316,15 @@ const actions = {
         return
       } else {
         state.config.initial_page_policy = data.initial_page_policy
+        // Check if mode was applied from URL even if tag/route wasn't
+        if (
+          querySelection.mode &&
+          (querySelection.mode === "voyager" || querySelection.mode === "er-diagram")
+        ) {
+          this.syncSelectionToUrl()
+          onGenerate()
+          return
+        }
         renderBasedOnInitialPolicy()
       }
 

@@ -19,6 +19,7 @@ WEB_DIR = Path(__file__).parent / "web"
 WEB_DIR.mkdir(exist_ok=True)
 
 GA_PLACEHOLDER = "<!-- GA_SNIPPET -->"
+VERSION_PLACEHOLDER = "<!-- VERSION_PLACEHOLDER -->"
 
 def _build_ga_snippet(ga_id: str | None) -> str:
 	if not ga_id:
@@ -197,7 +198,9 @@ def create_voyager(
 		index_file = WEB_DIR / "index.html"
 		if index_file.exists():
 			content = index_file.read_text(encoding="utf-8")
-			return content.replace(GA_PLACEHOLDER, _build_ga_snippet(ga_id))
+			content = content.replace(GA_PLACEHOLDER, _build_ga_snippet(ga_id))
+			content = content.replace(VERSION_PLACEHOLDER, f"?v={__version__}")
+			return content
 		# fallback simple page if index.html missing
 		return """
 		<!doctype html>

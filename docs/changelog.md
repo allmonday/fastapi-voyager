@@ -167,8 +167,16 @@
     - [x] refactor vue-main.js, move methods to store
     - [x] optimize search flow
 - 0.15.4
-    - [ ] add tests
+    - [x] static files cache buster 
+    - [ ] store voyager/erd toggle value in url query string
+
+## 0.16, enhance er diagram
+- 0.16.0
+    - [ ] show loader name
+    - [ ] show relationship list when double click entity in er diagram
+    - [ ] highlight entity in use case
 
 ## 1.0, release 
+    - [ ] add tests
 
 
