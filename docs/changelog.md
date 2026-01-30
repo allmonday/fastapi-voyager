@@ -168,7 +168,8 @@
     - [x] optimize search flow
 - 0.15.4
     - [x] static files cache buster 
-    - [ ] store voyager/erd toggle value in url query string
+    - [x] store voyager/erd toggle value in url query string
+    - [x] set highlight style
 
 ## 0.16, enhance er diagram
 - 0.16.0

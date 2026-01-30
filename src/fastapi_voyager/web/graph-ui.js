@@ -69,10 +69,45 @@ export class GraphUI {
   }
 
   highlightSchemaBanner(node) {
+    // Get all polygons in the node
     const polygons = node.querySelectorAll("polygon")
-    const ele = polygons[2] // select the second polygon
-    if (ele) {
-      ele.setAttribute("stroke-width", "3.5")
+
+    // The first polygon is typically the outer frame of the entire node
+    const outerFrame = polygons[0]
+    // The second polygon is typically the title background
+    const titleBg = polygons[1]
+
+    if (outerFrame) {
+      // Save original attributes for potential restoration
+      if (!outerFrame.hasAttribute("data-original-stroke")) {
+        outerFrame.setAttribute("data-original-stroke", outerFrame.getAttribute("stroke") || "")
+        outerFrame.setAttribute(
+          "data-original-stroke-width",
+          outerFrame.getAttribute("stroke-width") || "1"
+        )
+        outerFrame.setAttribute("data-original-fill", outerFrame.getAttribute("fill") || "")
+      }
+
+      // Apply bold purple border to the outer frame
+      outerFrame.setAttribute("stroke", "#822dba")
+      outerFrame.setAttribute("stroke-width", "3.0")
+    }
+
+    if (titleBg) {
+      // Save original attributes
+      if (!titleBg.hasAttribute("data-original-stroke")) {
+        titleBg.setAttribute("data-original-stroke", titleBg.getAttribute("stroke") || "")
+        titleBg.setAttribute(
+          "data-original-stroke-width",
+          titleBg.getAttribute("stroke-width") || "1"
+        )
+        titleBg.setAttribute("data-original-fill", titleBg.getAttribute("fill") || "")
+      }
+
+      // Apply purple background to title
+      titleBg.setAttribute("fill", "#822dba")
+      // Also update the stroke to match
+      titleBg.setAttribute("stroke", "#822dba")
     }
   }
 
