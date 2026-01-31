@@ -17,6 +17,13 @@
 
   GraphvizSvg.GVPT_2_PX = 32.5 // used to ease removal of extra space
 
+  // SVG element selectors for color manipulation
+  // NOTE: If you need to add more element types for highlighting/dimming,
+  // update SHAPE_ELEMENTS and the code will automatically handle them
+  GraphvizSvg.SHAPE_ELEMENTS = "polygon, ellipse, path, polyline"
+  GraphvizSvg.TEXT_ELEMENTS = "text"
+  GraphvizSvg.ALL_COLOR_ELEMENTS = GraphvizSvg.SHAPE_ELEMENTS + ", " + GraphvizSvg.TEXT_ELEMENTS
+
   GraphvizSvg.DEFAULTS = {
     url: null,
     svg: null,
@@ -178,8 +185,8 @@
       this.setInteractiveCursor($el, type === "edge")
     }
 
-    // save the colors of the paths, ellipses and polygons
-    $el.find("polygon, ellipse, path, polyline").each(function () {
+    // Save the colors of shape elements (polygon, ellipse, path, polyline)
+    $el.find(GraphvizSvg.SHAPE_ELEMENTS).each(function () {
       var $this = $(this)
       if ($this.attr("data-graphviz-hitbox") === "true") {
         return
@@ -196,8 +203,8 @@
       }
     })
 
-    // save the colors of text elements
-    $el.find("text").each(function () {
+    // Save the colors of text elements
+    $el.find(GraphvizSvg.TEXT_ELEMENTS).each(function () {
       var $this = $(this)
       // text elements might not have explicit fill attribute, use black as default
       var fill = $this.attr("fill")
@@ -418,6 +425,57 @@
     return retval
   }
 
+  // Helper function to apply color transformation to elements
+  GraphvizSvg.prototype._applyColorToElements = function (
+    $elements,
+    colorTransformer,
+    bgColor,
+    setStrokeWidth
+  ) {
+    var that = this
+    $elements.each(function () {
+      var $this = $(this)
+      if ($this.attr("data-graphviz-hitbox") === "true") {
+        return
+      }
+      var color = $this.data("graphviz.svg.color")
+      if (color) {
+        if (color.fill && color.fill != "none") {
+          $this.attr("fill", colorTransformer(color.fill, bgColor))
+        }
+        if (color.stroke && color.stroke != "none") {
+          $this.attr("stroke", colorTransformer(color.stroke, bgColor))
+        }
+        if (setStrokeWidth !== undefined) {
+          $this.attr("stroke-width", setStrokeWidth)
+        }
+      }
+    })
+  }
+
+  // Helper function to restore original colors
+  GraphvizSvg.prototype._restoreElementColors = function ($elements, setStrokeWidth) {
+    var that = this
+    $elements.each(function () {
+      var $this = $(this)
+      if ($this.attr("data-graphviz-hitbox") === "true") {
+        return
+      }
+      var color = $this.data("graphviz.svg.color")
+      if (color) {
+        if (color.fill && color.fill != "none") {
+          $this.attr("fill", color.fill)
+        }
+        if (color.stroke && color.stroke != "none") {
+          $this.attr("stroke", color.stroke)
+        }
+        if (setStrokeWidth !== undefined) {
+          $this.attr("stroke-width", setStrokeWidth)
+        }
+      }
+    })
+  }
+
   GraphvizSvg.prototype.findEdge = function (nodeName, testEdge, $retval) {
     var retval = []
     for (var name in this._edgesByName) {
@@ -453,53 +511,14 @@
 
   GraphvizSvg.prototype.colorElement = function ($el, getColor) {
     var bg = this.$element.css("background")
-    $el.find("polygon, ellipse, path, polyline").each(function () {
-      var $this = $(this)
-      if ($this.attr("data-graphviz-hitbox") === "true") {
-        return
-      }
-      var color = $this.data("graphviz.svg.color")
-      if (color.fill && color.fill != "none") {
-        $this.attr("fill", getColor(color.fill, bg)) // don't set  fill if it's a path
-      }
-      if (color.stroke && color.stroke != "none") {
-        $this.attr("stroke", getColor(color.stroke, bg))
-      }
-      $this.attr("stroke-width", 1.6)
-    })
-    // Also dim text elements
-    $el.find("text").each(function () {
-      var $this = $(this)
-      var color = $this.data("graphviz.svg.color")
-      if (color && color.fill) {
-        $this.attr("fill", getColor(color.fill, bg))
-      }
-    })
+
+    // Apply color transformation to all elements (shapes + text)
+    this._applyColorToElements($el.find(GraphvizSvg.ALL_COLOR_ELEMENTS), getColor, bg)
   }
 
   GraphvizSvg.prototype.restoreElement = function ($el) {
-    $el.find("polygon, ellipse, path, polyline").each(function () {
-      var $this = $(this)
-      if ($this.attr("data-graphviz-hitbox") === "true") {
-        return
-      }
-      var color = $this.data("graphviz.svg.color")
-      if (color.fill && color.fill != "none") {
-        $this.attr("fill", color.fill) // don't set  fill if it's a path
-      }
-      if (color.stroke && color.stroke != "none") {
-        $this.attr("stroke", color.stroke)
-      }
-      $this.attr("stroke-width", 1)
-    })
-    // Also restore text elements
-    $el.find("text").each(function () {
-      var $this = $(this)
-      var color = $this.data("graphviz.svg.color")
-      if (color.fill && color.fill != "none") {
-        $this.attr("fill", color.fill)
-      }
-    })
+    // Restore original colors for all elements (shapes + text)
+    this._restoreElementColors($el.find(GraphvizSvg.ALL_COLOR_ELEMENTS), 1)
   }
 
   // methods users can actually call
