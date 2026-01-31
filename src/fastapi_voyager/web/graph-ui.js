@@ -111,6 +111,22 @@ export class GraphUI {
     }
   }
 
+  clearSchemaBanners() {
+    // Clear all double-click banners by:
+    // 1. Calling highlight() to restore all elements
+    if (this.gv) {
+      this.gv.highlight()
+    }
+
+    // 2. Remove any leftover data-original-* attributes from schema banners
+    const allPolygons = document.querySelectorAll("polygon[data-original-stroke]")
+    allPolygons.forEach((polygon) => {
+      polygon.removeAttribute("data-original-stroke")
+      polygon.removeAttribute("data-original-stroke-width")
+      polygon.removeAttribute("data-original-fill")
+    })
+  }
+
   _init() {
     const self = this
     $(this.selector).graphviz({
@@ -127,11 +143,17 @@ export class GraphUI {
 
         nodes.on("dblclick.graphui", function (event) {
           event.stopPropagation()
+
+          // Clear all previous banners and highlights
+          self.clearSchemaBanners()
+
+          // Apply highlight to the double-clicked node
           try {
             self.highlightSchemaBanner(this)
           } catch (e) {
             console.log(e)
           }
+
           const set = $()
           set.push(this)
           const schemaName = event.currentTarget.dataset.name
@@ -177,6 +199,8 @@ export class GraphUI {
               }
             }
           } else {
+            // Clear any previous schema banners before highlighting
+            self.clearSchemaBanners()
             self.currentSelection = [obj]
             self._highlight()
           }
@@ -200,7 +224,9 @@ export class GraphUI {
               }
             })
             if (!isNode && self.gv) {
-              self.gv.highlight()
+              // Clear all highlights including schema banners
+              self.clearSchemaBanners()
+
               if (self.options.resetCb) {
                 self.options.resetCb()
               }
