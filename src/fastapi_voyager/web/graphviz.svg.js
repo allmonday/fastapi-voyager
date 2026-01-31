@@ -179,7 +179,7 @@
     }
 
     // save the colors of the paths, ellipses and polygons
-    $el.find("polygon, ellipse, path").each(function () {
+    $el.find("polygon, ellipse, path, polyline").each(function () {
       var $this = $(this)
       if ($this.attr("data-graphviz-hitbox") === "true") {
         return
@@ -194,6 +194,20 @@
       if (type === "node" && options.shrink) {
         that.scaleNode($this)
       }
+    })
+
+    // save the colors of text elements
+    $el.find("text").each(function () {
+      var $this = $(this)
+      // text elements might not have explicit fill attribute, use black as default
+      var fill = $this.attr("fill")
+      if (!fill || fill === "none") {
+        fill = "#000000" // default black color for text
+      }
+      $this.data("graphviz.svg.color", {
+        fill: fill,
+        stroke: $this.attr("stroke"),
+      })
     })
 
     // save the node name and check if theres a comment above; save it
@@ -439,7 +453,7 @@
 
   GraphvizSvg.prototype.colorElement = function ($el, getColor) {
     var bg = this.$element.css("background")
-    $el.find("polygon, ellipse, path").each(function () {
+    $el.find("polygon, ellipse, path, polyline").each(function () {
       var $this = $(this)
       if ($this.attr("data-graphviz-hitbox") === "true") {
         return
@@ -453,10 +467,18 @@
       }
       $this.attr("stroke-width", 1.6)
     })
+    // Also dim text elements
+    $el.find("text").each(function () {
+      var $this = $(this)
+      var color = $this.data("graphviz.svg.color")
+      if (color && color.fill) {
+        $this.attr("fill", getColor(color.fill, bg))
+      }
+    })
   }
 
   GraphvizSvg.prototype.restoreElement = function ($el) {
-    $el.find("polygon, ellipse, path").each(function () {
+    $el.find("polygon, ellipse, path, polyline").each(function () {
       var $this = $(this)
       if ($this.attr("data-graphviz-hitbox") === "true") {
         return
@@ -469,6 +491,14 @@
         $this.attr("stroke", color.stroke)
       }
       $this.attr("stroke-width", 1)
+    })
+    // Also restore text elements
+    $el.find("text").each(function () {
+      var $this = $(this)
+      var color = $this.data("graphviz.svg.color")
+      if (color.fill && color.fill != "none") {
+        $this.attr("fill", color.fill)
+      }
     })
   }
 
