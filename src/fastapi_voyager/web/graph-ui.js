@@ -184,9 +184,13 @@ export class GraphUI {
           const [upStreamNode, downStreamNode] = event.currentTarget.dataset.name.split("->")
           const nodes = self.gv.nodesByName()
 
-          const up = $().push(nodes[upStreamNode])
-          const down = $().push(nodes[downStreamNode])
-          const edge = $().push(this)
+          const up = $()
+          const down = $()
+          const edge = $()
+
+          up.push(nodes[upStreamNode])
+          down.push(nodes[downStreamNode])
+          edge.push(this)
 
           self.currentSelection = [
             { set: up, direction: "upstream" },
@@ -215,22 +219,18 @@ export class GraphUI {
         $(document)
           .off("click.graphui")
           .on("click.graphui", function (evt) {
-            // if outside container, do nothing
             const graphContainer = $(self.selector)[0]
             if (!graphContainer || !evt.target || !graphContainer.contains(evt.target)) {
               return
             }
 
-            let isNode = false
             const $everything = self.gv.$nodes.add(self.gv.$edges).add(self.gv.$clusters)
             const node = evt.target.parentNode
-            $everything.each(function () {
-              if (this === node) {
-                isNode = true
-              }
+            const isNode = $everything.is(function () {
+              return this === node
             })
+
             if (!isNode && self.gv) {
-              // Clear all highlights including schema banners
               self.clearSchemaBanners()
 
               if (self.options.resetCb) {
