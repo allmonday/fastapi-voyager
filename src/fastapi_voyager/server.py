@@ -119,14 +119,14 @@ def create_voyager(
 		schemas.sort(key=lambda s: s.name)
 
 		return OptionParam(
-			tags=tags, 
+			tags=tags,
 			schemas=schemas,
 			dot=dot,
 			enable_brief_mode=bool(module_prefix),
 			version=__version__,
 			swagger_url=swagger_url,
 			initial_page_policy=initial_page_policy,
-			has_er_diagram=er_diagram is not None, 
+			has_er_diagram=er_diagram is not None,
 			enable_pydantic_resolve_meta=enable_pydantic_resolve_meta)
 
 
