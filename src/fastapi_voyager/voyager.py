@@ -1,6 +1,5 @@
 
 import pydantic_resolve.constant as const
-from fastapi import FastAPI, routing
 from pydantic import BaseModel
 
 from fastapi_voyager.filter import (
@@ -8,6 +7,7 @@ from fastapi_voyager.filter import (
     filter_subgraph_by_module_prefix,
     filter_subgraph_from_tag_to_schema_by_module_prefix,
 )
+from fastapi_voyager.introspectors import AppIntrospector, RouteInfo
 from fastapi_voyager.render import Renderer
 from fastapi_voyager.type import PK, CoreData, FieldType, Link, LinkType, Route, SchemaNode, Tag
 from fastapi_voyager.type_helper import (
@@ -57,99 +57,169 @@ class Voyager:
         self.hide_primitive_route = hide_primitive_route
         self.show_module = show_module
         self.show_pydantic_resolve_meta = show_pydantic_resolve_meta
-    
 
-    def _get_available_route(self, app: FastAPI):
-        for route in app.routes:
-            if isinstance(route, routing.APIRoute):
-                yield route
-
-
-    def analysis(self, app: FastAPI):
+    def _get_introspector(self, app) -> AppIntrospector:
         """
+        Get the appropriate introspector for the given app.
+
+        Automatically detects the framework type and returns the matching introspector.
+
+        Args:
+            app: A web application instance or AppIntrospector
+
+        Returns:
+            An AppIntrospector instance
+
+        Raises:
+            TypeError: If the app type is not supported
+        """
+        # If it's already an introspector, return it
+        if isinstance(app, AppIntrospector):
+            return app
+
+        # Get the class name for type checking
+        app_class_name = type(app).__name__
+
+        # Try FastAPI
+        try:
+            from fastapi import FastAPI
+            from fastapi_voyager.introspectors import FastAPIIntrospector
+
+            if FastAPIIntrospector and isinstance(app, FastAPI):
+                return FastAPIIntrospector(app)
+        except (ImportError, Exception):
+            pass
+
+        # Try Litestar (check before Django Ninja to avoid Django import issues)
+        try:
+            from litestar import Litestar
+            from fastapi_voyager.introspectors import LitestarIntrospector
+
+            if LitestarIntrospector and isinstance(app, Litestar):
+                return LitestarIntrospector(app)
+        except (ImportError, Exception):
+            pass
+
+        # Try Django Ninja (check by class name first to avoid import if not needed)
+        try:
+            if app_class_name == "NinjaAPI":
+                from ninja import NinjaAPI
+                from fastapi_voyager.introspectors import DjangoNinjaIntrospector
+
+                if DjangoNinjaIntrospector and isinstance(app, NinjaAPI):
+                    return DjangoNinjaIntrospector(app)
+        except (ImportError, Exception):
+            pass
+
+        # If we get here, the app type is not supported
+        raise TypeError(
+            f"Unsupported app type: {type(app).__name__}. "
+            f"Supported types: FastAPI, Django Ninja API, Litestar, or any AppIntrospector implementation. "
+            f"If you're using a different framework, please implement AppIntrospector for that framework. "
+            f"See ADAPTER_EXAMPLE.md for instructions."
+        )
+
+    def analysis(self, app):
+        """
+        Analyze routes and schemas from a web application.
+
+        This method automatically detects the framework type and uses the appropriate
+        introspector. Supported frameworks:
+        - FastAPI (built-in)
+        - Any framework with a custom AppIntrospector implementation
+
+        Args:
+            app: A web application instance (FastAPI, Django Ninja API, etc.)
+                  or an AppIntrospector instance for custom frameworks.
+
         1. get routes which return pydantic schema
             1.1 collect tags and routes, add links tag-> route
             1.2 collect response_model and links route -> response_model
 
         2. iterate schemas, construct the schema/model nodes and their links
         """
+        introspector = self._get_introspector(app)
         schemas: list[type[BaseModel]] = []
 
         # First, group all routes by tag
-        routes_by_tag: dict[str, list] = {}
-        for route in self._get_available_route(app):
-            tags = getattr(route, 'tags', None)
-
+        routes_by_tag: dict[str, list[RouteInfo]] = {}
+        for route_info in introspector.get_routes():
             # using multiple tags is harmful, it's not recommended and will not be supported
-            route_tag = tags[0] if tags else '__default__'  
-            routes_by_tag.setdefault(route_tag, []).append(route)
+            route_tag = route_info.tags[0] if route_info.tags else '__default__'
+            routes_by_tag.setdefault(route_tag, []).append(route_info)
 
         # Then filter by include_tags if provided
         if self.include_tags:
-            filtered_routes_by_tag = {tag: routes for tag, routes in routes_by_tag.items() 
-                                    if tag in self.include_tags}
+            filtered_routes_by_tag = {
+                tag: routes
+                for tag, routes in routes_by_tag.items()
+                if tag in self.include_tags
+            }
         else:
             filtered_routes_by_tag = routes_by_tag
 
         # Process filtered routes
-        for route_tag, routes in filtered_routes_by_tag.items():
-
+        for route_tag, route_infos in filtered_routes_by_tag.items():
             tag_id = f'tag__{route_tag}'
             tag_obj = Tag(id=tag_id, name=route_tag, routes=[])
             self.tags.append(tag_obj)
 
-            for route in routes:
-                # add route and create links
-                route_id = full_class_name(route.endpoint)
-                route_name = route.endpoint.__name__
-                route_module = route.endpoint.__module__
-
+            for route_info in route_infos:
                 # filter by route_name (route.id) if provided
-                if self.route_name is not None and route_id != self.route_name:
+                if self.route_name is not None and route_info.id != self.route_name:
                     continue
 
-                is_primitive_response = is_non_pydantic_type(route.response_model)
+                is_primitive_response = is_non_pydantic_type(route_info.response_model)
                 # filter primitive route if needed
                 if self.hide_primitive_route and is_primitive_response:
                     continue
 
-                self.links.append(Link(
-                    source=tag_id,
-                    source_origin=tag_id,
-                    target=route_id,
-                    target_origin=route_id,
-                    type='tag_route'
-                ))
+                self.links.append(
+                    Link(
+                        source=tag_id,
+                        source_origin=tag_id,
+                        target=route_info.id,
+                        target_origin=route_info.id,
+                        type='tag_route',
+                    )
+                )
+
+                # Get unique_id from extra data if available
+                unique_id = route_info.operation_id
+                if route_info.extra and 'unique_id' in route_info.extra:
+                    unique_id = unique_id or route_info.extra['unique_id']
 
                 route_obj = Route(
-                    id=route_id,
-                    name=route_name,
-                    module=route_module,
-                    unique_id=route.operation_id or route.unique_id,
-                    response_schema=get_type_name(route.response_model),
-                    is_primitive=is_primitive_response
+                    id=route_info.id,
+                    name=route_info.name,
+                    module=route_info.module,
+                    unique_id=unique_id,
+                    response_schema=get_type_name(route_info.response_model),
+                    is_primitive=is_primitive_response,
                 )
                 self.routes.append(route_obj)
                 tag_obj.routes.append(route_obj)
 
                 # add response_models and create links from route -> response_model
-                for schema in get_core_types(route.response_model):
+                for schema in get_core_types(route_info.response_model):
                     if schema and issubclass(schema, BaseModel):
                         is_primitive_response = False
                         target_name = full_class_name(schema)
-                        self.links.append(Link(
-                            source=route_id,
-                            source_origin=route_id,
-                            target=self.generate_node_head(target_name),
-                            target_origin=target_name,
-                            type='route_to_schema'
-                        ))
+                        self.links.append(
+                            Link(
+                                source=route_info.id,
+                                source_origin=route_info.id,
+                                target=self.generate_node_head(target_name),
+                                target_origin=target_name,
+                                type='route_to_schema',
+                            )
+                        )
 
                         schemas.append(schema)
 
         for s in schemas:
             self.analysis_schemas(s)
-        
+
         self.nodes = list(self.node_set.values())
 
 

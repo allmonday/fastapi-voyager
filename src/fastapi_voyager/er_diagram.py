@@ -1,25 +1,26 @@
 from __future__ import annotations
 
-from fastapi_voyager.type_helper import (
-    update_forward_refs,
-    full_class_name,
-    get_core_types,
-    get_type_name
-)
-from fastapi_voyager.type import (
-    FieldInfo,
-    PK,
-    FieldType,
-    LinkType,
-    Link,
-    ModuleNode,
-    SchemaNode,
-)
+from logging import getLogger
+
+from pydantic import BaseModel
+from pydantic_resolve import Entity, ErDiagram, MultipleRelationship, Relationship
+
 from fastapi_voyager.render import Renderer
 from fastapi_voyager.render_style import RenderConfig
-from pydantic import BaseModel
-from pydantic_resolve import ErDiagram, Entity, Relationship, MultipleRelationship
-from logging import getLogger
+from fastapi_voyager.type import (
+    PK,
+    FieldInfo,
+    FieldType,
+    Link,
+    LinkType,
+    SchemaNode,
+)
+from fastapi_voyager.type_helper import (
+    full_class_name,
+    get_core_types,
+    get_type_name,
+    update_forward_refs,
+)
 
 logger = getLogger(__name__)
 

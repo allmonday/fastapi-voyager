@@ -5,9 +5,11 @@
 
 # FastAPI Voyager
 
-Visualize your FastAPI endpoints and explore them interactively.
+Visualize your API endpoints and explore them interactively.
 
 Its vision is to make code easier to read and understand, serving as an ideal documentation tool.
+
+**Now supports multiple frameworks:** FastAPI, Django Ninja, and Litestar.
 
 > This repo is still in early stage, it supports Pydantic v2 only.
 
@@ -20,6 +22,7 @@ Its vision is to make code easier to read and understand, serving as an ideal do
 
 - [Quick Start](#quick-start)
 - [Installation](#installation)
+- [Supported Frameworks](#supported-frameworks)
 - [Features](#features)
 - [Command Line Usage](#command-line-usage)
 - [About pydantic-resolve](#about-pydantic-resolve)
@@ -29,13 +32,15 @@ Its vision is to make code easier to read and understand, serving as an ideal do
 
 ## Quick Start
 
-With simple configuration, fastapi-voyager can be embedded into FastAPI:
+With simple configuration, fastapi-voyager can be embedded into your web application:
 
 ```python
 from fastapi import FastAPI
 from fastapi_voyager import create_voyager
 
 app = FastAPI()
+
+# ... define your routes ...
 
 app.mount('/voyager',
           create_voyager(
@@ -45,11 +50,13 @@ app.mount('/voyager',
             swagger_url="/docs",
             ga_id="G-XXXXXXXXVL",
             initial_page_policy='first',
-            online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master',
+            online_repo_url='https://github.com/your-org/your-repo/blob/master',
             enable_pydantic_resolve_meta=True))
 ```
 
 Visit `http://localhost:8000/voyager` to explore your API visually.
+
+For framework-specific examples (Django Ninja, Litestar), see [Supported Frameworks](#supported-frameworks).
 
 [View full example](https://github.com/allmonday/composition-oriented-development-pattern/blob/master/src/main.py#L48)
 
@@ -81,9 +88,106 @@ voyager -m path.to.your.app.module --server --app api
 
 > **Note**: [Sub-Application mounts](https://fastapi.tiangolo.com/advanced/sub-applications/) are not supported yet, but you can specify the name of the FastAPI application with `--app`. Only a single application (default: `app`) can be selected.
 
+## Supported Frameworks
+
+fastapi-voyager automatically detects your framework and provides the appropriate integration. Currently supported frameworks:
+
+### FastAPI
+
+```python
+from fastapi import FastAPI
+from fastapi_voyager import create_voyager
+
+app = FastAPI()
+
+@app.get("/hello")
+def hello():
+    return {"message": "Hello World"}
+
+# Mount voyager
+app.mount("/voyager", create_voyager(app))
+```
+
+Start with:
+```bash
+uvicorn your_app:app --reload
+# Visit http://localhost:8000/voyager
+```
+
+### Django Ninja
+
+```python
+import os
+import django
+from django.core.asgi import get_asgi_application
+from ninja import NinjaAPI
+from fastapi_voyager import create_voyager
+
+# Configure Django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myapp.settings")
+django.setup()
+
+# Create Django Ninja API
+api = NinjaAPI()
+
+@api.get("/hello")
+def hello(request):
+    return {"message": "Hello World"}
+
+# Create voyager ASGI app
+voyager_app = create_voyager(api)
+
+# Create ASGI application that routes between Django and voyager
+async def application(scope, receive, send):
+    if scope["type"] == "http" and scope["path"].startswith("/voyager"):
+        await voyager_app(scope, receive, send)
+    else:
+        django_app = get_asgi_application()
+        await django_app(scope, receive, send)
+```
+
+Start with:
+```bash
+uvicorn your_app:application --reload
+# Visit http://localhost:8000/voyager
+```
+
+### Litestar
+
+```python
+from litestar import Litestar, get
+from fastapi_voyager import create_voyager
+
+# Create Litestar app
+app = Litestar()
+
+@get("/hello")
+def hello() -> dict:
+    return {"message": "Hello World"}
+
+# Create voyager app (returns a Litestar app)
+voyager_app = create_voyager(app)
+
+# Create ASGI application that routes between main app and voyager
+async def asgi_app(scope, receive, send):
+    if scope["type"] == "http" and scope["path"].startswith("/voyager"):
+        # Remove /voyager prefix for voyager app
+        new_scope = dict(scope)
+        new_scope["path"] = scope["path"][8:] or "/"
+        await voyager_app(new_scope, receive, send)
+    else:
+        await app(scope, receive, send)
+```
+
+Start with:
+```bash
+uvicorn your_app:asgi_app --reload
+# Visit http://localhost:8000/voyager
+```
+
 ## Features
 
-fastapi-voyager is designed for scenarios using FastAPI as internal API integration endpoints. It helps visualize dependencies and serves as an architecture tool to identify implementation issues such as wrong relationships, overfetching, and more.
+fastapi-voyager is designed for scenarios using web frameworks with Pydantic models (FastAPI, Django Ninja, Litestar). It helps visualize dependencies and serves as an architecture tool to identify implementation issues such as wrong relationships, overfetching, and more.
 
 **Best Practice**: When building view models following the ER model pattern, fastapi-voyager can fully realize its potential - quickly identifying which APIs use specific entities and vice versa.
 
@@ -229,6 +333,21 @@ uv pip install ".[dev]"
 uvicorn tests.programatic:app --reload
 ```
 
+### Test Different Frameworks
+
+You can test the framework-specific examples:
+
+```bash
+# FastAPI example
+uvicorn tests.fastapi.embedding:app --reload
+
+# Django Ninja example
+uvicorn tests.django_ninja.embedding:app --reload
+
+# Litestar example
+uvicorn tests.litestar.embedding:asgi_app --reload
+```
+
 Visit `http://localhost:8000/voyager` to see changes.
 
 ### Setup Git Hooks (Optional)
@@ -260,9 +379,12 @@ This will run Prettier automatically before each commit. See [`.githooks/README.
 
 ## Dependencies
 
-- [FastAPI](https://fastapi.tiangolo.com/)
 - [pydantic-resolve](https://github.com/allmonday/pydantic-resolve)
 - [Quasar Framework](https://quasar.dev/)
+### Dev dependencies
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Django Ninja](https://django-ninja.rest-framework.com/)
+- [Litestar](https://litestar.dev/)
 
 ## Credits
 

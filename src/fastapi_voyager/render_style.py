@@ -2,7 +2,6 @@
 Style constants and configuration for rendering DOT graphs and HTML tables.
 """
 from dataclasses import dataclass, field
-from typing import Literal
 
 
 @dataclass

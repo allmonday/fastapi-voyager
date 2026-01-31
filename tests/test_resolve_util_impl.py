@@ -1,7 +1,9 @@
-from pydantic import BaseModel
 from typing import Annotated
+
+from pydantic import BaseModel
 from pydantic_resolve import Collector
 from pydantic_resolve.utils.er_diagram import LoaderInfo
+
 from fastapi_voyager.pydantic_resolve_util import analysis_pydantic_resolve_fields
 
 

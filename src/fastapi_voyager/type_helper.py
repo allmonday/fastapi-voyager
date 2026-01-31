@@ -2,13 +2,13 @@ import inspect
 import logging
 import os
 from types import UnionType
-from typing import Annotated, Any, Generic, Union, get_args, get_origin, ForwardRef
+from typing import Annotated, Any, ForwardRef, Generic, Union, get_args, get_origin
 
 import pydantic_resolve.constant as const
 from pydantic import BaseModel
 
-from fastapi_voyager.type import FieldInfo
 from fastapi_voyager.pydantic_resolve_util import analysis_pydantic_resolve_fields
+from fastapi_voyager.type import FieldInfo
 
 logger = logging.getLogger(__name__)
 

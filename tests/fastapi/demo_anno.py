@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from typing import Annotated
+
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from pydantic_resolve import Resolver, ensure_subset
 
 from tests.service.schema.schema import Member, Sprint, Story, Task
-from tests.service.schema.extra import A, B 
 
 app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
 

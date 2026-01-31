@@ -1,9 +1,11 @@
 from __future__ import annotations
-from typing import Literal
-from pydantic import BaseModel, Field
-from pydantic_resolve import Relationship, MultipleRelationship, Link
-from .base_entity import BaseEntity
 
+from typing import Literal
+
+from pydantic import BaseModel, Field
+from pydantic_resolve import Link, MultipleRelationship, Relationship
+
+from .base_entity import BaseEntity
 
 
 class Member(BaseModel):

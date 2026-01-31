@@ -1,302 +1,199 @@
-from pathlib import Path
-from typing import Literal
-
-from fastapi import APIRouter, FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from starlette.middleware.gzip import GZipMiddleware
-
-from fastapi_voyager.render import Renderer
-from fastapi_voyager.type import CoreData, SchemaNode, Tag
-from fastapi_voyager.type_helper import get_source, get_vscode_link
-from fastapi_voyager.version import __version__
-from fastapi_voyager.voyager import Voyager
-from pydantic_resolve import ErDiagram
-from fastapi_voyager.er_diagram import VoyagerErDiagram
-
-WEB_DIR = Path(__file__).parent / "web"
-WEB_DIR.mkdir(exist_ok=True)
-
-GA_PLACEHOLDER = "<!-- GA_SNIPPET -->"
-VERSION_PLACEHOLDER = "<!-- VERSION_PLACEHOLDER -->"
-
-def _build_ga_snippet(ga_id: str | None) -> str:
-	if not ga_id:
-		return ""
-
-	return f"""    <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){{dataLayer.push(arguments);}}
-      gtag('js', new Date());
-
-      gtag('config', '{ga_id}');
-    </script>
 """
+FastAPI-voyager server module with framework adapter support.
 
-INITIAL_PAGE_POLICY = Literal['first', 'full', 'empty']
+This module provides the main `create_voyager` function that automatically
+detects the framework type and returns an appropriately configured voyager UI.
+"""
+from typing import Any, Literal
 
-# ---------- setup ----------
+from pydantic_resolve import ErDiagram
 
-class OptionParam(BaseModel):
-	tags: list[Tag]
-	schemas: list[SchemaNode]
-	dot: str
-	enable_brief_mode: bool
-	version: str
-	initial_page_policy: INITIAL_PAGE_POLICY
-	swagger_url: str | None = None
-	has_er_diagram: bool = False
-	enable_pydantic_resolve_meta: bool = False
+from fastapi_voyager.adapters import DjangoNinjaAdapter, FastAPIAdapter, LitestarAdapter
 
-class Payload(BaseModel):
-	tags: list[str] | None = None
-	schema_name: str | None = None
-	schema_field: str | None = None
-	route_name: str | None = None
-	show_fields: str = 'object'
-	brief: bool = False
-	hide_primitive_route: bool = False
-	show_module: bool = True
-	show_pydantic_resolve_meta: bool = False
-
-# ---------- search ----------
-class SearchResultOptionParam(BaseModel):
-	tags: list[Tag]
-
-class SchemaSearchPayload(BaseModel):  # leave tag, route out
-	schema_name: str | None = None
-	schema_field: str | None = None
-	show_fields: str = 'object'
-	brief: bool = False
-	hide_primitive_route: bool = False
-	show_module: bool = True
-	show_pydantic_resolve_meta: bool = False
+INITIAL_PAGE_POLICY = Literal["first", "full", "empty"]
 
 
-# ---------- er diagram ----------
-class ErDiagramPayload(BaseModel):
-	show_fields: str = 'object'
-	show_module: bool = True
+def _get_adapter(
+    target_app: Any,
+    module_color: dict[str, str] | None = None,
+    gzip_minimum_size: int | None = 500,
+    module_prefix: str | None = None,
+    swagger_url: str | None = None,
+    online_repo_url: str | None = None,
+    initial_page_policy: INITIAL_PAGE_POLICY = "first",
+    ga_id: str | None = None,
+    er_diagram: ErDiagram | None = None,
+    enable_pydantic_resolve_meta: bool = False,
+) -> Any:
+    """
+    Get the appropriate adapter for the given target app.
+
+    Automatically detects the framework type and returns the matching adapter.
+
+    Args:
+        target_app: The web application instance to introspect
+        module_color: Optional color mapping for modules
+        gzip_minimum_size: Minimum size for gzip compression
+        module_prefix: Optional module prefix for filtering
+        swagger_url: Optional custom URL to Swagger documentation
+        online_repo_url: Optional online repository URL for source links
+        initial_page_policy: Initial page display policy
+        ga_id: Optional Google Analytics ID
+        er_diagram: Optional ER diagram from pydantic-resolve
+        enable_pydantic_resolve_meta: Enable pydantic-resolve metadata display
+
+    Returns:
+        An adapter instance for the detected framework
+
+    Raises:
+        TypeError: If the app type is not supported
+    """
+    # Get the class name for type checking
+    app_class_name = type(target_app).__name__
+
+    # Try FastAPI
+    try:
+        from fastapi import FastAPI
+
+        if isinstance(target_app, FastAPI):
+            return FastAPIAdapter(
+                target_app=target_app,
+                module_color=module_color,
+                gzip_minimum_size=gzip_minimum_size,
+                module_prefix=module_prefix,
+                swagger_url=swagger_url,
+                online_repo_url=online_repo_url,
+                initial_page_policy=initial_page_policy,
+                ga_id=ga_id,
+                er_diagram=er_diagram,
+                enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
+            )
+    except (ImportError, Exception):
+        pass
+
+    # Try Litestar (check before Django Ninja to avoid Django import issues)
+    try:
+        from litestar import Litestar
+
+        if isinstance(target_app, Litestar):
+            return LitestarAdapter(
+                target_app=target_app,
+                module_color=module_color,
+                gzip_minimum_size=gzip_minimum_size,
+                module_prefix=module_prefix,
+                swagger_url=swagger_url,
+                online_repo_url=online_repo_url,
+                initial_page_policy=initial_page_policy,
+                ga_id=ga_id,
+                er_diagram=er_diagram,
+                enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
+            )
+    except (ImportError, Exception):
+        pass
+
+    # Try Django Ninja (check by class name first to avoid import if not needed)
+    try:
+        if app_class_name == "NinjaAPI":
+            from ninja import NinjaAPI
+
+            if isinstance(target_app, NinjaAPI):
+                return DjangoNinjaAdapter(
+                    target_app=target_app,
+                    module_color=module_color,
+                    gzip_minimum_size=gzip_minimum_size,  # Note: ignored for Django
+                    module_prefix=module_prefix,
+                    swagger_url=swagger_url,
+                    online_repo_url=online_repo_url,
+                    initial_page_policy=initial_page_policy,
+                    ga_id=ga_id,
+                    er_diagram=er_diagram,
+                    enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
+                )
+    except (ImportError, Exception):
+        pass
+
+    # If we get here, the app type is not supported
+    raise TypeError(
+        f"Unsupported app type: {type(target_app).__name__}. "
+        f"Supported types: FastAPI, Django Ninja API, Litestar. "
+        f"If you're using a different framework, please implement a VoyagerAdapter for that framework. "
+        f"See fastapi_voyager/adapters/ for examples."
+    )
+
 
 def create_voyager(
-	target_app: FastAPI,
-	module_color: dict[str, str] | None = None,
-	gzip_minimum_size: int | None = 500,
-	module_prefix: str | None = None,
-	swagger_url: str | None = None,
-	online_repo_url: str | None = None,
-	initial_page_policy: INITIAL_PAGE_POLICY = 'first',
-	ga_id: str | None = None,
-	er_diagram: ErDiagram | None = None,
-	enable_pydantic_resolve_meta: bool = False,
-) -> FastAPI:
-	router = APIRouter(tags=['fastapi-voyager'])
+    target_app: Any,
+    module_color: dict[str, str] | None = None,
+    gzip_minimum_size: int | None = 500,
+    module_prefix: str | None = None,
+    swagger_url: str | None = None,
+    online_repo_url: str | None = None,
+    initial_page_policy: INITIAL_PAGE_POLICY = "first",
+    ga_id: str | None = None,
+    er_diagram: ErDiagram | None = None,
+    enable_pydantic_resolve_meta: bool = False,
+) -> Any:
+    """
+    Create a voyager UI application for the given target app.
 
-	@router.post("/er-diagram", response_class=PlainTextResponse)
-	def get_er_diagram(payload: ErDiagramPayload) -> str:
-		if er_diagram:
-			return VoyagerErDiagram(
-				er_diagram,
-				show_fields=payload.show_fields,
-				show_module=payload.show_module ).render_dot()
-		return ''
+    This function automatically detects the framework type (FastAPI, Django Ninja, or Litestar)
+    and returns an appropriately configured voyager UI application.
 
-	@router.get("/dot", response_model=OptionParam)
-	def get_dot() -> str:
-		voyager = Voyager(module_color=module_color)
-		voyager.analysis(target_app)
-		dot = voyager.render_dot()
+    For FastAPI: Returns a FastAPI app that can be mounted
+    For Django Ninja: Returns an ASGI application
+    For Litestar: Returns a Litestar app
 
-		# include tags and their routes
-		tags = voyager.tags
-		for t in tags:
-			t.routes.sort(key=lambda r: r.name)
-		tags.sort(key=lambda t: t.name)
+    Args:
+        target_app: The web application to visualize
+        module_color: Optional color mapping for modules (e.g., {"myapp": "blue"})
+        gzip_minimum_size: Minimum response size for gzip compression (set to <0 to disable)
+        module_prefix: Optional module prefix for filtering/organization
+        swagger_url: Optional custom URL to Swagger/OpenAPI documentation
+        online_repo_url: Optional base URL for online repository source links
+        initial_page_policy: Initial page display policy ('first', 'full', or 'empty')
+        ga_id: Optional Google Analytics tracking ID
+        er_diagram: Optional ER diagram from pydantic-resolve
+        enable_pydantic_resolve_meta: Enable display of pydantic-resolve metadata
 
-		schemas = voyager.nodes[:]
-		schemas.sort(key=lambda s: s.name)
+    Returns:
+        A framework-specific application object that provides the voyager UI
 
-		return OptionParam(
-			tags=tags, 
-			schemas=schemas,
-			dot=dot,
-			enable_brief_mode=bool(module_prefix),
-			version=__version__,
-			swagger_url=swagger_url,
-			initial_page_policy=initial_page_policy,
-			has_er_diagram=er_diagram is not None, 
-			enable_pydantic_resolve_meta=enable_pydantic_resolve_meta)
+    Example:
+        # FastAPI
+        from fastapi import FastAPI
+        from fastapi_voyager import create_voyager
 
+        app = FastAPI()
+        voyager_app = create_voyager(app)
+        app.mount("/voyager", voyager_app)
 
-	@router.post("/dot-search", response_model=SearchResultOptionParam)
-	def get_search_dot(payload: SchemaSearchPayload):
-		voyager = Voyager(
-			schema=payload.schema_name,
-			schema_field=payload.schema_field,
-			show_fields=payload.show_fields,
-			module_color=module_color,
-			hide_primitive_route=payload.hide_primitive_route,
-			show_module=payload.show_module,
-			show_pydantic_resolve_meta=payload.show_pydantic_resolve_meta,
-		)
-		voyager.analysis(target_app)
-		tags = voyager.calculate_filtered_tag_and_route()
+        # Django Ninja
+        from ninja import NinjaAPI
+        from fastapi_voyager import create_voyager
 
-		for t in tags:
-			t.routes.sort(key=lambda r: r.name)
-		tags.sort(key=lambda t: t.name)
+        api = NinjaAPI()
+        voyager_asgi_app = create_voyager(api)
+        # See django_ninja tests for integration examples
 
-		return SearchResultOptionParam(tags=tags)
+        # Litestar
+        from litestar import Litestar
+        from fastapi_voyager import create_voyager
 
-	@router.post("/dot", response_class=PlainTextResponse)
-	def get_filtered_dot(payload: Payload) -> str:
-		voyager = Voyager(
-			include_tags=payload.tags,
-			schema=payload.schema_name,
-			schema_field=payload.schema_field,
-			show_fields=payload.show_fields,
-			module_color=module_color,
-			route_name=payload.route_name,
-			hide_primitive_route=payload.hide_primitive_route,
-			show_module=payload.show_module,
-			show_pydantic_resolve_meta=payload.show_pydantic_resolve_meta,
-		)
-		voyager.analysis(target_app)
-		if payload.brief:
-			if payload.tags:
-				return voyager.render_tag_level_brief_dot(module_prefix=module_prefix)
-			else:
-				return voyager.render_overall_brief_dot(module_prefix=module_prefix)
-		else:
-			return voyager.render_dot()
+        app = Litestar()
+        voyager_app = create_voyager(app)
+        # Mount or integrate as needed
+    """
+    adapter = _get_adapter(
+        target_app=target_app,
+        module_color=module_color,
+        gzip_minimum_size=gzip_minimum_size,
+        module_prefix=module_prefix,
+        swagger_url=swagger_url,
+        online_repo_url=online_repo_url,
+        initial_page_policy=initial_page_policy,
+        ga_id=ga_id,
+        er_diagram=er_diagram,
+        enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
+    )
 
-	@router.post("/dot-core-data", response_model=CoreData)
-	def get_filtered_dot_core_data(payload: Payload) -> str:
-		voyager = Voyager(
-			include_tags=payload.tags,
-			schema=payload.schema_name,
-			schema_field=payload.schema_field,
-			show_fields=payload.show_fields,
-			module_color=module_color,
-			route_name=payload.route_name,
-		)
-		voyager.analysis(target_app)
-		return voyager.dump_core_data()
-
-	@router.post('/dot-render-core-data', response_class=PlainTextResponse)
-	def render_dot_from_core_data(core_data: CoreData) -> str:
-		renderer = Renderer(
-			show_fields=core_data.show_fields,
-			module_color=core_data.module_color,
-			schema=core_data.schema)
-		return renderer.render_dot(core_data.tags, core_data.routes, core_data.nodes, core_data.links)
-
-	@router.get("/", response_class=HTMLResponse)
-	def index():
-		index_file = WEB_DIR / "index.html"
-		if index_file.exists():
-			content = index_file.read_text(encoding="utf-8")
-			content = content.replace(GA_PLACEHOLDER, _build_ga_snippet(ga_id))
-			content = content.replace(VERSION_PLACEHOLDER, f"?v={__version__}")
-			return content
-		# fallback simple page if index.html missing
-		return """
-		<!doctype html>
-		<html>
-		<head><meta charset=\"utf-8\"><title>Graphviz Preview</title></head>
-		<body>
-		  <p>index.html not found. Create one under src/fastapi_voyager/web/index.html</p>
-		</body>
-		</html>
-		"""
-	
-	class SourcePayload(BaseModel):
-		schema_name: str
-
-	@router.post("/source")
-	def get_object_by_module_name(payload: SourcePayload):
-		"""
-		input: __module__ + __name__, eg: tests.demo.PageStories
-		output: source code of the object
-		"""
-		try:
-			components = payload.schema_name.split('.')
-			if len(components) < 2:
-				return JSONResponse(
-					status_code=400, 
-					content={"error": "Invalid schema name format. Expected format: module.ClassName"}
-				)
-			
-			module_name = '.'.join(components[:-1])
-			class_name = components[-1]
-			
-			mod = __import__(module_name, fromlist=[class_name])
-			obj = getattr(mod, class_name)
-			source_code = get_source(obj)
-			
-			return JSONResponse(content={"source_code": source_code})
-		except ImportError as e:
-			return JSONResponse(
-				status_code=404,
-				content={"error": f"Module not found: {e}"}
-			)
-		except AttributeError as e:
-			return JSONResponse(
-				status_code=404,
-				content={"error": f"Class not found: {e}"}
-			)
-		except Exception as e:
-			return JSONResponse(
-				status_code=500,
-				content={"error": f"Internal error: {str(e)}"}
-			)
-
-	@router.post("/vscode-link")
-	def get_vscode_link_by_module_name(payload: SourcePayload):
-		"""
-		input: __module__ + __name__, eg: tests.demo.PageStories
-		output: source path of the object
-		"""
-		try:
-			components = payload.schema_name.split('.')
-			if len(components) < 2:
-				return JSONResponse(
-					status_code=400, 
-					content={"error": "Invalid schema name format. Expected format: module.ClassName"}
-				)
-			
-			module_name = '.'.join(components[:-1])
-			class_name = components[-1]
-			
-			mod = __import__(module_name, fromlist=[class_name])
-			obj = getattr(mod, class_name)
-			link = get_vscode_link(obj, online_repo_url=online_repo_url)
-			
-			return JSONResponse(content={"link": link})
-		except ImportError as e:
-			return JSONResponse(
-				status_code=404,
-				content={"error": f"Module not found: {e}"}
-			)
-		except AttributeError as e:
-			return JSONResponse(
-				status_code=404,
-				content={"error": f"Class not found: {e}"}
-			)
-		except Exception as e:
-			return JSONResponse(
-				status_code=500,
-				content={"error": f"Internal error: {str(e)}"}
-			)
-        
-	app = FastAPI(title="fastapi-voyager demo server")
-	if gzip_minimum_size is not None and gzip_minimum_size >= 0:
-		app.add_middleware(GZipMiddleware, minimum_size=gzip_minimum_size)
-
-	app.mount("/fastapi-voyager-static", StaticFiles(directory=str(WEB_DIR)), name="static")
-	app.include_router(router)
-
-	return app
-
+    return adapter.create_app()

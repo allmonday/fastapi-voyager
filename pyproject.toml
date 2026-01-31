@@ -8,7 +8,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 keywords = ["fastapi", "visualization", "routing", "openapi"]
 dependencies = [
-  "fastapi>=0.110",
   "pydantic-resolve>=2.4.3",
   "jinja2>=3.0.0"
 ]
@@ -32,7 +31,7 @@ Homepage = "https://github.com/allmonday/fastapi-voyager"
 Source = "https://github.com/allmonday/fastapi-voyager"
 
 [project.optional-dependencies]
-dev = ["uvicorn", "ruff", "pytest"]
+dev = ["uvicorn", "ruff", "pytest", "fastapi>=0.110", "django-ninja", "litestar"]
 
 [build-system]
 requires = ["hatchling"]
@@ -40,6 +39,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.version]
 path = "src/fastapi_voyager/version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fastapi_voyager"]
 
 [tool.uv]
 # You can pin resolution or indexes here later.

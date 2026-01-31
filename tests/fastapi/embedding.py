@@ -1,6 +1,7 @@
 from fastapi_voyager import create_voyager
-# from tests.demo_anno import app
-from tests.demo import app, diagram
+
+# from tests.fastapi.demo_anno import app
+from tests.fastapi.demo import app, diagram
 
 app.mount(
     '/voyager', 
