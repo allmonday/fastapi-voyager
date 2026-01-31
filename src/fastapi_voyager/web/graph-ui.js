@@ -1,7 +1,14 @@
 export class GraphUI {
-  // Highlight style constants
+  // ====================
+  // Constants
+  // ====================
+
   static HIGHLIGHT_COLOR = "#822dba"
   static HIGHLIGHT_STROKE_WIDTH = "3.0"
+
+  // ====================
+  // Constructor
+  // ====================
 
   constructor(selector = "#graph", options = {}) {
     this.selector = selector
@@ -12,6 +19,10 @@ export class GraphUI {
     this.currentSelection = []
     this._init()
   }
+
+  // ====================
+  // Highlight Methods
+  // ====================
 
   _highlight(mode = "bidirectional") {
     let highlightedNodes = $()
@@ -72,6 +83,10 @@ export class GraphUI {
     return $result
   }
 
+  // ====================
+  // Schema Banner Methods
+  // ====================
+
   highlightSchemaBanner(node) {
     const polygons = node.querySelectorAll("polygon")
     const outerFrame = polygons[0]
@@ -126,6 +141,10 @@ export class GraphUI {
     return obj
   }
 
+  // ====================
+  // Initialization & Events
+  // ====================
+
   _init() {
     const self = this
     $(this.selector).graphviz({
@@ -162,18 +181,18 @@ export class GraphUI {
         })
 
         edges.on("click.graphui", function (event) {
-          const up = $()
-          const down = $()
-          const edge = $()
           const [upStreamNode, downStreamNode] = event.currentTarget.dataset.name.split("->")
           const nodes = self.gv.nodesByName()
-          up.push(nodes[upStreamNode])
-          down.push(nodes[downStreamNode])
-          edge.push(this)
-          const upObj = { set: up, direction: "upstream" }
-          const downObj = { set: down, direction: "downstream" }
-          const edgeObj = { set: edge, direction: "single" }
-          self.currentSelection = [upObj, downObj, edgeObj]
+
+          const up = $().push(nodes[upStreamNode])
+          const down = $().push(nodes[downStreamNode])
+          const edge = $().push(this)
+
+          self.currentSelection = [
+            { set: up, direction: "upstream" },
+            { set: down, direction: "downstream" },
+            { set: edge, direction: "single" },
+          ]
 
           self._highlightEdgeNodes()
         })
@@ -222,6 +241,10 @@ export class GraphUI {
       },
     })
   }
+
+  // ====================
+  // Render Method
+  // ====================
 
   async render(dotSrc, resetZoom = true) {
     const height = this.options.height || "100%"
