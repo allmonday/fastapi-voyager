@@ -114,6 +114,18 @@ export class GraphUI {
     }
   }
 
+  _applyNodeHighlight(node) {
+    const set = $()
+    set.push(node)
+    const obj = { set, direction: "bidirectional" }
+
+    this.clearSchemaBanners()
+    this.currentSelection = [obj]
+    this._highlight()
+
+    return obj
+  }
+
   _init() {
     const self = this
     $(this.selector).graphviz({
@@ -131,20 +143,8 @@ export class GraphUI {
         nodes.on("dblclick.graphui", function (event) {
           event.stopPropagation()
 
-          const set = $()
-          set.push(this)
-          const obj = { set, direction: "bidirectional" }
+          self._applyNodeHighlight(this)
 
-          // Clear all previous banners and highlights
-          self.clearSchemaBanners()
-
-          // Set current selection for highlight (same as single click)
-          self.currentSelection = [obj]
-
-          // Apply highlight to related nodes (same as single click)
-          self._highlight()
-
-          // Apply purple border to the double-clicked node (additional visual)
           try {
             self.highlightSchemaBanner(this)
           } catch (e) {
@@ -179,10 +179,6 @@ export class GraphUI {
         })
 
         nodes.on("click.graphui", function (event) {
-          const set = $()
-          set.push(this)
-          const obj = { set, direction: "bidirectional" }
-
           const schemaName = event.currentTarget.dataset.name
           if (event.shiftKey && self.options.onSchemaShiftClick) {
             if (schemaName) {
@@ -193,10 +189,7 @@ export class GraphUI {
               }
             }
           } else {
-            // Clear any previous schema banners before highlighting
-            self.clearSchemaBanners()
-            self.currentSelection = [obj]
-            self._highlight()
+            self._applyNodeHighlight(this)
           }
         })
 
