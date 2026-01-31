@@ -1,4 +1,8 @@
 export class GraphUI {
+  // Highlight style constants
+  static HIGHLIGHT_COLOR = "#822dba"
+  static HIGHLIGHT_STROKE_WIDTH = "3.0"
+
   constructor(selector = "#graph", options = {}) {
     this.selector = selector
     this.options = options // e.g. { onSchemaClick: (name) => {} }
@@ -82,8 +86,8 @@ export class GraphUI {
         )
         outerFrame.setAttribute("data-original-fill", outerFrame.getAttribute("fill") || "")
       }
-      outerFrame.setAttribute("stroke", "#822dba")
-      outerFrame.setAttribute("stroke-width", "3.0")
+      outerFrame.setAttribute("stroke", GraphUI.HIGHLIGHT_COLOR)
+      outerFrame.setAttribute("stroke-width", GraphUI.HIGHLIGHT_STROKE_WIDTH)
     }
 
     if (titleBg) {
@@ -95,8 +99,8 @@ export class GraphUI {
         )
         titleBg.setAttribute("data-original-fill", titleBg.getAttribute("fill") || "")
       }
-      titleBg.setAttribute("fill", "#822dba")
-      titleBg.setAttribute("stroke", "#822dba")
+      titleBg.setAttribute("fill", GraphUI.HIGHLIGHT_COLOR)
+      titleBg.setAttribute("stroke", GraphUI.HIGHLIGHT_COLOR)
     }
   }
 
