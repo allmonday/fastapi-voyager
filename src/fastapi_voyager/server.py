@@ -48,6 +48,9 @@ def _get_adapter(
     Raises:
         TypeError: If the app type is not supported
     """
+    # Get the class name for type checking
+    app_class_name = type(target_app).__name__
+
     # Try FastAPI
     try:
         from fastapi import FastAPI
@@ -65,30 +68,10 @@ def _get_adapter(
                 er_diagram=er_diagram,
                 enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
             )
-    except ImportError:
+    except (ImportError, Exception):
         pass
 
-    # Try Django Ninja
-    try:
-        from ninja import NinjaAPI
-
-        if isinstance(target_app, NinjaAPI):
-            return DjangoNinjaAdapter(
-                target_app=target_app,
-                module_color=module_color,
-                gzip_minimum_size=gzip_minimum_size,  # Note: ignored for Django
-                module_prefix=module_prefix,
-                swagger_url=swagger_url,
-                online_repo_url=online_repo_url,
-                initial_page_policy=initial_page_policy,
-                ga_id=ga_id,
-                er_diagram=er_diagram,
-                enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
-            )
-    except ImportError:
-        pass
-
-    # Try Litestar
+    # Try Litestar (check before Django Ninja to avoid Django import issues)
     try:
         from litestar import Litestar
 
@@ -105,7 +88,28 @@ def _get_adapter(
                 er_diagram=er_diagram,
                 enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
             )
-    except ImportError:
+    except (ImportError, Exception):
+        pass
+
+    # Try Django Ninja (check by class name first to avoid import if not needed)
+    try:
+        if app_class_name == "NinjaAPI":
+            from ninja import NinjaAPI
+
+            if isinstance(target_app, NinjaAPI):
+                return DjangoNinjaAdapter(
+                    target_app=target_app,
+                    module_color=module_color,
+                    gzip_minimum_size=gzip_minimum_size,  # Note: ignored for Django
+                    module_prefix=module_prefix,
+                    swagger_url=swagger_url,
+                    online_repo_url=online_repo_url,
+                    initial_page_policy=initial_page_policy,
+                    ga_id=ga_id,
+                    er_diagram=er_diagram,
+                    enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
+                )
+    except (ImportError, Exception):
         pass
 
     # If we get here, the app type is not supported

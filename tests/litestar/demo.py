@@ -98,43 +98,35 @@ type DataModelPageStory = DataModel[PageStory]
 class DemoController(Controller):
     path = "/demo"
 
+    @get("/sprints", tags=['for-restapi', 'group_a'])
+    def get_sprints(self) -> list[Sprint]:
+        return []
 
-@get("/sprints", tags=['for-restapi', 'group_a'])
-def get_sprints() -> list[Sprint]:
-    return []
+    @get("/page_overall", tags=['for-ui-page'])
+    async def get_page_info(self) -> PageOverallWrap:
+        page_overall = PageOverallWrap(content="Page Overall Content", sprints=[])
+        return await Resolver().resolve(page_overall)
 
+    @get("/page_info/", tags=['for-ui-page'])
+    def get_page_stories(self) -> PageStories:
+        return {}
 
-@get("/page_overall", tags=['for-ui-page'])
-async def get_page_info() -> PageOverallWrap:
-    page_overall = PageOverallWrap(content="Page Overall Content", sprints=[])
-    return await Resolver().resolve(page_overall)
+    @get("/page_test_1/", tags=['for-ui-page'])
+    def get_page_test_1(self) -> DataModelPageStory:
+        return {}
 
+    @get("/page_test_2/", tags=['for-ui-page'])
+    def get_page_test_2(self) -> A:
+        return {}
 
-@get("/page_info/", tags=['for-ui-page'])
-def get_page_stories() -> PageStories:
-    return {}
+    @get("/page_test_3/", tags=['for-ui-page'])
+    def get_page_test_3_long_long_long_name(self) -> bool:
+        return True
 
+    @get("/page_test_4/", tags=['for-ui-page'])
+    def get_page_test_3_no_response_model(self) -> bool:
+        return True
 
-@get("/page_test_1/", tags=['for-ui-page'])
-def get_page_test_1() -> DataModelPageStory:
-    return {}
-
-
-@get("/page_test_2/", tags=['for-ui-page'])
-def get_page_test_2() -> A:
-    return {}
-
-
-@get("/page_test_3/", tags=['for-ui-page'])
-def get_page_test_3_long_long_long_name() -> bool:
-    return True
-
-
-@get("/page_test_4/", tags=['for-ui-page'])
-def get_page_test_3_no_response_model() -> bool:
-    return True
-
-
-@get("/page_test_5/", tags=['long_long_long_tag_name', 'group_b'])
-def get_page_test_3_no_response_model_long_long_long_name() -> bool:
-    return True
+    @get("/page_test_5/", tags=['long_long_long_tag_name', 'group_b'])
+    def get_page_test_3_no_response_model_long_long_long_name(self) -> bool:
+        return True

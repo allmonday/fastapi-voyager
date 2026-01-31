@@ -36,30 +36,56 @@ class LitestarIntrospector(AppIntrospector):
         """
         for route in self.app.routes:
             try:
-                # Skip routes that don't have a handler
-                if not hasattr(route, "handler"):
+                # Skip routes without path or methods
+                if not hasattr(route, "path") or not hasattr(route, "methods"):
                     continue
 
-                handler = route.handler
+                # Skip Litestar's auto-generated schema routes
+                if hasattr(route, "path") and route.path.startswith("/schema"):
+                    continue
+
+                # Get the handler function from route_handlers
+                handler = None
+                handler_obj = None
+                if hasattr(route, "route_handlers") and route.route_handlers:
+                    # Find the GET handler (or any non-OPTIONS handler)
+                    for route_handler in route.route_handlers:
+                        if hasattr(route_handler, "fn") and hasattr(route_handler.fn, "__name__"):
+                            # Store the route handler object for tags
+                            if hasattr(route_handler, "http_methods") and "GET" in route_handler.http_methods:
+                                handler_obj = route_handler
+                            handler = route_handler.fn
+                            if handler_obj:
+                                break
+
                 if not handler:
                     continue
 
-                # Extract tags from route
+                # Skip handlers with names starting with _ (internal/private)
+                if hasattr(handler, "__name__") and handler.__name__.startswith("_"):
+                    continue
+
+                # Extract tags from the route handler object
                 tags = []
-                if hasattr(route, "tags"):
-                    tags = list(route.tags) if route.tags else []
+                if handler_obj and hasattr(handler_obj, "tags") and handler_obj.tags:
+                    tags = list(handler_obj.tags)
+
+                # Get return type from handler's annotations
+                return_model = type(None)
+                if hasattr(handler, "__annotations__") and "return" in handler.__annotations__:
+                    return_model = handler.__annotations__["return"]
 
                 yield RouteInfo(
                     id=self._get_route_id(handler),
                     name=handler.__name__,
                     module=handler.__module__,
-                    operation_id=self._get_operation_id(route),
+                    operation_id=self._get_operation_id(route, handler),
                     tags=tags,
                     endpoint=handler,
-                    response_model=self._get_response_model(route),
+                    response_model=return_model,
                     extra={
-                        "methods": list(route.http_methods) if hasattr(route, "http_methods") else [],
-                        "path": route.path if hasattr(route, "path") else "",
+                        "methods": list(route.methods) if hasattr(route, "methods") else [],
+                        "path": route.path,
                     },
                 )
             except (AttributeError, TypeError):
@@ -91,12 +117,13 @@ class LitestarIntrospector(AppIntrospector):
         from fastapi_voyager.type_helper import full_class_name
         return full_class_name(handler)
 
-    def _get_operation_id(self, route) -> str:
+    def _get_operation_id(self, route, handler) -> str:
         """
         Extract or generate the operation ID for the route.
 
         Args:
             route: The Litestar route object
+            handler: The handler function
 
         Returns:
             An operation ID string
@@ -104,6 +131,9 @@ class LitestarIntrospector(AppIntrospector):
         # Litestar might not have operation_id, so we generate one
         if hasattr(route, "operation_id"):
             return route.operation_id
+        # Fallback to using the handler function name
+        if hasattr(handler, "__name__"):
+            return handler.__name__
         # Fallback to using the path
         if hasattr(route, "path"):
             return route.path

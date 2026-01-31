@@ -77,37 +77,38 @@ class Voyager:
         if isinstance(app, AppIntrospector):
             return app
 
+        # Get the class name for type checking
+        app_class_name = type(app).__name__
+
         # Try FastAPI
         try:
             from fastapi import FastAPI
-
             from fastapi_voyager.introspectors import FastAPIIntrospector
 
             if FastAPIIntrospector and isinstance(app, FastAPI):
                 return FastAPIIntrospector(app)
-        except ImportError:
+        except (ImportError, Exception):
             pass
 
-        # Try Django Ninja
-        try:
-            from ninja import NinjaAPI
-
-            from fastapi_voyager.introspectors import DjangoNinjaIntrospector
-
-            if DjangoNinjaIntrospector and isinstance(app, NinjaAPI):
-                return DjangoNinjaIntrospector(app)
-        except ImportError:
-            pass
-
-        # Try Litestar
+        # Try Litestar (check before Django Ninja to avoid Django import issues)
         try:
             from litestar import Litestar
-
             from fastapi_voyager.introspectors import LitestarIntrospector
 
             if LitestarIntrospector and isinstance(app, Litestar):
                 return LitestarIntrospector(app)
-        except ImportError:
+        except (ImportError, Exception):
+            pass
+
+        # Try Django Ninja (check by class name first to avoid import if not needed)
+        try:
+            if app_class_name == "NinjaAPI":
+                from ninja import NinjaAPI
+                from fastapi_voyager.introspectors import DjangoNinjaIntrospector
+
+                if DjangoNinjaIntrospector and isinstance(app, NinjaAPI):
+                    return DjangoNinjaIntrospector(app)
+        except (ImportError, Exception):
             pass
 
         # If we get here, the app type is not supported
