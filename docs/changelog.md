@@ -172,6 +172,9 @@
     - [x] set highlight style
 - 0.15.5
     - [x] fix loadInitial bug
+- 0.15.6
+    - [x] internal refactor: graph-ui.js
+    - [x] enhance the selected and unselected node & edges
 
 ## 0.16, enhance er diagram
 - 0.16.0
