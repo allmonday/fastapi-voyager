@@ -16,6 +16,14 @@ tests/
 │   ├── demo.py           # Demo FastAPI application
 │   ├── demo_anno.py     # Demo with annotations
 │   └── embedding.py      # Example of embedding voyager in FastAPI app
+├── django_ninja/          # Django Ninja-specific test examples
+│   ├── __init__.py
+│   ├── demo.py           # Demo Django Ninja application
+│   └── embedding.py      # Example of embedding voyager in Django Ninja
+├── litestar/              # Litestar-specific test examples
+│   ├── __init__.py
+│   ├── demo.py           # Demo Litestar application
+│   └── embedding.py      # Example of embedding voyager in Litestar
 └── README.md
 ```
 
@@ -34,33 +42,27 @@ tests/
 - Reusable test utilities and schema definitions
 - Used across different framework tests
 - Contains shared Pydantic models and test data
+- Includes `Member`, `Sprint`, `Story`, `Task` models
+- Includes pydantic-resolve BaseEntity and diagram
 
-### Framework-Specific Tests (`fastapi/`, `django_ninja/`, `litestar/`, etc.)
-- Example applications for each supported framework
-- Integration tests for framework introspectors
-- Can be run independently or as part of the full test suite
+### Framework-Specific Tests
 
-## Adding Tests for New Frameworks
+Each supported framework has its own directory with similar structure:
 
-When adding support for a new framework (e.g., Django Ninja, Litestar):
+#### FastAPI (`fastapi/`)
+- `demo.py` - Example FastAPI application with various route patterns
+- `embedding.py` - Shows how to mount voyager into FastAPI app
+- Demonstrates pydantic-resolve integration
 
-1. Create a new directory: `tests/<framework_name>/`
-2. Add example applications and tests
-3. Reuse utilities from `service/` where possible
-4. Follow the same structure as `tests/fastapi/`
+#### Django Ninja (`django_ninja/`)
+- `demo.py` - Django Ninja version of the demo application
+- Uses `NinjaAPI` instead of `FastAPI`
+- Shows similar functionality with framework-specific differences
 
-Example:
-```
-tests/
-├── django_ninja/
-│   ├── __init__.py
-│   ├── demo.py
-│   └── test_introspector.py
-└── litestar/
-    ├── __init__.py
-    ├── demo.py
-    └── test_introspector.py
-```
+#### Litestar (`litestar/`)
+- `demo.py` - Litestar version using Controller pattern
+- Uses `@get` decorator and Controller classes
+- Demonstrates framework-specific patterns
 
 ## Running Tests
 
@@ -74,7 +76,75 @@ Run specific test file:
 uv run pytest tests/test_analysis.py
 ```
 
-Run framework-specific tests:
+Run framework-specific demos:
 ```bash
-uv run pytest tests/fastapi/
+# FastAPI
+python tests/fastapi/embedding.py
+
+# Django Ninja (requires Django setup)
+# See tests/django_ninja/embedding.py for integration instructions
+
+# Litestar
+python tests/litestar/embedding.py
 ```
+
+## Key Differences Between Frameworks
+
+### FastAPI
+```python
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/path", response_model=Model)
+def route():
+    return Model()
+
+app.mount("/voyager", create_voyager(app))
+```
+
+### Django Ninja
+```python
+from ninja import NinjaAPI
+api = NinjaAPI()
+
+@api.get("/path")
+def route(request) -> Model:
+    return Model()
+
+# Integrated via Django urls.py
+# See embedding.py for details
+```
+
+### Litestar
+```python
+from litestar import Litestar, Controller
+
+class MyController(Controller):
+    @get("/path")
+    def path(self) -> Model:
+        return Model()
+
+app = Litestar(route_handlers=[MyController])
+app.mount("/voyager", voyager_app)
+```
+
+## Adding Tests for New Frameworks
+
+When adding support for a new framework:
+
+1. Create directory: `tests/<framework_name>/`
+2. Add `__init__.py`
+3. Create `demo.py` with example routes
+   - Reuse `tests.service.schema` models
+   - Mirror FastAPI demo functionality
+   - Use framework-specific patterns
+4. Create `embedding.py` with voyager integration
+5. Add introspector in `src/fastapi_voyager/introspectors/`
+6. Update `Voyager._get_introspector()` to detect framework
+7. Add framework-specific tests if needed
+
+All frameworks share the same:
+- Pydantic models from `tests.service.schema`
+- pydantic-resolve BaseEntity diagram
+- Testing patterns
+

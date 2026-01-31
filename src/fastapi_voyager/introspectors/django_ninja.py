@@ -25,7 +25,7 @@ class DjangoNinjaIntrospector(AppIntrospector):
             swagger_url: Optional custom URL to Swagger documentation
         """
         self.api = ninja_api
-        self.swagger_url = swagger_url or "/api/doc"
+        self.swagger_url = swagger_url or "/api/docs"
 
     def get_routes(self) -> Iterator[RouteInfo]:
         """
@@ -35,25 +35,32 @@ class DjangoNinjaIntrospector(AppIntrospector):
             RouteInfo: Standardized route information for each API route
         """
         # Access the internal router structure
-        if not hasattr(self.api, "_router"):
+        if not hasattr(self.api, "default_router"):
             return
 
-        router = self.api._router
+        router = self.api.default_router
 
-        # Iterate through all operations registered in the router
-        for path, operations_dict in router.operations.items():
-            for operation in operations_dict.values():
+        # Iterate through all path operations registered in the router
+        if not hasattr(router, "path_operations"):
+            return
+
+        for path, path_view in router.path_operations.items():
+            # path_view is a PathView object with a list of operations
+            if not hasattr(path_view, "operations"):
+                continue
+
+            for operation in path_view.operations:
                 try:
                     yield RouteInfo(
                         id=self._get_route_id(operation),
                         name=operation.view_func.__name__,
                         module=operation.view_func.__module__,
-                        operation_id=operation.operation_id,
+                        operation_id=operation.operation_id or operation.view_func.__name__,
                         tags=operation.tags or [],
                         endpoint=operation.view_func,
                         response_model=self._get_response_model(operation),
                         extra={
-                            "methods": [operation.method],
+                            "methods": operation.methods,  # This is a list
                             "path": path,
                         },
                     )
@@ -96,10 +103,21 @@ class DjangoNinjaIntrospector(AppIntrospector):
         Returns:
             The response model class
         """
-        if hasattr(operation, "response_model"):
-            return operation.response_model
-        # Fallback to checking the view function's return annotation
+        from ninja.constants import NOT_SET_TYPE
+
+        # Django Ninja infers response model from function's return type annotation
+        # Try to get it from the view function's annotations first
         if hasattr(operation.view_func, "__annotations__") and "return" in operation.view_func.__annotations__:
             return operation.view_func.__annotations__["return"]
+
+        # Fallback to checking response_models (if explicitly set)
+        if hasattr(operation, "response_models"):
+            # Get the 200 response model, or the first one
+            for status_code in [200, "200", "2xx"]:
+                if status_code in operation.response_models:
+                    model = operation.response_models[status_code]
+                    if model is not NOT_SET_TYPE:
+                        return model
+
         # Return None if no response model found
         return type(None)  # type: ignore
