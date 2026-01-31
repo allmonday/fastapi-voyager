@@ -10,8 +10,8 @@ from fastapi_voyager.module import build_module_route_tree, build_module_schema_
 from fastapi_voyager.render_style import RenderConfig
 from fastapi_voyager.type import (
     PK,
-    FieldType,
     FieldInfo,
+    FieldType,
     Link,
     ModuleNode,
     ModuleRoute,
@@ -361,7 +361,7 @@ class Renderer:
 
             if cluster_color:
                 pen_style = f'pencolor = "{cluster_color}"'
-                pen_style += '\n' + f'penwidth = 3' if color else ''
+                pen_style += '\n' + 'penwidth = 3' if color else ''
             else:
                 pen_style = 'pencolor="#ccc"'
 

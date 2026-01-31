@@ -1,4 +1,5 @@
 from fastapi_voyager import create_voyager
+
 # from tests.fastapi.demo_anno import app
 from tests.fastapi.demo import app, diagram
 

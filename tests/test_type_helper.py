@@ -1,7 +1,9 @@
 import sys
-import pytest
-from fastapi_voyager.type_helper import get_core_types
 from typing import Annotated
+
+import pytest
+
+from fastapi_voyager.type_helper import get_core_types
 
 
 def test_optional_and_list_core_types():

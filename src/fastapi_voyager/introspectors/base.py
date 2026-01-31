@@ -9,8 +9,9 @@ different web frameworks that support OpenAPI and Pydantic, such as:
 - Flask-OpenAPI
 """
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
-from typing import Any, Callable, Iterator
+from typing import Any
 
 
 @dataclass

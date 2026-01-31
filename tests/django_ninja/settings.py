@@ -1,7 +1,6 @@
 """
 Minimal Django settings for django-ninja test app.
 """
-import os
 from pathlib import Path
 
 # Build paths

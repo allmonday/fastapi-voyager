@@ -3,7 +3,7 @@ Django Ninja implementation of the AppIntrospector interface.
 
 This module provides the adapter that allows fastapi-voyager to work with Django Ninja applications.
 """
-from typing import Iterator
+from collections.abc import Iterator
 
 from fastapi_voyager.introspectors.base import AppIntrospector, RouteInfo
 

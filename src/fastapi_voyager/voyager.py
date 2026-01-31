@@ -80,6 +80,7 @@ class Voyager:
         # Try FastAPI
         try:
             from fastapi import FastAPI
+
             from fastapi_voyager.introspectors import FastAPIIntrospector
 
             if FastAPIIntrospector and isinstance(app, FastAPI):
@@ -90,6 +91,7 @@ class Voyager:
         # Try Django Ninja
         try:
             from ninja import NinjaAPI
+
             from fastapi_voyager.introspectors import DjangoNinjaIntrospector
 
             if DjangoNinjaIntrospector and isinstance(app, NinjaAPI):
@@ -100,6 +102,7 @@ class Voyager:
         # Try Litestar
         try:
             from litestar import Litestar
+
             from fastapi_voyager.introspectors import LitestarIntrospector
 
             if LitestarIntrospector and isinstance(app, Litestar):

@@ -1,4 +1,5 @@
 from litestar import Litestar
+
 from fastapi_voyager import create_voyager
 from tests.litestar.demo import DemoController, diagram
 
