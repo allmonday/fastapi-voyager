@@ -144,18 +144,26 @@ export class GraphUI {
         nodes.on("dblclick.graphui", function (event) {
           event.stopPropagation()
 
+          const set = $()
+          set.push(this)
+          const obj = { set, direction: "bidirectional" }
+
           // Clear all previous banners and highlights
           self.clearSchemaBanners()
 
-          // Apply highlight to the double-clicked node
+          // Set current selection for highlight (same as single click)
+          self.currentSelection = [obj]
+
+          // Apply highlight to related nodes (same as single click)
+          self._highlight()
+
+          // Apply purple border to the double-clicked node (additional visual)
           try {
             self.highlightSchemaBanner(this)
           } catch (e) {
             console.log(e)
           }
 
-          const set = $()
-          set.push(this)
           const schemaName = event.currentTarget.dataset.name
           if (schemaName) {
             try {
