@@ -325,7 +325,7 @@ const actions = {
           onGenerate()
           return
         }
-        renderBasedOnInitialPolicy()
+        renderBasedOnInitialPolicy(onGenerate)
       }
 
       // default route options placeholder
