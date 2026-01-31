@@ -69,16 +69,11 @@ export class GraphUI {
   }
 
   highlightSchemaBanner(node) {
-    // Get all polygons in the node
     const polygons = node.querySelectorAll("polygon")
-
-    // The first polygon is typically the outer frame of the entire node
     const outerFrame = polygons[0]
-    // The second polygon is typically the title background
     const titleBg = polygons[1]
 
     if (outerFrame) {
-      // Save original attributes for potential restoration
       if (!outerFrame.hasAttribute("data-original-stroke")) {
         outerFrame.setAttribute("data-original-stroke", outerFrame.getAttribute("stroke") || "")
         outerFrame.setAttribute(
@@ -87,14 +82,11 @@ export class GraphUI {
         )
         outerFrame.setAttribute("data-original-fill", outerFrame.getAttribute("fill") || "")
       }
-
-      // Apply bold purple border to the outer frame
       outerFrame.setAttribute("stroke", "#822dba")
       outerFrame.setAttribute("stroke-width", "3.0")
     }
 
     if (titleBg) {
-      // Save original attributes
       if (!titleBg.hasAttribute("data-original-stroke")) {
         titleBg.setAttribute("data-original-stroke", titleBg.getAttribute("stroke") || "")
         titleBg.setAttribute(
@@ -103,22 +95,16 @@ export class GraphUI {
         )
         titleBg.setAttribute("data-original-fill", titleBg.getAttribute("fill") || "")
       }
-
-      // Apply purple background to title
       titleBg.setAttribute("fill", "#822dba")
-      // Also update the stroke to match
       titleBg.setAttribute("stroke", "#822dba")
     }
   }
 
   clearSchemaBanners() {
-    // Clear all double-click banners by:
-    // 1. Calling highlight() to restore all elements
     if (this.gv) {
       this.gv.highlight()
     }
 
-    // 2. Remove any leftover data-original-* attributes from schema banners
     const allPolygons = document.querySelectorAll("polygon[data-original-stroke]")
     allPolygons.forEach((polygon) => {
       polygon.removeAttribute("data-original-stroke")
@@ -185,8 +171,8 @@ export class GraphUI {
           edge.push(this)
           const upObj = { set: up, direction: "upstream" }
           const downObj = { set: down, direction: "downstream" }
-          const edgeOjb = { set: edge, direction: "single" }
-          self.currentSelection = [upObj, downObj, edgeOjb]
+          const edgeObj = { set: edge, direction: "single" }
+          self.currentSelection = [upObj, downObj, edgeObj]
 
           self._highlightEdgeNodes()
         })
@@ -197,7 +183,6 @@ export class GraphUI {
           const obj = { set, direction: "bidirectional" }
 
           const schemaName = event.currentTarget.dataset.name
-          console.log("shift click detected")
           if (event.shiftKey && self.options.onSchemaShiftClick) {
             if (schemaName) {
               try {
