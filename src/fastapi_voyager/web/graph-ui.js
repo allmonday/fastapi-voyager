@@ -78,27 +78,13 @@ export class GraphUI {
     const titleBg = polygons[1]
 
     if (outerFrame) {
-      if (!outerFrame.hasAttribute("data-original-stroke")) {
-        outerFrame.setAttribute("data-original-stroke", outerFrame.getAttribute("stroke") || "")
-        outerFrame.setAttribute(
-          "data-original-stroke-width",
-          outerFrame.getAttribute("stroke-width") || "1"
-        )
-        outerFrame.setAttribute("data-original-fill", outerFrame.getAttribute("fill") || "")
-      }
+      this._saveOriginalAttributes(outerFrame)
       outerFrame.setAttribute("stroke", GraphUI.HIGHLIGHT_COLOR)
       outerFrame.setAttribute("stroke-width", GraphUI.HIGHLIGHT_STROKE_WIDTH)
     }
 
     if (titleBg) {
-      if (!titleBg.hasAttribute("data-original-stroke")) {
-        titleBg.setAttribute("data-original-stroke", titleBg.getAttribute("stroke") || "")
-        titleBg.setAttribute(
-          "data-original-stroke-width",
-          titleBg.getAttribute("stroke-width") || "1"
-        )
-        titleBg.setAttribute("data-original-fill", titleBg.getAttribute("fill") || "")
-      }
+      this._saveOriginalAttributes(titleBg)
       titleBg.setAttribute("fill", GraphUI.HIGHLIGHT_COLOR)
       titleBg.setAttribute("stroke", GraphUI.HIGHLIGHT_COLOR)
     }
@@ -115,6 +101,17 @@ export class GraphUI {
       polygon.removeAttribute("data-original-stroke-width")
       polygon.removeAttribute("data-original-fill")
     })
+  }
+
+  _saveOriginalAttributes(element) {
+    if (!element.hasAttribute("data-original-stroke")) {
+      element.setAttribute("data-original-stroke", element.getAttribute("stroke") || "")
+      element.setAttribute(
+        "data-original-stroke-width",
+        element.getAttribute("stroke-width") || "1"
+      )
+      element.setAttribute("data-original-fill", element.getAttribute("fill") || "")
+    }
   }
 
   _init() {
