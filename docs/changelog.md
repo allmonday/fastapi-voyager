@@ -170,6 +170,8 @@
     - [x] static files cache buster 
     - [x] store voyager/erd toggle value in url query string
     - [x] set highlight style
+- 0.15.5
+    - [x] fix loadInitial bug
 
 ## 0.16, enhance er diagram
 - 0.16.0
