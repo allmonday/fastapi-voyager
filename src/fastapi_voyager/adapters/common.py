@@ -56,6 +56,7 @@ class VoyagerContext:
         ga_id: str | None = None,
         er_diagram: ErDiagram | None = None,
         enable_pydantic_resolve_meta: bool = False,
+        framework_name: str | None = None,
     ):
         self.target_app = target_app
         self.module_color = module_color or {}
@@ -66,6 +67,7 @@ class VoyagerContext:
         self.ga_id = ga_id
         self.er_diagram = er_diagram
         self.enable_pydantic_resolve_meta = enable_pydantic_resolve_meta
+        self.framework_name = framework_name or "API"
 
     def get_voyager(self, **kwargs) -> Voyager:
         """Create a Voyager instance with common configuration."""
@@ -112,6 +114,7 @@ class VoyagerContext:
             "initial_page_policy": self.initial_page_policy,
             "has_er_diagram": self.er_diagram is not None,
             "enable_pydantic_resolve_meta": self.enable_pydantic_resolve_meta,
+            "framework_name": self.framework_name,
         }
 
     def get_search_dot(self, payload: dict) -> list[Tag]:

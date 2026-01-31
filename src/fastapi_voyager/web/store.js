@@ -2,6 +2,7 @@ const { reactive } = window.Vue
 
 const state = reactive({
   version: "",
+  framework_name: "",
   config: {
     initial_page_policy: "first",
     has_er_diagram: false,
@@ -305,6 +306,7 @@ const actions = {
       state.swagger.url = data.swagger_url || null
       state.config.has_er_diagram = data.has_er_diagram || false
       state.config.enable_pydantic_resolve_meta = data.enable_pydantic_resolve_meta || false
+      state.framework_name = data.framework_name || "API"
 
       this.rebuildSchemaOptions()
 

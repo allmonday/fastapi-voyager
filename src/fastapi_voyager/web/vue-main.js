@@ -291,6 +291,10 @@ const app = createApp({
     onMounted(async () => {
       document.body.classList.remove("app-loading")
       await loadInitial()
+      // Update document title after framework_name is loaded
+      if (store.state.framework_name) {
+        document.title = `${store.state.framework_name} Voyager`
+      }
       // Reveal app content only after initial JS/data is ready
     })
 

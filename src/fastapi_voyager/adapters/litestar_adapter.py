@@ -43,6 +43,7 @@ class LitestarAdapter(VoyagerAdapter):
             ga_id=ga_id,
             er_diagram=er_diagram,
             enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
+            framework_name="Litestar",
         )
         self.gzip_minimum_size = gzip_minimum_size
 
@@ -68,6 +69,7 @@ class LitestarAdapter(VoyagerAdapter):
                 "swagger_url": data["swagger_url"],
                 "has_er_diagram": data["has_er_diagram"],
                 "enable_pydantic_resolve_meta": data["enable_pydantic_resolve_meta"],
+                "framework_name": data["framework_name"],
             }
 
         @post("/dot-search")

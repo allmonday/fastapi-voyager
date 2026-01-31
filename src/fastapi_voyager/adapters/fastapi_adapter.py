@@ -26,6 +26,7 @@ class OptionParam(BaseModel):
     swagger_url: str | None = None
     has_er_diagram: bool = False
     enable_pydantic_resolve_meta: bool = False
+    framework_name: str = "API"
 
 
 class Payload(BaseModel):
@@ -93,6 +94,7 @@ class FastAPIAdapter(VoyagerAdapter):
             ga_id=ga_id,
             er_diagram=er_diagram,
             enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
+            framework_name="FastAPI",
         )
         self.gzip_minimum_size = gzip_minimum_size
 

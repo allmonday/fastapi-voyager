@@ -43,6 +43,7 @@ class DjangoNinjaAdapter(VoyagerAdapter):
             ga_id=ga_id,
             er_diagram=er_diagram,
             enable_pydantic_resolve_meta=enable_pydantic_resolve_meta,
+            framework_name="Django Ninja",
         )
         # Note: gzip should be handled by Django's middleware, not here
 
@@ -158,6 +159,7 @@ class DjangoNinjaAdapter(VoyagerAdapter):
             "swagger_url": data["swagger_url"],
             "has_er_diagram": data["has_er_diagram"],
             "enable_pydantic_resolve_meta": data["enable_pydantic_resolve_meta"],
+            "framework_name": data["framework_name"],
         }
         await self._send_json(response_data, send)
 
