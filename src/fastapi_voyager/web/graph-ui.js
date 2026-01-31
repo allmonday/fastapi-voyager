@@ -141,6 +141,17 @@ export class GraphUI {
     return obj
   }
 
+  _triggerCallback(callbackName, schemaName) {
+    const callback = this.options[callbackName]
+    if (callback && schemaName) {
+      try {
+        callback(schemaName)
+      } catch (e) {
+        console.warn(`${callbackName} callback failed`, e)
+      }
+    }
+  }
+
   // ====================
   // Initialization & Events
   // ====================
@@ -170,14 +181,7 @@ export class GraphUI {
             console.log(e)
           }
 
-          const schemaName = event.currentTarget.dataset.name
-          if (schemaName) {
-            try {
-              self.options.onSchemaClick(schemaName)
-            } catch (e) {
-              console.warn("onSchemaClick callback failed", e)
-            }
-          }
+          self._triggerCallback("onSchemaClick", event.currentTarget.dataset.name)
         })
 
         edges.on("click.graphui", function (event) {
@@ -202,15 +206,8 @@ export class GraphUI {
         })
 
         nodes.on("click.graphui", function (event) {
-          const schemaName = event.currentTarget.dataset.name
-          if (event.shiftKey && self.options.onSchemaShiftClick) {
-            if (schemaName) {
-              try {
-                self.options.onSchemaShiftClick(schemaName)
-              } catch (e) {
-                console.warn("onSchemaShiftClick callback failed", e)
-              }
-            }
+          if (event.shiftKey) {
+            self._triggerCallback("onSchemaShiftClick", event.currentTarget.dataset.name)
           } else {
             self._applyNodeHighlight(this)
           }
