@@ -270,7 +270,7 @@ requires-dist = [
     { name = "litestar", marker = "extra == 'litestar'", specifier = ">=2.19.0" },
     { name = "pydantic", marker = "extra == 'all'", specifier = ">=2.0" },
     { name = "pydantic", marker = "extra == 'litestar'", specifier = ">=2.0" },
-    { name = "pydantic-resolve", specifier = ">=2.4.3" },
+    { name = "pydantic-resolve", specifier = ">=3.0.3" },
     { name = "pytest", marker = "extra == 'all'" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'all'" },
@@ -312,6 +312,15 @@ litestar = [
     { name = "litestar", specifier = ">=2.19.0" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "uvicorn", specifier = ">=0.34.0" },
+]
+
+[[package]]
+name = "graphql-core"
+version = "3.2.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/9b/037a640a2983b09aed4a823f9cf1729e6d780b0671f854efa4727a7affbe/graphql_core-3.2.7.tar.gz", hash = "sha256:27b6904bdd3b43f2a0556dad5d579bdfdeab1f38e8e8788e555bdcb586a6f62c", size = 513484, upload-time = "2025-11-01T22:30:40.436Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0a/14/933037032608787fb92e365883ad6a741c235e0ff992865ec5d904a38f1e/graphql_core-3.2.7-py3-none-any.whl", hash = "sha256:17fc8f3ca4a42913d8e24d9ac9f08deddf0a0b2483076575757f6c412ead2ec0", size = 207262, upload-time = "2025-11-01T22:30:38.912Z" },
 ]
 
 [[package]]
@@ -859,14 +868,15 @@ wheels = [
 
 [[package]]
 name = "pydantic-resolve"
-version = "2.4.3"
+version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiodataloader" },
+    { name = "graphql-core" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6b/fa/0f92fdbbb415dc31ea0e9ba3cd6861e9362f79d83d8c71464d39467d3be1/pydantic_resolve-2.4.3.tar.gz", hash = "sha256:13fd755c0451b258d428eec6bb8b86eec2f2c5ab90c8350cc620f3f5450587d9", size = 960379, upload-time = "2026-01-03T00:43:21.371Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8e/1a/b9cf83202da13628c2295786049a86125b6a5357404d8715e17045e5b9ab/pydantic_resolve-3.0.3.tar.gz", hash = "sha256:8d96a57344f1e2038d7fb9b6b484a04b84a35662f8f02ab1724a7fd33e261233", size = 1259643, upload-time = "2026-03-01T03:13:57.196Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/af/89/5ecfc871e0183a6c0102e5a3067b9023c686e91503135a2a559f59ae098c/pydantic_resolve-2.4.3-py3-none-any.whl", hash = "sha256:bfed0e47842ae3fd57276fb7ab89c0e3eff1366e7defa589225ffd91d5e16ada", size = 39234, upload-time = "2026-01-03T00:43:22.716Z" },
+    { url = "https://files.pythonhosted.org/packages/20/3a/f18456c8e13e3ae04b724ffc9b3c5ca846cf38d03798e18214183278a1b6/pydantic_resolve-3.0.3-py3-none-any.whl", hash = "sha256:80b83ae6186e5302d036a1a2b3c1aedd3fa40ed1045358d13e06661f040129f5", size = 86667, upload-time = "2026-03-01T03:13:58.822Z" },
 ]
 
 [[package]]

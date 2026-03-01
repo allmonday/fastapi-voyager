@@ -7,17 +7,35 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tests.django_ninja.settings')
 django.setup()
 
 from dataclasses import dataclass
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Generic, Optional, TypeVar
 
+from django.http import HttpResponse
 from ninja import NinjaAPI
 from pydantic import BaseModel, Field
-from pydantic_resolve import Collector, DefineSubset, ExposeAs, Resolver, SendTo
+from pydantic_resolve import (
+    Collector,
+    DefineSubset,
+    ExposeAs,
+    GraphQLHandler,
+    LoadBy,
+    Resolver,
+    SchemaBuilder,
+    SendTo,
+    config_global_resolver,
+)
 
 from tests.service.schema.base_entity import BaseEntity
 from tests.service.schema.extra import A
 from tests.service.schema.schema import Member, Sprint, Story, Task
 
 diagram = BaseEntity.get_diagram()
+
+# 配置全局 resolver
+config_global_resolver(diagram)
+
+# 创建 GraphQL handler 和 schema builder
+graphql_handler = GraphQLHandler(diagram, enable_from_attribute_in_type_adapter=True)
+schema_builder = SchemaBuilder(diagram)
 
 # Create Django Ninja API instance
 api = NinjaAPI(title="Demo API (Django Ninja)", description="A demo Django Ninja application for router visualization")
@@ -27,6 +45,137 @@ api = NinjaAPI(title="Demo API (Django Ninja)", description="A demo Django Ninja
 def get_sprints(request) -> list[Sprint]:
     return []
 
+
+# =====================================
+# GraphQL Support
+# =====================================
+
+class GraphQLRequest(BaseModel):
+    query: str
+    operationName: Optional[str] = None
+
+
+# GraphiQL Playground HTML
+GRAPHIQL_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GraphiQL - Django Ninja Demo</title>
+  <style>
+    body { margin: 0; }
+    #graphiql { height: 100dvh; }
+    .loading {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+  </style>
+  <link rel="stylesheet" href="https://esm.sh/graphiql/dist/style.css" />
+  <link rel="stylesheet" href="https://esm.sh/@graphiql/plugin-explorer/dist/style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@19.1.0",
+        "react/jsx-runtime": "https://esm.sh/react@19.1.0/jsx-runtime",
+        "react-dom": "https://esm.sh/react-dom@19.1.0",
+        "react-dom/client": "https://esm.sh/react-dom@19.1.0/client",
+        "@emotion/is-prop-valid": "data:text/javascript,",
+        "graphiql": "https://esm.sh/graphiql?standalone&external=react,react-dom,@graphiql/react,graphql",
+        "graphiql/": "https://esm.sh/graphiql/",
+        "@graphiql/plugin-explorer": "https://esm.sh/@graphiql/plugin-explorer?standalone&external=react,@graphiql/react,graphql",
+        "@graphiql/react": "https://esm.sh/@graphiql/react?standalone&external=react,react-dom,graphql,@emotion/is-prop-valid",
+        "@graphiql/toolkit": "https://esm.sh/@graphiql/toolkit?standalone&external=graphql",
+        "graphql": "https://esm.sh/graphql@16.11.0"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="graphiql">
+    <div class="loading">Loading…</div>
+  </div>
+  <script type="module">
+    import React from 'react';
+    import ReactDOM from 'react-dom/client';
+    import { GraphiQL, HISTORY_PLUGIN } from 'graphiql';
+    import { createGraphiQLFetcher } from '@graphiql/toolkit';
+    import { explorerPlugin } from '@graphiql/plugin-explorer';
+
+    const fetcher = createGraphiQLFetcher({ url: '/graphql' });
+    const plugins = [HISTORY_PLUGIN, explorerPlugin()];
+
+    function App() {
+      return React.createElement(GraphiQL, {
+        fetcher: fetcher,
+        plugins: plugins,
+      });
+    }
+
+    const container = document.getElementById('graphiql');
+    const root = ReactDOM.createRoot(container);
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>
+"""
+
+
+# =====================================
+# GraphQL 视图函数 (用于 urls.py 直接引用)
+# =====================================
+
+def graphiql_playground(request) -> HttpResponse:
+    """GraphiQL 交互式查询界面 (GET)"""
+    return HttpResponse(GRAPHIQL_HTML, content_type="text/html")
+
+
+def graphql_endpoint(request):
+    """GraphQL 查询端点 (POST)"""
+    import json
+    import asyncio
+    body = json.loads(request.body)
+    query = body.get('query', '')
+    result = asyncio.run(graphql_handler.execute(query=query))
+    return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+def graphql_schema(request) -> HttpResponse:
+    """GraphQL Schema 端点 (GET)"""
+    schema_sdl = schema_builder.build_schema()
+    return HttpResponse(schema_sdl, content_type="text/plain; charset=utf-8")
+
+
+# =====================================
+# Django Ninja API 路由
+# =====================================
+
+@api.get("/graphql", tags=['graphql'])
+def api_graphiql_playground(request) -> HttpResponse:
+    """GraphiQL 交互式查询界面"""
+    return HttpResponse(GRAPHIQL_HTML, content_type="text/html")
+
+
+@api.post("/graphql", tags=['graphql'])
+async def api_graphql_endpoint(request, req: GraphQLRequest):
+    """GraphQL 查询端点"""
+    result = await graphql_handler.execute(query=req.query)
+    return result
+
+
+@api.get("/graphql/schema", tags=['graphql'])
+def api_graphql_schema(request) -> HttpResponse:
+    """GraphQL Schema 端点（返回 SDL 格式）"""
+    schema_sdl = schema_builder.build_schema()
+    return HttpResponse(schema_sdl, content_type="text/plain; charset=utf-8")
+
+
+# =====================================
+# Page Models
+# =====================================
 
 class PageMember(Member):
     fullname: str = ''
@@ -52,7 +201,7 @@ type TaskUnion = TaskA | TaskB
 
 
 class PageTask(Task):
-    owner: PageMember | None = None
+    owner: Annotated[PageMember | None, LoadBy('owner_id')] = None
 
 
 class MiddleStory(DefineSubset):
@@ -73,7 +222,7 @@ class PageStory(DefineSubset):
     def post_desc(self):
         return self.title + ' (processed........................)'
 
-    tasks: Annotated[list[PageTask], SendTo("SomeCollector")] = []
+    tasks: Annotated[list[PageTask], LoadBy('id'), SendTo("SomeCollector")] = []
 
     coll: list[str] = []
     def post_coll(self, c=Collector(alias="top_collector")):
@@ -145,7 +294,3 @@ def get_page_test_3_no_response_model(request):
 @api.get("/page_test_5/", tags=['long_long_long_tag_name', 'group_b'])
 def get_page_test_3_no_response_model_long_long_long_name(request):
     return True
-
-
-# Note: Django Ninja doesn't have operation_id attribute like FastAPI
-# The introspector will generate it from the function name

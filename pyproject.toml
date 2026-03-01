@@ -8,7 +8,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 keywords = ["fastapi", "visualization", "routing", "openapi"]
 dependencies = [
-  "pydantic-resolve>=2.4.3",
+  "pydantic-resolve>=3.0.3",
   "jinja2>=3.0.0"
 ]
 classifiers = [
