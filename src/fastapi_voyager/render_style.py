@@ -28,6 +28,10 @@ class ColorScheme:
     send_to: str = '#ca6d6d'
     collector: str = '#777'
 
+    # GraphQL method colors
+    query: str = '#47a80f'      # Green for @query methods
+    mutation: str = '#ca6d6d'   # Red/coral for @mutation methods
+
     # Link colors
     inherit: str = 'purple'
     subset: str = 'orange'

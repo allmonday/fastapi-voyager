@@ -5,14 +5,16 @@ from logging import getLogger
 from pydantic import BaseModel
 from pydantic_resolve import Entity, ErDiagram, MultipleRelationship, Relationship
 
+from fastapi_voyager.pydantic_resolve_util import extract_query_mutation_methods
 from fastapi_voyager.render import Renderer
 from fastapi_voyager.render_style import RenderConfig
 from fastapi_voyager.type import (
-    PK,
     FieldInfo,
     FieldType,
     Link,
     LinkType,
+    MethodInfo,
+    PK,
     SchemaNode,
 )
 from fastapi_voyager.type_helper import (
@@ -192,13 +194,18 @@ class VoyagerErDiagram:
         full_name = full_class_name(schema)
 
         if full_name not in self.node_set:
+            # Extract queries and mutations
+            queries, mutations = get_queries_and_mutations(schema)
+
             # skip meta info for normal queries
             self.node_set[full_name] = SchemaNode(
                 id=full_name,
                 module=schema.__module__,
                 name=schema.__name__,
                 fields=get_fields(schema, fk_set),
-                is_entity=False  # Don't mark in ER diagram
+                is_entity=False,  # Don't mark in ER diagram
+                queries=queries,
+                mutations=mutations
             )
         return full_name
 
@@ -261,3 +268,19 @@ def get_fields(schema: type[BaseModel], fk_set: set[str] | None = None) -> list[
             is_exclude=bool(v.exclude)
         ))
     return fields
+
+
+def get_queries_and_mutations(schema: type[BaseModel]) -> tuple[list[MethodInfo], list[MethodInfo]]:
+    """Extract @query and @mutation methods from an entity."""
+    query_dicts, mutation_dicts = extract_query_mutation_methods(schema)
+
+    queries = [
+        MethodInfo(name=q['name'], return_type=q['return_type'])
+        for q in query_dicts
+    ]
+    mutations = [
+        MethodInfo(name=m['name'], return_type=m['return_type'])
+        for m in mutation_dicts
+    ]
+
+    return queries, mutations

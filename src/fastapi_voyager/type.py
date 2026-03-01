@@ -26,6 +26,13 @@ class FieldInfo:
     send_to_info: list[str] | None = None
     collect_info: list[str] | None = None
 
+
+@dataclass
+class MethodInfo:
+    """@query 或 @mutation 方法信息"""
+    name: str              # GraphQL 名称（来自装饰器或方法名）
+    return_type: str       # 返回类型字符串
+
 @dataclass
 class Tag(NodeBase):
     routes: list['Route']  # route.id
@@ -49,6 +56,8 @@ class SchemaNode(NodeBase):
     module: str
     fields: list[FieldInfo] = field(default_factory=list)
     is_entity: bool = False  # Mark if this is an ER diagram entity
+    queries: list[MethodInfo] = field(default_factory=list)   # @query methods
+    mutations: list[MethodInfo] = field(default_factory=list) # @mutation methods
 
 @dataclass
 class ModuleNode:

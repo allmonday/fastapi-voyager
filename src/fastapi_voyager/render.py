@@ -9,16 +9,18 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from fastapi_voyager.module import build_module_route_tree, build_module_schema_tree
 from fastapi_voyager.render_style import RenderConfig
 from fastapi_voyager.type import (
-    PK,
     FieldInfo,
     FieldType,
     Link,
+    MethodInfo,
     ModuleNode,
     ModuleRoute,
+    PK,
     Route,
     SchemaNode,
     Tag,
 )
+from typing import Literal
 
 logger = getLogger(__name__)
 
@@ -178,6 +180,35 @@ class Renderer:
             content=content
         )
 
+    def _render_schema_method(self, method: MethodInfo, type: Literal['query', 'mutation']) -> str:
+        """Render a single method row for @query or @mutation."""
+        # Format: [Q] name: type or [M] name: type
+        prefix = '[Q]' if type == 'query' else '[M]'
+        color = self.colors.query if type == 'query' else self.colors.mutation
+
+        # Truncate return type if too long
+        return_type = method.return_type
+        if len(return_type) > self.config.max_type_length:
+            return_type = return_type[:self.config.max_type_length] + self.config.type_suffix
+
+        method_text = f'{prefix} {method.name}: {return_type}'
+
+        # Render method text with color
+        text_html = self.template_renderer.render_template(
+            'html/colored_text.j2',
+            text=method_text,
+            color=color
+        )
+
+        content = f'<font>  {text_html}  </font>'
+
+        return self.template_renderer.render_template(
+            'html/schema_field_row.j2',
+            port=None,  # No port needed for methods
+            align='left',
+            content=content
+        )
+
     def _get_filtered_fields(self, node: SchemaNode) -> list[FieldInfo]:
         """Get fields filtered by show_fields and show_pydantic_resolve_meta settings."""
 
@@ -230,6 +261,16 @@ class Renderer:
         # Render each field
         for field in fields:
             rows.append(self._render_schema_field(field))
+
+        # Add methods if present (in all show_fields modes)
+        if node.queries or node.mutations:
+            # Render queries
+            for method in node.queries:
+                rows.append(self._render_schema_method(method, type='query'))
+
+            # Render mutations
+            for method in node.mutations:
+                rows.append(self._render_schema_method(method, type='mutation'))
 
         # Determine header color
         default_color = self.theme_color if color is None else color

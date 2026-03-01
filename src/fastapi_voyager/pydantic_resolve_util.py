@@ -99,3 +99,65 @@ def analysis_pydantic_resolve_fields(schema: type[BaseModel], field: str):
         "send_to_info": send_to_info,
         "collect_info": None if len(post_collector) == 0 else post_collector
     }
+
+
+def extract_query_mutation_methods(entity: type) -> tuple[list[dict], list[dict]]:
+    """
+    Extract all @query and @mutation decorated methods from an Entity.
+
+    Returns:
+        A tuple of (queries, mutations), each is a list of dicts:
+        - name: GraphQL name (from decorator or method name)
+        - return_type: Return type annotation as string
+
+    Each list is sorted alphabetically by name.
+    """
+    # Lazy import to avoid circular dependency
+    from fastapi_voyager.type_helper import get_type_name
+
+    queries = []
+    mutations = []
+
+    for name, method in entity.__dict__.items():
+        # Handle classmethod - access underlying function
+        actual_method = method
+        if isinstance(method, classmethod):
+            actual_method = method.__func__
+
+        is_query = hasattr(actual_method, '_pydantic_resolve_query')
+        is_mutation = hasattr(actual_method, '_pydantic_resolve_mutation')
+
+        if is_query or is_mutation:
+            # Get GraphQL name
+            if is_query:
+                gql_name = getattr(actual_method, '_pydantic_resolve_query_name', None)
+            else:
+                gql_name = getattr(actual_method, '_pydantic_resolve_mutation_name', None)
+
+            # Use method name if no GraphQL name specified
+            display_name = gql_name or name
+
+            # Get return type from signature
+            return_type = 'Unknown'
+            try:
+                sig = inspect.signature(actual_method)
+                if sig.return_annotation != inspect.Signature.empty:
+                    return_type = get_type_name(sig.return_annotation)
+            except Exception:
+                pass
+
+            method_info = {
+                'name': display_name,
+                'return_type': return_type
+            }
+
+            if is_query:
+                queries.append(method_info)
+            else:
+                mutations.append(method_info)
+
+    # Sort each list alphabetically by name
+    queries.sort(key=lambda m: m['name'])
+    mutations.sort(key=lambda m: m['name'])
+
+    return queries, mutations

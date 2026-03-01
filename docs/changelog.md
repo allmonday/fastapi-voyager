@@ -210,8 +210,12 @@
     - [x] enable PWA
 - 0.17.3
     - [x] fix unstable size of magnification effect.
-- 0.17.4
     - [x] 1.show loader name
+
+## 0.18
+- 0.18.0
+    - [x] show query and mutation method info in er diagram.
+- 0.18.1
     - [ ] 2.show relationship list when double click entity in er diagram
     - [ ] 3.highlight entity in use case
     - [ ] 4.change cli -m param, use `path.to.module:app` instead.
