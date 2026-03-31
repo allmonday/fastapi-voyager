@@ -3,7 +3,7 @@ from __future__ import annotations
 from logging import getLogger
 
 from pydantic import BaseModel
-from pydantic_resolve import Entity, ErDiagram, MultipleRelationship, Relationship
+from pydantic_resolve import Entity, ErDiagram, Relationship
 
 from fastapi_voyager.pydantic_resolve_util import extract_query_mutation_methods
 from fastapi_voyager.render import Renderer
@@ -145,45 +145,27 @@ class VoyagerErDiagram:
         self.add_to_node_set(schema, fk_set=self.fk_set.get(full_class_name(schema)))
 
         for relationship in entity.relationships:
-            annos = get_core_types(relationship.target_kls)
+            annos = get_core_types(relationship.target)
             for anno in annos:
                 self.add_to_node_set(anno, fk_set=self.fk_set.get(full_class_name(anno)))
-                source_name = f'{full_class_name(schema)}::f{relationship.field}'
-                if isinstance(relationship, Relationship):
-                    # Build label with cardinality and loader name
-                    cardinality = f'1 {ARROR} N' if is_list(relationship.target_kls) else f'1 {ARROR} 1'
-                    loader_name = _get_loader_name(relationship.loader)
-                    label = cardinality
-                    if loader_name:
-                        label = f'{label}\n({loader_name})'
-                    self.add_to_link_set(
-                        source=source_name,
-                        source_origin=full_class_name(schema),
-                        target=self.generate_node_head(full_class_name(anno)),
-                        target_origin=full_class_name(anno),
-                        type='schema',
-                        label=label,
-                        style='solid' if relationship.loader else 'solid, dashed'
-                        )
-
-                elif isinstance(relationship, MultipleRelationship):
-                    for link in relationship.links:
-                        # Build label with cardinality, biz name and loader name
-                        cardinality = f'1 {ARROR} N' if is_list(relationship.target_kls) else f'1 {ARROR} 1'
-                        loader_name = _get_loader_name(link.loader)
-                        label = f'{cardinality} / {link.biz}'
-                        if loader_name:
-                            label = f'{label}\n({loader_name})'
-                        self.add_to_link_set(
-                            source=source_name,
-                            source_origin=full_class_name(schema),
-                            target=self.generate_node_head(full_class_name(anno)),
-                            target_origin=full_class_name(anno),
-                            type='schema',
-                            biz=link.biz,
-                            label=label,
-                            style='solid' if link.loader else 'solid, dashed'
-                        )
+                source_name = f'{full_class_name(schema)}::f{relationship.fk}'
+                # Build label with cardinality and loader name
+                cardinality = f'1 {ARROR} N' if is_list(relationship.target) else f'1 {ARROR} 1'
+                loader_name = _get_loader_name(relationship.loader)
+                label = cardinality
+                if relationship.name:
+                    label = f'{relationship.name}\n{label}'
+                if loader_name:
+                    label = f'{label}\n({loader_name})'
+                self.add_to_link_set(
+                    source=source_name,
+                    source_origin=full_class_name(schema),
+                    target=self.generate_node_head(full_class_name(anno)),
+                    target_origin=full_class_name(anno),
+                    type='schema',
+                    label=label,
+                    style='solid' if relationship.loader else 'solid, dashed'
+                    )
 
     def add_to_node_set(self, schema, fk_set: set[str] | None = None) -> str:
         """
@@ -241,7 +223,7 @@ class VoyagerErDiagram:
 
     def render_dot(self):
         self.fk_set = {
-            full_class_name(entity.kls): set([rel.field for rel in entity.relationships])
+            full_class_name(entity.kls): set([rel.fk for rel in entity.relationships])
                 for entity in self.er_diagram.configs
         }
 

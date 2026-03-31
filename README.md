@@ -13,6 +13,8 @@ Its vision is to make code easier to read and understand, serving as an ideal do
 
 > This repo is still in early stage, it supports Pydantic v2 only.
 
+> **Breaking Change**: Since v0.19, `fastapi-voyager` depends on `pydantic-resolve>=4.0`. If you use `pydantic-resolve` v3, please pin `fastapi-voyager<=0.18`.
+
 - **Live Demo**: https://www.newsyeah.fun/voyager/
 - **Example Source**: [composition-oriented-development-pattern](https://github.com/allmonday/composition-oriented-development-pattern)
 

@@ -17,7 +17,6 @@ from pydantic_resolve import (
     DefineSubset,
     ExposeAs,
     GraphQLHandler,
-    LoadBy,
     Resolver,
     SchemaBuilder,
     SendTo,
@@ -29,6 +28,9 @@ from tests.service.schema.extra import A
 from tests.service.schema.schema import Member, Sprint, Story, Task
 
 diagram = BaseEntity.get_diagram()
+
+# 创建 AutoLoad 工厂（v4: 从 diagram 实例创建）
+AutoLoad = diagram.create_auto_load()
 
 # 配置全局 resolver
 config_global_resolver(diagram)
@@ -201,7 +203,7 @@ type TaskUnion = TaskA | TaskB
 
 
 class PageTask(Task):
-    owner: Annotated[PageMember | None, LoadBy('owner_id')] = None
+    owner: Annotated[PageMember | None, AutoLoad()] = None
 
 
 class MiddleStory(DefineSubset):
@@ -222,7 +224,7 @@ class PageStory(DefineSubset):
     def post_desc(self):
         return self.title + ' (processed........................)'
 
-    tasks: Annotated[list[PageTask], LoadBy('id'), SendTo("SomeCollector")] = []
+    tasks: Annotated[list[PageTask], AutoLoad(), SendTo("SomeCollector")] = []
 
     coll: list[str] = []
     def post_coll(self, c=Collector(alias="top_collector")):

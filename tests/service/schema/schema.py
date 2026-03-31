@@ -6,8 +6,6 @@ from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 from pydantic_resolve import (
-    Link,
-    MultipleRelationship,
     Relationship,
     base_entity,
     mutation,
@@ -155,18 +153,18 @@ class Member(BaseModel, BaseEntity):
     first_name: str = Field(description="名")
     last_name: str = Field(description="姓")
 
-    @query(name="members")
+    @query
     async def get_all(cls, limit: int = 10, offset: int = 0) -> List["Member"]:
         """获取所有成员（分页）"""
         all_members = list(members_db.values())
         return all_members[offset : offset + limit]
 
-    @query(name="member")
+    @query
     async def get_by_id(cls, id: int) -> Optional["Member"]:
         """根据 ID 获取成员"""
         return members_db.get(id)
 
-    @mutation(name="createMember", description="创建新成员")
+    @mutation
     async def create_member(cls, first_name: str, last_name: str) -> "Member":
         """创建新成员"""
         global member_id_counter
@@ -177,7 +175,7 @@ class Member(BaseModel, BaseEntity):
         members_db[member_id_counter] = new_member
         return new_member
 
-    @mutation(name="createMemberWithInput", description="使用 Input Type 创建新成员")
+    @mutation
     async def create_member_with_input(cls, input: CreateMemberInput) -> "Member":
         """使用 Input Type 创建新成员"""
         global member_id_counter
@@ -190,7 +188,7 @@ class Member(BaseModel, BaseEntity):
         members_db[member_id_counter] = new_member
         return new_member
 
-    @mutation(name="updateMember")
+    @mutation
     async def update_member(
         cls, id: int, first_name: Optional[str] = None, last_name: Optional[str] = None
     ) -> Optional["Member"]:
@@ -204,7 +202,7 @@ class Member(BaseModel, BaseEntity):
             return member
         return None
 
-    @mutation(name="updateMemberWithInput", description="使用 Input Type 更新成员")
+    @mutation
     async def update_member_with_input(
         cls, id: int, input: UpdateMemberInput
     ) -> Optional["Member"]:
@@ -218,7 +216,7 @@ class Member(BaseModel, BaseEntity):
             return member
         return None
 
-    @mutation(name="deleteMember")
+    @mutation
     async def delete_member(cls, id: int) -> bool:
         """删除成员，返回是否成功"""
         if id in members_db:
@@ -232,16 +230,16 @@ class Task(BaseModel, BaseEntity):
 
     __relationships__ = [
         Relationship(
-            field="owner_id",
-            target_kls=Member,
+            fk="owner_id",
+            target=Member,
             loader=member_loader,
-            default_field_name="owner",
+            name="owner",
         ),
         Relationship(
-            field="story_id",
-            target_kls="Story",
+            fk="story_id",
+            target="Story",
             loader=story_loader,
-            default_field_name="story",
+            name="story",
         ),
     ]
     id: int = Field(description="The unique identifier of the task")
@@ -249,23 +247,23 @@ class Task(BaseModel, BaseEntity):
     description: str = Field(description="任务描述")
     owner_id: int = Field(description="负责人 ID")
 
-    @query(name="tasks")
+    @query
     async def get_all(cls, limit: int = 10, offset: int = 0) -> List["Task"]:
         """获取所有任务（分页）"""
         all_tasks = list(tasks_db.values())
         return all_tasks[offset : offset + limit]
 
-    @query(name="task")
+    @query
     async def get_by_id(cls, id: int) -> Optional["Task"]:
         """根据 ID 获取任务"""
         return tasks_db.get(id)
 
-    @query(name="tasksByStory")
+    @query
     async def get_by_story_id(cls, story_id: int) -> List["Task"]:
         """根据 Story ID 获取任务列表"""
         return [t for t in tasks_db.values() if t.story_id == story_id]
 
-    @mutation(name="createTask", description="创建新任务")
+    @mutation
     async def create_task(cls, story_id: int, description: str, owner_id: int) -> "Task":
         """创建新任务"""
         global task_id_counter
@@ -279,7 +277,7 @@ class Task(BaseModel, BaseEntity):
         tasks_db[task_id_counter] = new_task
         return new_task
 
-    @mutation(name="createTaskWithInput", description="使用 Input Type 创建新任务")
+    @mutation
     async def create_task_with_input(cls, input: CreateTaskInput) -> "Task":
         """使用 Input Type 创建新任务"""
         global task_id_counter
@@ -293,7 +291,7 @@ class Task(BaseModel, BaseEntity):
         tasks_db[task_id_counter] = new_task
         return new_task
 
-    @mutation(name="updateTask")
+    @mutation
     async def update_task(
         cls,
         id: int,
@@ -313,7 +311,7 @@ class Task(BaseModel, BaseEntity):
             return task
         return None
 
-    @mutation(name="updateTaskWithInput", description="使用 Input Type 更新任务")
+    @mutation
     async def update_task_with_input(
         cls, id: int, input: UpdateTaskInput
     ) -> Optional["Task"]:
@@ -329,7 +327,7 @@ class Task(BaseModel, BaseEntity):
             return task
         return None
 
-    @mutation(name="deleteTask")
+    @mutation
     async def delete_task(cls, id: int) -> bool:
         """删除任务，返回是否成功"""
         if id in tasks_db:
@@ -343,10 +341,10 @@ class Story(BaseModel, BaseEntity):
 
     __relationships__ = [
         Relationship(
-            field="id",
-            target_kls=list["Task"],
+            fk="id",
+            target=list["Task"],
             loader=story_to_tasks_loader,
-            default_field_name="tasks",
+            name="tasks",
         ),
     ]
     id: int = Field(description="Story ID")
@@ -356,7 +354,7 @@ class Story(BaseModel, BaseEntity):
     title: str = Field(description="标题")
     description: str = Field(description="描述")
 
-    @query(name="stories")
+    @query
     async def get_all(
         cls, limit: int = 10, offset: int = 0, sprint_id: Optional[int] = None
     ) -> List["Story"]:
@@ -366,17 +364,17 @@ class Story(BaseModel, BaseEntity):
             all_stories = [s for s in all_stories if s.sprint_id == sprint_id]
         return all_stories[offset : offset + limit]
 
-    @query(name="story")
+    @query
     async def get_by_id(cls, id: int) -> Optional["Story"]:
         """根据 ID 获取 Story"""
         return stories_db.get(id)
 
-    @query(name="storiesBySprint")
+    @query
     async def get_by_sprint_id(cls, sprint_id: int) -> List["Story"]:
         """根据 Sprint ID 获取 Story 列表"""
         return [s for s in stories_db.values() if s.sprint_id == sprint_id]
 
-    @mutation(name="createStory", description="创建新 Story")
+    @mutation
     async def create_story(
         cls,
         type: Literal["feature", "bugfix"],
@@ -399,7 +397,7 @@ class Story(BaseModel, BaseEntity):
         stories_db[story_id_counter] = new_story
         return new_story
 
-    @mutation(name="createStoryWithInput", description="使用 Input Type 创建新 Story")
+    @mutation
     async def create_story_with_input(cls, input: CreateStoryInput) -> "Story":
         """使用 Input Type 创建新 Story"""
         global story_id_counter
@@ -415,7 +413,7 @@ class Story(BaseModel, BaseEntity):
         stories_db[story_id_counter] = new_story
         return new_story
 
-    @mutation(name="updateStory")
+    @mutation
     async def update_story(
         cls,
         id: int,
@@ -438,7 +436,7 @@ class Story(BaseModel, BaseEntity):
             return story
         return None
 
-    @mutation(name="updateStoryWithInput", description="使用 Input Type 更新 Story")
+    @mutation
     async def update_story_with_input(
         cls, id: int, input: UpdateStoryInput
     ) -> Optional["Story"]:
@@ -456,7 +454,7 @@ class Story(BaseModel, BaseEntity):
             return story
         return None
 
-    @mutation(name="deleteStory")
+    @mutation
     async def delete_story(cls, id: int) -> bool:
         """删除 Story，返回是否成功"""
         if id in stories_db:
@@ -469,38 +467,34 @@ class Sprint(BaseModel, BaseEntity):
     """Sprint 实体"""
 
     __relationships__ = [
-        MultipleRelationship(
-            field="id",
-            target_kls=list["Story"],
-            links=[
-                Link(
-                    biz="all",
-                    loader=sprint_to_stories_loader,
-                    default_field_name="stories",
-                ),
-                Link(
-                    biz="done",
-                    loader=sprint_to_stories_loader,
-                    default_field_name="done_stories",
-                ),
-            ],
-        )
+        Relationship(
+            fk="id",
+            target=list["Story"],
+            loader=sprint_to_stories_loader,
+            name="stories",
+        ),
+        Relationship(
+            fk="id",
+            target=list["Story"],
+            loader=sprint_to_stories_loader,
+            name="done_stories",
+        ),
     ]
     id: int = Field(description="Sprint ID")
     name: str = Field(description="Sprint 名称")
 
-    @query(name="sprints")
+    @query
     async def get_all(cls, limit: int = 10, offset: int = 0) -> List["Sprint"]:
         """获取所有 Sprint（分页）"""
         all_sprints = list(sprints_db.values())
         return all_sprints[offset : offset + limit]
 
-    @query(name="sprint")
+    @query
     async def get_by_id(cls, id: int) -> Optional["Sprint"]:
         """根据 ID 获取 Sprint"""
         return sprints_db.get(id)
 
-    @mutation(name="createSprint", description="创建新 Sprint")
+    @mutation
     async def create_sprint(cls, name: str) -> "Sprint":
         """创建新 Sprint"""
         global sprint_id_counter
@@ -509,7 +503,7 @@ class Sprint(BaseModel, BaseEntity):
         sprints_db[sprint_id_counter] = new_sprint
         return new_sprint
 
-    @mutation(name="createSprintWithInput", description="使用 Input Type 创建新 Sprint")
+    @mutation
     async def create_sprint_with_input(cls, input: CreateSprintInput) -> "Sprint":
         """使用 Input Type 创建新 Sprint"""
         global sprint_id_counter
@@ -518,7 +512,7 @@ class Sprint(BaseModel, BaseEntity):
         sprints_db[sprint_id_counter] = new_sprint
         return new_sprint
 
-    @mutation(name="updateSprint")
+    @mutation
     async def update_sprint(
         cls, id: int, name: Optional[str] = None
     ) -> Optional["Sprint"]:
@@ -530,7 +524,7 @@ class Sprint(BaseModel, BaseEntity):
             return sprint
         return None
 
-    @mutation(name="updateSprintWithInput", description="使用 Input Type 更新 Sprint")
+    @mutation
     async def update_sprint_with_input(
         cls, id: int, input: UpdateSprintInput
     ) -> Optional["Sprint"]:
@@ -542,7 +536,7 @@ class Sprint(BaseModel, BaseEntity):
             return sprint
         return None
 
-    @mutation(name="deleteSprint")
+    @mutation
     async def delete_sprint(cls, id: int) -> bool:
         """删除 Sprint，返回是否成功"""
         if id in sprints_db:

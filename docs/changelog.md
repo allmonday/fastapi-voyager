@@ -220,6 +220,11 @@
     - [ ] 3.highlight entity in use case
     - [ ] 4.change cli -m param, use `path.to.module:app` instead.
 
+## 0.19
+- 0.19.0
+  - **Breaking Change**: migrate pydantic-resolve v4.0. If you use pydantic-resolve v3, please pin `fastapi-voyager<=0.18`.
+  - show relationship name on ER diagram edges.
+
 ## 1.0, release 
     - [ ] add tests
 
