@@ -22,6 +22,7 @@ from fastapi_voyager.type_helper import (
     get_core_types,
     get_type_name,
     is_list,
+    safe_issubclass,
     update_forward_refs,
 )
 
@@ -147,6 +148,8 @@ class VoyagerErDiagram:
         for relationship in entity.relationships:
             annos = get_core_types(relationship.target)
             for anno in annos:
+                if not isinstance(anno, type) or not safe_issubclass(anno, BaseModel):
+                    continue
                 self.add_to_node_set(anno, fk_set=self.fk_set.get(full_class_name(anno)))
                 source_name = f'{full_class_name(schema)}::f{relationship.fk}'
                 # Build label with cardinality and loader name

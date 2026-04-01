@@ -346,6 +346,12 @@ class Story(BaseModel, BaseEntity):
             loader=story_to_tasks_loader,
             name="tasks",
         ),
+        Relationship(
+            fk="id",
+            target=list[int],
+            loader=lambda x: x,
+            name="task_ids",
+        )
     ]
     id: int = Field(description="Story ID")
     type: Literal["feature", "bugfix"] = Field(description="类型")

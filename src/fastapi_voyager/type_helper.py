@@ -264,8 +264,8 @@ def safe_issubclass(kls, target_kls):
         # if kls is ForwardRef, log it
         if isinstance(kls, ForwardRef):
             logger.error(f'{str(kls)} is a ForwardRef, not a subclass of {target_kls.__module__}:{target_kls.__qualname__}')
-        else:
-            logger.debug(f'{kls.__module__}:{kls.__qualname__} is not subclass of {target_kls.__module__}:{target_kls.__qualname__}')  
+        elif isinstance(kls, type):
+            logger.debug(f'{kls.__module__}:{kls.__qualname__} is not subclass of {target_kls.__module__}:{target_kls.__qualname__}')
         return False
 
 
