@@ -227,10 +227,10 @@ class VoyagerErDiagram:
     def render_dot(self):
         self.fk_set = {
             full_class_name(entity.kls): set([rel.fk for rel in entity.relationships])
-                for entity in self.er_diagram.configs
+                for entity in self.er_diagram.entities
         }
 
-        for entity in self.er_diagram.configs:
+        for entity in self.er_diagram.entities:
             self.analysis_entity(entity)
         renderer = DiagramRenderer(
             show_fields=self.show_field,

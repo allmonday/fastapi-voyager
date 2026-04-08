@@ -103,7 +103,7 @@ class VoyagerContext:
 
         return {
             full_class_name(entity.kls)
-            for entity in self.er_diagram.configs
+            for entity in self.er_diagram.entities
         }
 
     def get_voyager(self, **kwargs) -> Voyager:

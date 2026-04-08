@@ -222,7 +222,13 @@
     - show relationship name on ER diagram edges.
 - 0.19.1
     - [x] fix: handle value type in diagram relationship.
-- 0.19.2
+
+## 0.20
+- 0.20.0
+  - [x] migrate pydantic resolve from v4 to v5
+
+## unrelease
+- x.x.x
     - [ ] 2.show relationship list when double click entity in er diagram
     - [ ] 3.highlight entity in use case
     - [ ] 4.change cli -m param, use `path.to.module:app` instead.

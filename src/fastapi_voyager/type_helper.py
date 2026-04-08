@@ -37,7 +37,7 @@ def is_base_entity_subclass(schema, entity_class_names: set[str] | None = None) 
 
     Args:
         schema: The schema class to check
-        entity_class_names: Optional set of full class names from er_diagram.configs
+        entity_class_names: Optional set of full class names from er_diagram.entities
 
     Returns:
         True if the schema is an entity, False otherwise

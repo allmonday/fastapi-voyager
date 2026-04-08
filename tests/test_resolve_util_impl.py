@@ -18,7 +18,7 @@ class SchemaA(BaseModel):
     }
 
     id: int
-    resolved_field: Annotated[str, LoaderInfo(field="id")] = ""
+    resolved_field: Annotated[str, LoaderInfo(origin="id")] = ""
     exposed_field: str = ""
     collected_field: str = ""
 
