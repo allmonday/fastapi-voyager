@@ -107,9 +107,9 @@ class FastAPIAdapter(VoyagerAdapter):
 
         router = APIRouter(tags=["fastapi-voyager"])
 
-        @router.post("/er-diagram", response_class=PlainTextResponse)
-        def get_er_diagram(payload: ErDiagramPayload) -> str:
-            return self.ctx.get_er_diagram_dot(payload.model_dump())
+        @router.post("/er-diagram")
+        def get_er_diagram(payload: ErDiagramPayload):
+            return self.ctx.get_er_diagram_data(payload.model_dump())
 
         @router.get("/dot", response_model=OptionParam)
         def get_dot() -> OptionParam:

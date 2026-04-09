@@ -88,6 +88,7 @@ class Link:
     type: LinkType
     label: str | None = None
     style: str | None = None
+    loader_fullname: str | None = None
 
 FieldType = Literal['single', 'object', 'all']
 PK = "PK"

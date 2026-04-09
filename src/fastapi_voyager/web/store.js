@@ -53,6 +53,17 @@ const state = reactive({
     routeItems: [],
   },
 
+  // ER diagram edge metadata
+  erDiagramLinks: [],
+
+  // edge detail sidebar state
+  edgeDetail: {
+    loaderFullname: null,
+    sourceEntity: null,
+    targetEntity: null,
+    label: null,
+  },
+
   // schema options, schema, fields
   search: {
     mode: false,
@@ -381,6 +392,10 @@ const actions = {
     state.rightDrawer.drawer = false
     state.routeDetail.show = false
     state.schemaDetail.schemaCodeName = ""
+    state.edgeDetail.loaderFullname = null
+    state.edgeDetail.sourceEntity = null
+    state.edgeDetail.targetEntity = null
+    state.edgeDetail.label = null
   },
 
   /**

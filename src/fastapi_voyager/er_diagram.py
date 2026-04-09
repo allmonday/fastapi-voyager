@@ -155,6 +155,11 @@ class VoyagerErDiagram:
                 # Build label with cardinality and loader name
                 cardinality = f'1 {ARROR} N' if is_list(relationship.target) else f'1 {ARROR} 1'
                 loader_name = _get_loader_name(relationship.loader)
+                loader_fullname = (
+                    f"{relationship.loader.__module__}.{loader_name}"
+                    if relationship.loader and loader_name
+                    else None
+                )
                 label = cardinality
                 if relationship.name:
                     label = f'{relationship.name}\n{label}'
@@ -167,7 +172,8 @@ class VoyagerErDiagram:
                     target_origin=full_class_name(anno),
                     type='schema',
                     label=label,
-                    style='solid' if relationship.loader else 'solid, dashed'
+                    style='solid' if relationship.loader else 'solid, dashed',
+                    loader_fullname=loader_fullname
                     )
 
     def add_to_node_set(self, schema, fk_set: set[str] | None = None) -> str:
@@ -195,15 +201,16 @@ class VoyagerErDiagram:
         return full_name
 
     def add_to_link_set(
-            self, 
-            source: str, 
+            self,
+            source: str,
             source_origin: str,
-            target: str, 
+            target: str,
             target_origin: str,
             type: LinkType,
             label: str,
             style: str,
-            biz: str | None = None
+            biz: str | None = None,
+            loader_fullname: str | None = None
         ) -> bool:
         """
         1. add link to link_set
@@ -219,7 +226,8 @@ class VoyagerErDiagram:
                 target_origin=target_origin,
                 type=type,
                 label=label,
-                style=style
+                style=style,
+                loader_fullname=loader_fullname
             ))
         return result
 
