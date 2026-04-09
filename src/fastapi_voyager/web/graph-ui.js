@@ -219,6 +219,7 @@ export class GraphUI {
         })
 
         edges.on("dblclick.graphui", function (event) {
+          event.stopPropagation()
           const [upStreamNodeRaw, downStreamNodeRaw] = event.currentTarget.dataset.name.split("->")
           // Strip port info (e.g. "ClassA:f.owner_id" -> "ClassA")
           const upStreamNode = upStreamNodeRaw.split(":")[0]
