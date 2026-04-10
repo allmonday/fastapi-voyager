@@ -191,8 +191,8 @@ class DjangoNinjaAdapter(VoyagerAdapter):
 
     async def _handle_er_diagram(self, payload, send):
         """Handle POST /er-diagram."""
-        dot = self.ctx.get_er_diagram_dot(payload)
-        await self._send_text(dot, send)
+        data = self.ctx.get_er_diagram_data(payload)
+        await self._send_json(data, send)
 
     async def _handle_search_dot(self, payload, send):
         """Handle POST /dot-search."""

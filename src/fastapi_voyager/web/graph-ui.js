@@ -146,11 +146,11 @@ export class GraphUI {
     return obj
   }
 
-  _triggerCallback(callbackName, schemaName) {
+  _triggerCallback(callbackName, ...args) {
     const callback = this.options[callbackName]
-    if (callback && schemaName) {
+    if (callback) {
       try {
-        callback(schemaName)
+        callback(...args)
       } catch (e) {
         console.warn(`${callbackName} callback failed`, e)
       }
@@ -218,16 +218,20 @@ export class GraphUI {
           self._triggerCallback("onSchemaClick", event.currentTarget.dataset.name)
         })
 
-        edges.on("click.graphui", function (event) {
-          const [upStreamNode, downStreamNode] = event.currentTarget.dataset.name.split("->")
+        edges.on("dblclick.graphui", function (event) {
+          event.stopPropagation()
+          const [upStreamNodeRaw, downStreamNodeRaw] = event.currentTarget.dataset.name.split("->")
+          // Strip port info (e.g. "ClassA:f.owner_id" -> "ClassA")
+          const upStreamNode = upStreamNodeRaw.split(":")[0]
+          const downStreamNode = downStreamNodeRaw.split(":")[0]
           const nodes = self.gv.nodesByName()
 
           const up = $()
           const down = $()
           const edge = $()
 
-          up.push(nodes[upStreamNode])
-          down.push(nodes[downStreamNode])
+          if (nodes[upStreamNode]) up.push(nodes[upStreamNode])
+          if (nodes[downStreamNode]) down.push(nodes[downStreamNode])
           edge.push(this)
 
           self.currentSelection = [
@@ -236,7 +240,13 @@ export class GraphUI {
             { set: edge, direction: "single" },
           ]
 
-          self._highlightEdgeNodes()
+          try {
+            self._highlightEdgeNodes()
+          } catch (e) {
+            console.warn("[edge-click] highlight error:", e)
+          }
+
+          self._triggerCallback("onEdgeClick", event.currentTarget.dataset.name)
         })
 
         nodes.on("click.graphui", function (event) {
@@ -256,10 +266,16 @@ export class GraphUI {
             }
 
             const $everything = self.gv.$nodes.add(self.gv.$edges).add(self.gv.$clusters)
-            const node = evt.target.parentNode
-            const isNode = $everything.is(function () {
-              return this === node
-            })
+            // Walk up from click target to find if it's inside a node/edge/cluster
+            let el = evt.target
+            let isNode = false
+            while (el && el !== graphContainer) {
+              if ($everything.is(el)) {
+                isNode = true
+                break
+              }
+              el = el.parentNode
+            }
 
             if (!isNode && self.gv) {
               self.clearSchemaBanners()

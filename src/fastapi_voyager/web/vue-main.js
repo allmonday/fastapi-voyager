@@ -1,5 +1,6 @@
 import SchemaCodeDisplay from "./component/schema-code-display.js"
 import RouteCodeDisplay from "./component/route-code-display.js"
+import LoaderCodeDisplay from "./component/loader-code-display.js"
 import Demo from "./component/demo.js"
 import RenderGraph from "./component/render-graph.js"
 import { GraphUI } from "./graph-ui.js"
@@ -56,6 +57,23 @@ const app = createApp({
           if (id in store.state.graph.routeItems) {
             store.state.routeDetail.routeCodeId = id
             store.state.routeDetail.show = true
+          }
+        },
+        onEdgeClick: (edgeName, edgeLabel) => {
+          const [sourceRaw, targetRaw] = edgeName.split("->")
+          // Strip port info (e.g. "module.ClassA:f.owner_id" -> "module.ClassA")
+          const source = sourceRaw.split(":")[0]
+          const target = targetRaw.split(":")[0]
+          const link = store.state.erDiagramLinks.find(
+            (l) => l.source_origin === source && l.target_origin === target
+          )
+          if (link && link.loader_fullname) {
+            store.actions.resetDetailPanels()
+            store.state.edgeDetail.loaderFullname = link.loader_fullname
+            store.state.edgeDetail.sourceEntity = link.source_origin
+            store.state.edgeDetail.targetEntity = link.target_origin
+            store.state.edgeDetail.label = link.label
+            store.state.rightDrawer.drawer = true
           }
         },
         resetCb: () => {
@@ -144,9 +162,10 @@ const app = createApp({
         if (!res.ok) {
           throw new Error(`failed with status ${res.status}`)
         }
-        const dot = await res.text()
-        erDiagramCache.value = dot
-        await graphUI.render(dot, resetZoom)
+        const data = await res.json()
+        erDiagramCache.value = data.dot
+        store.state.erDiagramLinks = data.links || []
+        await graphUI.render(data.dot, resetZoom)
       } catch (err) {
         console.error(err)
       } finally {
@@ -363,6 +382,7 @@ if (window.Quasar && typeof window.Quasar.setCssVar === "function") {
 
 app.component("schema-code-display", SchemaCodeDisplay) // double click to see node details
 app.component("route-code-display", RouteCodeDisplay) // double click to see route details
+app.component("loader-code-display", LoaderCodeDisplay) // click edge to see loader code
 app.component("render-graph", RenderGraph) // for debug, render pasted dot content
 app.component("demo-component", Demo)
 

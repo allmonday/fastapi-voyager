@@ -385,9 +385,16 @@
             />
           </div>
           <schema-code-display
+            v-if="store.state.schemaDetail.schemaCodeName"
             :schema-name="store.state.schemaDetail.schemaCodeName"
             :schemas="store.state.graph.schemaMap"
-          />
+          ></schema-code-display><loader-code-display
+            v-else-if="store.state.edgeDetail.loaderFullname"
+            :loader-fullname="store.state.edgeDetail.loaderFullname"
+            :source-entity="store.state.edgeDetail.sourceEntity"
+            :target-entity="store.state.edgeDetail.targetEntity"
+            :label="store.state.edgeDetail.label"
+          ></loader-code-display>
         </q-drawer>
 
         <q-page-container>

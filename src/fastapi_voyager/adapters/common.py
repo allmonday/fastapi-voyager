@@ -232,6 +232,28 @@ class VoyagerContext:
             ).render_dot()
         return ""
 
+    def get_er_diagram_data(self, payload: dict) -> dict:
+        """Get ER diagram dot graph and link metadata."""
+        if not self.er_diagram:
+            return {"dot": "", "links": []}
+        diagram = VoyagerErDiagram(
+            self.er_diagram,
+            show_fields=payload.get("show_fields", "object"),
+            show_module=payload.get("show_module", True),
+            theme_color=self._get_theme_color(),
+        )
+        dot = diagram.render_dot()
+        links_meta = [
+            {
+                "source_origin": link.source_origin,
+                "target_origin": link.target_origin,
+                "label": link.label,
+                "loader_fullname": link.loader_fullname,
+            }
+            for link in diagram.links
+        ]
+        return {"dot": dot, "links": links_meta}
+
     def get_index_html(self) -> str:
         """Get the index HTML content."""
         index_file = WEB_DIR / "index.html"
