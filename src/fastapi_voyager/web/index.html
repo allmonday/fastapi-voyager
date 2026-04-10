@@ -388,7 +388,8 @@
             v-if="store.state.schemaDetail.schemaCodeName"
             :schema-name="store.state.schemaDetail.schemaCodeName"
             :schemas="store.state.graph.schemaMap"
-          ></schema-code-display><loader-code-display
+          ></schema-code-display
+          ><loader-code-display
             v-else-if="store.state.edgeDetail.loaderFullname"
             :loader-fullname="store.state.edgeDetail.loaderFullname"
             :source-entity="store.state.edgeDetail.sourceEntity"

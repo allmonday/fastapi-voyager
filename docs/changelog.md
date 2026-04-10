@@ -227,6 +227,9 @@
 - 0.20.0
   - [x] migrate pydantic resolve from v4 to v5
 
+- 0.21.0
+  - [x] add dataloader info in side bar
+
 ## unrelease
 - x.x.x
     - [ ] 2.show relationship list when double click entity in er diagram
