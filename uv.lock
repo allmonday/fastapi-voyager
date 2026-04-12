@@ -270,7 +270,7 @@ requires-dist = [
     { name = "litestar", marker = "extra == 'litestar'", specifier = ">=2.19.0" },
     { name = "pydantic", marker = "extra == 'all'", specifier = ">=2.0" },
     { name = "pydantic", marker = "extra == 'litestar'", specifier = ">=2.0" },
-    { name = "pydantic-resolve", specifier = "==5.0.0" },
+    { name = "pydantic-resolve", specifier = ">=5.0.0" },
     { name = "pytest", marker = "extra == 'all'" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'all'" },
