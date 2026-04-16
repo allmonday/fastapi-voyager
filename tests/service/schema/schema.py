@@ -1,615 +1,770 @@
 """
-示例实体定义 - 用于 GraphQL 和 REST API 演示
+电商系统实体定义 - 用于 GraphQL 和 REST API 演示
+使用 SQLAlchemy ORM + build_relationship 自动构建 relationships 和 loaders
 """
 
-from typing import Dict, List, Literal, Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, Field
-from pydantic_resolve import (
-    Relationship,
-    base_entity,
-    mutation,
-    query,
+from pydantic import BaseModel
+from pydantic_resolve import ErDiagram, mutation, query
+from pydantic_resolve.integration.mapping import Mapping
+from pydantic_resolve.integration.sqlalchemy import build_relationship
+from sqlalchemy import select
+
+from .db import async_session, create_tables
+from .dto.attribute import Attribute, AttributeValue
+from .dto.inventory import Inventory, Warehouse
+from .dto.marketing import Coupon, CouponUsage
+from .dto.order import Order, OrderItem, Payment, Refund
+from .dto.product import Brand, Category, Product, ProductImage, ProductVariant, Review
+from .dto.shipment import Shipment, ShipmentItem
+from .dto.store import Store
+from .dto.tag import Tag
+from .dto.user import User, UserAddress
+from .orm import (
+    AttributeOrm,
+    AttributeValueOrm,
+    BrandOrm,
+    CategoryOrm,
+    CouponOrm,
+    CouponUsageOrm,
+    InventoryOrm,
+    OrderItemOrm,
+    OrderOrm,
+    PaymentOrm,
+    ProductImageOrm,
+    ProductOrm,
+    ProductVariantOrm,
+    RefundOrm,
+    ReviewOrm,
+    ShipmentItemOrm,
+    ShipmentOrm,
+    StoreOrm,
+    TagOrm,
+    UserAddressOrm,
+    UserOrm,
+    WarehouseOrm,
 )
-from pydantic_resolve.utils.dataloader import build_list, build_object
-
-from .base_entity import BaseEntity
 
 # =====================================
 # Input Types for Mutations
 # =====================================
 
 
-class CreateMemberInput(BaseModel):
-    """创建成员的输入类型"""
+class CreateProductInput(BaseModel):
+    """创建商品的输入类型"""
 
-    first_name: str = Field(description="名")
-    last_name: str = Field(description="姓")
-
-
-class UpdateMemberInput(BaseModel):
-    """更新成员的输入类型"""
-
-    first_name: Optional[str] = Field(default=None, description="名")
-    last_name: Optional[str] = Field(default=None, description="姓")
+    name: str
+    description: str = ""
+    price: float
+    brand_id: Optional[int] = None
+    category_id: Optional[int] = None
+    store_id: Optional[int] = None
 
 
-class CreateTaskInput(BaseModel):
-    """创建任务的输入类型"""
+class CreateOrderInput(BaseModel):
+    """创建订单的输入类型"""
 
-    story_id: int = Field(description="所属 Story ID")
-    description: str = Field(description="任务描述")
-    owner_id: int = Field(description="负责人 ID")
-
-
-class UpdateTaskInput(BaseModel):
-    """更新任务的输入类型"""
-
-    story_id: Optional[int] = Field(default=None, description="所属 Story ID")
-    description: Optional[str] = Field(default=None, description="任务描述")
-    owner_id: Optional[int] = Field(default=None, description="负责人 ID")
-
-
-class CreateStoryInput(BaseModel):
-    """创建 Story 的输入类型"""
-
-    type: Literal["feature", "bugfix"] = Field(description="类型")
-    sprint_id: int = Field(description="所属 Sprint ID")
-    title: str = Field(description="标题")
-    description: str = Field(description="描述")
-    dct: dict = Field(default_factory=dict, description="额外信息")
-
-
-class UpdateStoryInput(BaseModel):
-    """更新 Story 的输入类型"""
-
-    type: Optional[Literal["feature", "bugfix"]] = Field(
-        default=None, description="类型"
-    )
-    sprint_id: Optional[int] = Field(default=None, description="所属 Sprint ID")
-    title: Optional[str] = Field(default=None, description="标题")
-    description: Optional[str] = Field(default=None, description="描述")
-
-
-class CreateSprintInput(BaseModel):
-    """创建 Sprint 的输入类型"""
-
-    name: str = Field(description="Sprint 名称")
-
-
-class UpdateSprintInput(BaseModel):
-    """更新 Sprint 的输入类型"""
-
-    name: Optional[str] = Field(default=None, description="Sprint 名称")
+    user_id: int
+    total_amount: float = 0
 
 
 # =====================================
-# 模拟数据库（先声明，在文件末尾初始化）
+# Build Relationships from SQLAlchemy ORM
 # =====================================
 
-members_db: Dict[int, "Member"] = {}
-tasks_db: Dict[int, "Task"] = {}
-stories_db: Dict[int, "Story"] = {}
-sprints_db: Dict[int, "Sprint"] = {}
+_mappings = [
+    Mapping(entity=User, orm=UserOrm),
+    Mapping(entity=UserAddress, orm=UserAddressOrm),
+    Mapping(entity=Category, orm=CategoryOrm),
+    Mapping(entity=Brand, orm=BrandOrm),
+    Mapping(entity=Product, orm=ProductOrm),
+    Mapping(entity=ProductVariant, orm=ProductVariantOrm),
+    Mapping(entity=ProductImage, orm=ProductImageOrm),
+    Mapping(entity=Review, orm=ReviewOrm),
+    Mapping(entity=Tag, orm=TagOrm),
+    Mapping(entity=Order, orm=OrderOrm),
+    Mapping(entity=OrderItem, orm=OrderItemOrm),
+    Mapping(entity=Payment, orm=PaymentOrm),
+    Mapping(entity=Refund, orm=RefundOrm),
+    Mapping(entity=Warehouse, orm=WarehouseOrm),
+    Mapping(entity=Inventory, orm=InventoryOrm),
+    Mapping(entity=Shipment, orm=ShipmentOrm),
+    Mapping(entity=ShipmentItem, orm=ShipmentItemOrm),
+    Mapping(entity=Coupon, orm=CouponOrm),
+    Mapping(entity=CouponUsage, orm=CouponUsageOrm),
+    Mapping(entity=Store, orm=StoreOrm),
+    Mapping(entity=Attribute, orm=AttributeOrm),
+    Mapping(entity=AttributeValue, orm=AttributeValueOrm),
+]
 
-member_id_counter = 0
-task_id_counter = 0
-story_id_counter = 0
-sprint_id_counter = 0
+_entities = build_relationship(
+    mappings=_mappings,
+    session_factory=lambda: async_session(),
+)
 
-
-# =====================================
-# DataLoader 函数
-# =====================================
-
-
-async def member_loader(member_ids: List[int]) -> List[dict]:
-    """成员批量加载器"""
-    members = [m if m else None for m in [members_db.get(mid) for mid in member_ids]]
-    return list(build_object(members, member_ids, lambda m: m.id if m else None))
-
-
-async def task_loader(task_ids: List[int]) -> List[dict]:
-    """任务批量加载器"""
-    tasks = [t if t else None for t in [tasks_db.get(tid) for tid in task_ids]]
-    return list(build_object(tasks, task_ids, lambda t: t.id if t else None))
-
-
-async def story_loader(story_ids: List[int]) -> List[dict]:
-    """Story 批量加载器"""
-    stories = [s if s else None for s in [stories_db.get(sid) for sid in story_ids]]
-    return list(build_object(stories, story_ids, lambda s: s.id if s else None))
-
-
-async def sprint_loader(sprint_ids: List[int]) -> List[dict]:
-    """Sprint 批量加载器"""
-    sprints = [sp if sp else None for sp in [sprints_db.get(sid) for sid in sprint_ids]]
-    return list(build_object(sprints, sprint_ids, lambda sp: sp.id if sp else None))
-
-
-async def story_to_tasks_loader(story_ids: List[int]) -> List[List[dict]]:
-    """根据 Story ID 加载关联的 Tasks"""
-    all_tasks = list(tasks_db.values())
-    return list(build_list(all_tasks, story_ids, lambda t: t.story_id))
-
-
-async def sprint_to_stories_loader(sprint_ids: List[int]) -> List[List[dict]]:
-    """根据 Sprint ID 加载关联的 Stories"""
-    all_stories = list(stories_db.values())
-    return list(build_list(all_stories, sprint_ids, lambda s: s.sprint_id))
+diagram = ErDiagram(entities=[]).add_relationship(_entities)
 
 
 # =====================================
-# 实体定义
+# Query & Mutation Methods on DTOs
 # =====================================
 
 
-class Member(BaseModel, BaseEntity):
-    """成员实体"""
-
-    __relationships__ = []
-
-    id: int = Field(description="成员唯一标识 ID")
-    first_name: str = Field(description="名")
-    last_name: str = Field(description="姓")
+class User(User):  # type: ignore[no-redef]
+    @query
+    async def get_all(cls, limit: int = 10, offset: int = 0) -> List["User"]:
+        """获取所有用户（分页）"""
+        async with async_session() as session:
+            stmt = select(UserOrm).offset(offset).limit(limit)
+            rows = (await session.scalars(stmt)).all()
+            return [User.model_validate(r) for r in rows]
 
     @query
-    async def get_all(cls, limit: int = 10, offset: int = 0) -> List["Member"]:
-        """获取所有成员（分页）"""
-        all_members = list(members_db.values())
-        return all_members[offset : offset + limit]
-
-    @query
-    async def get_by_id(cls, id: int) -> Optional["Member"]:
-        """根据 ID 获取成员"""
-        return members_db.get(id)
+    async def get_by_id(cls, id: int) -> Optional["User"]:
+        """根据 ID 获取用户"""
+        async with async_session() as session:
+            row = await session.get(UserOrm, id)
+            return User.model_validate(row) if row else None
 
     @mutation
-    async def create_member(cls, first_name: str, last_name: str) -> "Member":
-        """创建新成员"""
-        global member_id_counter
-        member_id_counter += 1
-        new_member = Member(
-            id=member_id_counter, first_name=first_name, last_name=last_name
-        )
-        members_db[member_id_counter] = new_member
-        return new_member
-
-    @mutation
-    async def create_member_with_input(cls, input: CreateMemberInput) -> "Member":
-        """使用 Input Type 创建新成员"""
-        global member_id_counter
-        member_id_counter += 1
-        new_member = Member(
-            id=member_id_counter,
-            first_name=input.first_name,
-            last_name=input.last_name,
-        )
-        members_db[member_id_counter] = new_member
-        return new_member
-
-    @mutation
-    async def update_member(
-        cls, id: int, first_name: Optional[str] = None, last_name: Optional[str] = None
-    ) -> Optional["Member"]:
-        """更新成员信息"""
-        if id in members_db:
-            member = members_db[id]
-            if first_name is not None:
-                member.first_name = first_name
-            if last_name is not None:
-                member.last_name = last_name
-            return member
-        return None
-
-    @mutation
-    async def update_member_with_input(
-        cls, id: int, input: UpdateMemberInput
-    ) -> Optional["Member"]:
-        """使用 Input Type 更新成员信息"""
-        if id in members_db:
-            member = members_db[id]
-            if input.first_name is not None:
-                member.first_name = input.first_name
-            if input.last_name is not None:
-                member.last_name = input.last_name
-            return member
-        return None
-
-    @mutation
-    async def delete_member(cls, id: int) -> bool:
-        """删除成员，返回是否成功"""
-        if id in members_db:
-            del members_db[id]
-            return True
-        return False
+    async def create_user(cls, username: str, email: str, phone: str = "") -> "User":
+        """创建新用户"""
+        async with async_session() as session:
+            async with session.begin():
+                orm = UserOrm(username=username, email=email, phone=phone or None)
+                session.add(orm)
+                await session.flush()
+                return User.model_validate(orm)
 
 
-class Task(BaseModel, BaseEntity):
-    """任务实体"""
-
-    __relationships__ = [
-        Relationship(
-            fk="owner_id",
-            target=Member,
-            loader=member_loader,
-            name="owner",
-        ),
-        Relationship(
-            fk="story_id",
-            target="Story",
-            loader=story_loader,
-            name="story",
-        ),
-    ]
-    id: int = Field(description="The unique identifier of the task")
-    story_id: int = Field(description="所属 Story ID")
-    description: str = Field(description="任务描述")
-    owner_id: int = Field(description="负责人 ID")
-
-    @query
-    async def get_all(cls, limit: int = 10, offset: int = 0) -> List["Task"]:
-        """获取所有任务（分页）"""
-        all_tasks = list(tasks_db.values())
-        return all_tasks[offset : offset + limit]
-
-    @query
-    async def get_by_id(cls, id: int) -> Optional["Task"]:
-        """根据 ID 获取任务"""
-        return tasks_db.get(id)
-
-    @query
-    async def get_by_story_id(cls, story_id: int) -> List["Task"]:
-        """根据 Story ID 获取任务列表"""
-        return [t for t in tasks_db.values() if t.story_id == story_id]
-
-    @mutation
-    async def create_task(cls, story_id: int, description: str, owner_id: int) -> "Task":
-        """创建新任务"""
-        global task_id_counter
-        task_id_counter += 1
-        new_task = Task(
-            id=task_id_counter,
-            story_id=story_id,
-            description=description,
-            owner_id=owner_id,
-        )
-        tasks_db[task_id_counter] = new_task
-        return new_task
-
-    @mutation
-    async def create_task_with_input(cls, input: CreateTaskInput) -> "Task":
-        """使用 Input Type 创建新任务"""
-        global task_id_counter
-        task_id_counter += 1
-        new_task = Task(
-            id=task_id_counter,
-            story_id=input.story_id,
-            description=input.description,
-            owner_id=input.owner_id,
-        )
-        tasks_db[task_id_counter] = new_task
-        return new_task
-
-    @mutation
-    async def update_task(
-        cls,
-        id: int,
-        story_id: Optional[int] = None,
-        description: Optional[str] = None,
-        owner_id: Optional[int] = None,
-    ) -> Optional["Task"]:
-        """更新任务信息"""
-        if id in tasks_db:
-            task = tasks_db[id]
-            if story_id is not None:
-                task.story_id = story_id
-            if description is not None:
-                task.description = description
-            if owner_id is not None:
-                task.owner_id = owner_id
-            return task
-        return None
-
-    @mutation
-    async def update_task_with_input(
-        cls, id: int, input: UpdateTaskInput
-    ) -> Optional["Task"]:
-        """使用 Input Type 更新任务信息"""
-        if id in tasks_db:
-            task = tasks_db[id]
-            if input.story_id is not None:
-                task.story_id = input.story_id
-            if input.description is not None:
-                task.description = input.description
-            if input.owner_id is not None:
-                task.owner_id = input.owner_id
-            return task
-        return None
-
-    @mutation
-    async def delete_task(cls, id: int) -> bool:
-        """删除任务，返回是否成功"""
-        if id in tasks_db:
-            del tasks_db[id]
-            return True
-        return False
-
-
-class Story(BaseModel, BaseEntity):
-    """Story 实体"""
-
-    __relationships__ = [
-        Relationship(
-            fk="id",
-            target=list["Task"],
-            loader=story_to_tasks_loader,
-            name="tasks",
-        ),
-        Relationship(
-            fk="id",
-            target=list[int],
-            loader=lambda x: x,
-            name="task_ids",
-        )
-    ]
-    id: int = Field(description="Story ID")
-    type: Literal["feature", "bugfix"] = Field(description="类型")
-    dct: dict = Field(default_factory=dict, description="额外信息")
-    sprint_id: int = Field(description="所属 Sprint ID")
-    title: str = Field(description="标题")
-    description: str = Field(description="描述")
-
+class Product(Product):  # type: ignore[no-redef]
     @query
     async def get_all(
-        cls, limit: int = 10, offset: int = 0, sprint_id: Optional[int] = None
-    ) -> List["Story"]:
-        """获取所有 Story（分页，可按 Sprint 筛选）"""
-        all_stories = list(stories_db.values())
-        if sprint_id:
-            all_stories = [s for s in all_stories if s.sprint_id == sprint_id]
-        return all_stories[offset : offset + limit]
+        cls, limit: int = 10, offset: int = 0, category_id: Optional[int] = None
+    ) -> List["Product"]:
+        """获取所有商品（分页，可按分类筛选）"""
+        async with async_session() as session:
+            stmt = select(ProductOrm)
+            if category_id:
+                stmt = stmt.where(ProductOrm.category_id == category_id)
+            stmt = stmt.offset(offset).limit(limit)
+            rows = (await session.scalars(stmt)).all()
+            return [Product.model_validate(r) for r in rows]
 
     @query
-    async def get_by_id(cls, id: int) -> Optional["Story"]:
-        """根据 ID 获取 Story"""
-        return stories_db.get(id)
-
-    @query
-    async def get_by_sprint_id(cls, sprint_id: int) -> List["Story"]:
-        """根据 Sprint ID 获取 Story 列表"""
-        return [s for s in stories_db.values() if s.sprint_id == sprint_id]
+    async def get_by_id(cls, id: int) -> Optional["Product"]:
+        """根据 ID 获取商品"""
+        async with async_session() as session:
+            row = await session.get(ProductOrm, id)
+            return Product.model_validate(row) if row else None
 
     @mutation
-    async def create_story(
+    async def create_product(
         cls,
-        type: Literal["feature", "bugfix"],
-        sprint_id: int,
-        title: str,
-        description: str,
-        dct: dict = None,
-    ) -> "Story":
-        """创建新 Story"""
-        global story_id_counter
-        story_id_counter += 1
-        new_story = Story(
-            id=story_id_counter,
-            type=type,
-            sprint_id=sprint_id,
-            title=title,
-            description=description,
-            dct=dct or {},
-        )
-        stories_db[story_id_counter] = new_story
-        return new_story
-
-    @mutation
-    async def create_story_with_input(cls, input: CreateStoryInput) -> "Story":
-        """使用 Input Type 创建新 Story"""
-        global story_id_counter
-        story_id_counter += 1
-        new_story = Story(
-            id=story_id_counter,
-            type=input.type,
-            sprint_id=input.sprint_id,
-            title=input.title,
-            description=input.description,
-            dct=input.dct,
-        )
-        stories_db[story_id_counter] = new_story
-        return new_story
-
-    @mutation
-    async def update_story(
-        cls,
-        id: int,
-        type: Optional[Literal["feature", "bugfix"]] = None,
-        sprint_id: Optional[int] = None,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-    ) -> Optional["Story"]:
-        """更新 Story 信息"""
-        if id in stories_db:
-            story = stories_db[id]
-            if type is not None:
-                story.type = type
-            if sprint_id is not None:
-                story.sprint_id = sprint_id
-            if title is not None:
-                story.title = title
-            if description is not None:
-                story.description = description
-            return story
-        return None
-
-    @mutation
-    async def update_story_with_input(
-        cls, id: int, input: UpdateStoryInput
-    ) -> Optional["Story"]:
-        """使用 Input Type 更新 Story 信息"""
-        if id in stories_db:
-            story = stories_db[id]
-            if input.type is not None:
-                story.type = input.type
-            if input.sprint_id is not None:
-                story.sprint_id = input.sprint_id
-            if input.title is not None:
-                story.title = input.title
-            if input.description is not None:
-                story.description = input.description
-            return story
-        return None
-
-    @mutation
-    async def delete_story(cls, id: int) -> bool:
-        """删除 Story，返回是否成功"""
-        if id in stories_db:
-            del stories_db[id]
-            return True
-        return False
+        name: str,
+        price: float,
+        description: str = "",
+        brand_id: Optional[int] = None,
+        category_id: Optional[int] = None,
+        store_id: Optional[int] = None,
+    ) -> "Product":
+        """创建新商品"""
+        async with async_session() as session:
+            async with session.begin():
+                orm = ProductOrm(
+                    name=name,
+                    price=price,
+                    description=description or None,
+                    brand_id=brand_id,
+                    category_id=category_id,
+                    store_id=store_id,
+                )
+                session.add(orm)
+                await session.flush()
+                return Product.model_validate(orm)
 
 
-class Sprint(BaseModel, BaseEntity):
-    """Sprint 实体"""
-
-    __relationships__ = [
-        Relationship(
-            fk="id",
-            target=list["Story"],
-            loader=sprint_to_stories_loader,
-            name="stories",
-        ),
-        Relationship(
-            fk="id",
-            target=list["Story"],
-            loader=sprint_to_stories_loader,
-            name="done_stories",
-        ),
-    ]
-    id: int = Field(description="Sprint ID")
-    name: str = Field(description="Sprint 名称")
+class Order(Order):  # type: ignore[no-redef]
+    @query
+    async def get_all(
+        cls, limit: int = 10, offset: int = 0, user_id: Optional[int] = None
+    ) -> List["Order"]:
+        """获取所有订单（分页，可按用户筛选）"""
+        async with async_session() as session:
+            stmt = select(OrderOrm)
+            if user_id:
+                stmt = stmt.where(OrderOrm.user_id == user_id)
+            stmt = stmt.offset(offset).limit(limit)
+            rows = (await session.scalars(stmt)).all()
+            return [Order.model_validate(r) for r in rows]
 
     @query
-    async def get_all(cls, limit: int = 10, offset: int = 0) -> List["Sprint"]:
-        """获取所有 Sprint（分页）"""
-        all_sprints = list(sprints_db.values())
-        return all_sprints[offset : offset + limit]
+    async def get_by_id(cls, id: int) -> Optional["Order"]:
+        """根据 ID 获取订单"""
+        async with async_session() as session:
+            row = await session.get(OrderOrm, id)
+            return Order.model_validate(row) if row else None
 
+    @mutation
+    async def create_order(cls, user_id: int, total_amount: float = 0) -> "Order":
+        """创建新订单"""
+        async with async_session() as session:
+            async with session.begin():
+                orm = OrderOrm(user_id=user_id, total_amount=total_amount)
+                session.add(orm)
+                await session.flush()
+                return Order.model_validate(orm)
+
+    @mutation
+    async def update_order_status(cls, id: int, status: str) -> Optional["Order"]:
+        """更新订单状态"""
+        async with async_session() as session:
+            async with session.begin():
+                row = await session.get(OrderOrm, id)
+                if row:
+                    row.status = status
+                    await session.flush()
+                    return Order.model_validate(row)
+        return None
+
+
+class Category(Category):  # type: ignore[no-redef]
     @query
-    async def get_by_id(cls, id: int) -> Optional["Sprint"]:
-        """根据 ID 获取 Sprint"""
-        return sprints_db.get(id)
+    async def get_all(cls) -> List["Category"]:
+        """获取所有分类"""
+        async with async_session() as session:
+            stmt = select(CategoryOrm)
+            rows = (await session.scalars(stmt)).all()
+            return [Category.model_validate(r) for r in rows]
 
     @mutation
-    async def create_sprint(cls, name: str) -> "Sprint":
-        """创建新 Sprint"""
-        global sprint_id_counter
-        sprint_id_counter += 1
-        new_sprint = Sprint(id=sprint_id_counter, name=name)
-        sprints_db[sprint_id_counter] = new_sprint
-        return new_sprint
+    async def create_category(
+        cls, name: str, parent_id: Optional[int] = None
+    ) -> "Category":
+        """创建分类"""
+        async with async_session() as session:
+            async with session.begin():
+                orm = CategoryOrm(name=name, parent_id=parent_id)
+                session.add(orm)
+                await session.flush()
+                return Category.model_validate(orm)
+
+
+class Brand(Brand):  # type: ignore[no-redef]
+    @query
+    async def get_all(cls) -> List["Brand"]:
+        """获取所有品牌"""
+        async with async_session() as session:
+            stmt = select(BrandOrm)
+            rows = (await session.scalars(stmt)).all()
+            return [Brand.model_validate(r) for r in rows]
 
     @mutation
-    async def create_sprint_with_input(cls, input: CreateSprintInput) -> "Sprint":
-        """使用 Input Type 创建新 Sprint"""
-        global sprint_id_counter
-        sprint_id_counter += 1
-        new_sprint = Sprint(id=sprint_id_counter, name=input.name)
-        sprints_db[sprint_id_counter] = new_sprint
-        return new_sprint
+    async def create_brand(cls, name: str, logo: str = "") -> "Brand":
+        """创建品牌"""
+        async with async_session() as session:
+            async with session.begin():
+                orm = BrandOrm(name=name, logo=logo or None)
+                session.add(orm)
+                await session.flush()
+                return Brand.model_validate(orm)
+
+
+class Tag(Tag):  # type: ignore[no-redef]
+    @query
+    async def get_all(cls) -> List["Tag"]:
+        """获取所有标签"""
+        async with async_session() as session:
+            stmt = select(TagOrm)
+            rows = (await session.scalars(stmt)).all()
+            return [Tag.model_validate(r) for r in rows]
 
     @mutation
-    async def update_sprint(
-        cls, id: int, name: Optional[str] = None
-    ) -> Optional["Sprint"]:
-        """更新 Sprint 信息"""
-        if id in sprints_db:
-            sprint = sprints_db[id]
-            if name is not None:
-                sprint.name = name
-            return sprint
-        return None
+    async def create_tag(cls, name: str) -> "Tag":
+        """创建标签"""
+        async with async_session() as session:
+            async with session.begin():
+                orm = TagOrm(name=name)
+                session.add(orm)
+                await session.flush()
+                return Tag.model_validate(orm)
+
+
+class Coupon(Coupon):  # type: ignore[no-redef]
+    @query
+    async def get_all(cls) -> List["Coupon"]:
+        """获取所有优惠券"""
+        async with async_session() as session:
+            stmt = select(CouponOrm)
+            rows = (await session.scalars(stmt)).all()
+            return [Coupon.model_validate(r) for r in rows]
 
     @mutation
-    async def update_sprint_with_input(
-        cls, id: int, input: UpdateSprintInput
-    ) -> Optional["Sprint"]:
-        """使用 Input Type 更新 Sprint 信息"""
-        if id in sprints_db:
-            sprint = sprints_db[id]
-            if input.name is not None:
-                sprint.name = input.name
-            return sprint
-        return None
+    async def create_coupon(
+        cls, code: str, discount: float, min_amount: float = 0
+    ) -> "Coupon":
+        """创建优惠券"""
+        async with async_session() as session:
+            async with session.begin():
+                orm = CouponOrm(code=code, discount=discount, min_amount=min_amount)
+                session.add(orm)
+                await session.flush()
+                return Coupon.model_validate(orm)
+
+
+class Store(Store):  # type: ignore[no-redef]
+    @query
+    async def get_all(cls) -> List["Store"]:
+        """获取所有店铺"""
+        async with async_session() as session:
+            stmt = select(StoreOrm)
+            rows = (await session.scalars(stmt)).all()
+            return [Store.model_validate(r) for r in rows]
 
     @mutation
-    async def delete_sprint(cls, id: int) -> bool:
-        """删除 Sprint，返回是否成功"""
-        if id in sprints_db:
-            del sprints_db[id]
-            return True
-        return False
+    async def create_store(cls, name: str, description: str = "") -> "Store":
+        """创建店铺"""
+        async with async_session() as session:
+            async with session.begin():
+                orm = StoreOrm(name=name, description=description or None)
+                session.add(orm)
+                await session.flush()
+                return Store.model_validate(orm)
+
+
+class Warehouse(Warehouse):  # type: ignore[no-redef]
+    @query
+    async def get_all(cls) -> List["Warehouse"]:
+        """获取所有仓库"""
+        async with async_session() as session:
+            stmt = select(WarehouseOrm)
+            rows = (await session.scalars(stmt)).all()
+            return [Warehouse.model_validate(r) for r in rows]
+
+
+class ProductVariant(ProductVariant):  # type: ignore[no-redef]
+    @query
+    async def get_by_product(cls, product_id: int) -> List["ProductVariant"]:
+        """根据商品 ID 获取规格列表"""
+        async with async_session() as session:
+            stmt = select(ProductVariantOrm).where(
+                ProductVariantOrm.product_id == product_id
+            )
+            rows = (await session.scalars(stmt)).all()
+            return [ProductVariant.model_validate(r) for r in rows]
+
+
+class OrderItem(OrderItem):  # type: ignore[no-redef]
+    @query
+    async def get_by_order(cls, order_id: int) -> List["OrderItem"]:
+        """根据订单 ID 获取明细"""
+        async with async_session() as session:
+            stmt = select(OrderItemOrm).where(OrderItemOrm.order_id == order_id)
+            rows = (await session.scalars(stmt)).all()
+            return [OrderItem.model_validate(r) for r in rows]
+
+
+class UserAddress(UserAddress):  # type: ignore[no-redef]
+    pass
+
+
+class ProductImage(ProductImage):  # type: ignore[no-redef]
+    pass
+
+
+class Review(Review):  # type: ignore[no-redef]
+    pass
+
+
+class Payment(Payment):  # type: ignore[no-redef]
+    pass
+
+
+class Refund(Refund):  # type: ignore[no-redef]
+    pass
+
+
+class Inventory(Inventory):  # type: ignore[no-redef]
+    pass
+
+
+class Shipment(Shipment):  # type: ignore[no-redef]
+    pass
+
+
+class ShipmentItem(ShipmentItem):  # type: ignore[no-redef]
+    pass
+
+
+class CouponUsage(CouponUsage):  # type: ignore[no-redef]
+    pass
+
+
+class Attribute(Attribute):  # type: ignore[no-redef]
+    pass
+
+
+class AttributeValue(AttributeValue):  # type: ignore[no-redef]
+    pass
 
 
 # =====================================
-# 初始化模拟数据库
+# 初始化种子数据
 # =====================================
 
 
-def init_db():
-    """初始化模拟数据库"""
-    global members_db, tasks_db, stories_db, sprints_db
-    global member_id_counter, task_id_counter, story_id_counter, sprint_id_counter
+async def init_db():
+    """创建表并插入种子数据"""
+    await create_tables()
 
-    member_id_counter = 2
-    task_id_counter = 4
-    story_id_counter = 2
-    sprint_id_counter = 1
+    async with async_session() as session:
+        async with session.begin():
+            # Users
+            session.add_all(
+                [
+                    UserOrm(id=1, username="zhangsan", email="zhangsan@example.com"),
+                    UserOrm(id=2, username="lisi", email="lisi@example.com"),
+                    UserOrm(id=3, username="wangwu", email="wangwu@example.com"),
+                ]
+            )
+            # Addresses
+            session.add_all(
+                [
+                    UserAddressOrm(
+                        id=1,
+                        user_id=1,
+                        province="广东",
+                        city="深圳",
+                        district="南山区",
+                        detail="科技园路1号",
+                        is_default=True,
+                    ),
+                    UserAddressOrm(
+                        id=2,
+                        user_id=1,
+                        province="广东",
+                        city="深圳",
+                        district="福田区",
+                        detail="华强北路2号",
+                    ),
+                    UserAddressOrm(
+                        id=3,
+                        user_id=2,
+                        province="北京",
+                        city="北京",
+                        district="朝阳区",
+                        detail="望京路3号",
+                        is_default=True,
+                    ),
+                    UserAddressOrm(
+                        id=4,
+                        user_id=3,
+                        province="上海",
+                        city="上海",
+                        district="浦东新区",
+                        detail="张江路4号",
+                        is_default=True,
+                    ),
+                ]
+            )
+            # Brands
+            session.add_all(
+                [
+                    BrandOrm(id=1, name="Apple"),
+                    BrandOrm(id=2, name="Nike"),
+                ]
+            )
+            # Categories (with nesting)
+            session.add_all(
+                [
+                    CategoryOrm(id=1, name="电子产品"),
+                    CategoryOrm(id=2, name="手机", parent_id=1),
+                    CategoryOrm(id=3, name="电脑", parent_id=1),
+                    CategoryOrm(id=4, name="服装"),
+                    CategoryOrm(id=5, name="鞋子", parent_id=4),
+                ]
+            )
+            # Stores
+            session.add_all(
+                [
+                    StoreOrm(id=1, name="Apple 官方旗舰店", description="Apple 官方授权"),
+                    StoreOrm(id=2, name="Nike 运动专营", description="Nike 品牌直营"),
+                ]
+            )
+            # Tags
+            session.add_all(
+                [
+                    TagOrm(id=1, name="新品"),
+                    TagOrm(id=2, name="热卖"),
+                    TagOrm(id=3, name="折扣"),
+                    TagOrm(id=4, name="高端"),
+                    TagOrm(id=5, name="运动"),
+                ]
+            )
+            # Products
+            session.add_all(
+                [
+                    ProductOrm(
+                        id=1,
+                        name="iPhone 15",
+                        price=5999.0,
+                        brand_id=1,
+                        category_id=2,
+                        store_id=1,
+                    ),
+                    ProductOrm(
+                        id=2,
+                        name="MacBook Pro",
+                        price=12999.0,
+                        brand_id=1,
+                        category_id=3,
+                        store_id=1,
+                    ),
+                    ProductOrm(
+                        id=3,
+                        name="Air Jordan 1",
+                        price=1299.0,
+                        brand_id=2,
+                        category_id=5,
+                        store_id=2,
+                    ),
+                    ProductOrm(
+                        id=4,
+                        name="iPad Air",
+                        price=4799.0,
+                        brand_id=1,
+                        category_id=2,
+                        store_id=1,
+                    ),
+                    ProductOrm(
+                        id=5,
+                        name="Nike Air Max",
+                        price=899.0,
+                        brand_id=2,
+                        category_id=5,
+                        store_id=2,
+                    ),
+                ]
+            )
+            # Product Variants
+            session.add_all(
+                [
+                    ProductVariantOrm(id=1, product_id=1, sku="IP15-128-BLK", price=5999.0, stock=100),
+                    ProductVariantOrm(id=2, product_id=1, sku="IP15-256-WHT", price=6499.0, stock=50),
+                    ProductVariantOrm(id=3, product_id=2, sku="MBP14-512", price=12999.0, stock=30),
+                    ProductVariantOrm(id=4, product_id=2, sku="MBP16-1T", price=18999.0, stock=10),
+                    ProductVariantOrm(id=5, product_id=3, sku="AJ1-42-RED", price=1299.0, stock=80),
+                    ProductVariantOrm(id=6, product_id=3, sku="AJ1-43-BLK", price=1299.0, stock=60),
+                    ProductVariantOrm(id=7, product_id=4, sku="IPA-64-BLU", price=4799.0, stock=40),
+                    ProductVariantOrm(id=8, product_id=5, sku="NAM-42-WHT", price=899.0, stock=120),
+                ]
+            )
+            # Product Images
+            session.add_all(
+                [
+                    ProductImageOrm(id=1, product_id=1, url="/img/iphone15-1.jpg", sort_order=1),
+                    ProductImageOrm(id=2, product_id=1, url="/img/iphone15-2.jpg", sort_order=2),
+                    ProductImageOrm(id=3, product_id=2, url="/img/macbook-1.jpg", sort_order=1),
+                    ProductImageOrm(id=4, product_id=2, url="/img/macbook-2.jpg", sort_order=2),
+                    ProductImageOrm(id=5, product_id=3, url="/img/aj1-1.jpg", sort_order=1),
+                    ProductImageOrm(id=6, product_id=3, url="/img/aj1-2.jpg", sort_order=2),
+                    ProductImageOrm(id=7, product_id=4, url="/img/ipad-1.jpg", sort_order=1),
+                    ProductImageOrm(id=8, product_id=4, url="/img/ipad-2.jpg", sort_order=2),
+                    ProductImageOrm(id=9, product_id=5, url="/img/airmax-1.jpg", sort_order=1),
+                    ProductImageOrm(id=10, product_id=5, url="/img/airmax-2.jpg", sort_order=2),
+                ]
+            )
+            # Product Tags (M:N)
+            from .orm.tables import product_tag
 
-    members_db.clear()
-    tasks_db.clear()
-    stories_db.clear()
-    sprints_db.clear()
+            await session.execute(
+                product_tag.insert(),
+                [
+                    {"product_id": 1, "tag_id": 1},
+                    {"product_id": 1, "tag_id": 4},
+                    {"product_id": 2, "tag_id": 2},
+                    {"product_id": 2, "tag_id": 4},
+                    {"product_id": 3, "tag_id": 1},
+                    {"product_id": 3, "tag_id": 5},
+                    {"product_id": 4, "tag_id": 2},
+                    {"product_id": 5, "tag_id": 3},
+                    {"product_id": 5, "tag_id": 5},
+                ],
+            )
+            # Store Staff (M:N)
+            from .orm.tables import store_staff
 
-    members_db.update(
-        {
-            1: Member(id=1, first_name="John", last_name="Doe"),
-            2: Member(id=2, first_name="Jane", last_name="Smith"),
-        }
-    )
+            await session.execute(
+                store_staff.insert(),
+                [
+                    {"store_id": 1, "user_id": 1},
+                    {"store_id": 1, "user_id": 2},
+                    {"store_id": 2, "user_id": 2},
+                ],
+            )
+            # Attributes & Values
+            session.add_all(
+                [
+                    AttributeOrm(id=1, name="颜色"),
+                    AttributeOrm(id=2, name="尺寸"),
+                    AttributeOrm(id=3, name="材质"),
+                    AttributeOrm(id=4, name="容量"),
+                    AttributeOrm(id=5, name="款式"),
+                ]
+            )
+            session.add_all(
+                [
+                    AttributeValueOrm(id=1, attribute_id=1, value="黑色"),
+                    AttributeValueOrm(id=2, attribute_id=1, value="白色"),
+                    AttributeValueOrm(id=3, attribute_id=1, value="红色"),
+                    AttributeValueOrm(id=4, attribute_id=2, value="S"),
+                    AttributeValueOrm(id=5, attribute_id=2, value="M"),
+                    AttributeValueOrm(id=6, attribute_id=2, value="L"),
+                    AttributeValueOrm(id=7, attribute_id=3, value="皮革"),
+                    AttributeValueOrm(id=8, attribute_id=3, value="网布"),
+                    AttributeValueOrm(id=9, attribute_id=4, value="128GB"),
+                    AttributeValueOrm(id=10, attribute_id=4, value="256GB"),
+                    AttributeValueOrm(id=11, attribute_id=4, value="512GB"),
+                    AttributeValueOrm(id=12, attribute_id=4, value="1TB"),
+                    AttributeValueOrm(id=13, attribute_id=5, value="低帮"),
+                    AttributeValueOrm(id=14, attribute_id=5, value="高帮"),
+                    AttributeValueOrm(id=15, attribute_id=1, value="蓝色"),
+                ]
+            )
+            # Product Attribute Values (M:N)
+            from .orm.tables import product_attribute
 
-    sprints_db.update({1: Sprint(id=1, name="Sprint 1")})
-
-    stories_db.update(
-        {
-            1: Story(
-                id=1,
-                type="feature",
-                dct={"key": "value"},
-                sprint_id=1,
-                title="First Story",
-                description="This is the first story",
-            ),
-            2: Story(
-                id=2,
-                type="bugfix",
-                dct={},
-                sprint_id=1,
-                title="Second Story",
-                description="This is the second story",
-            ),
-        }
-    )
-
-    tasks_db.update(
-        {
-            1: Task(id=1, story_id=1, description="Task 1 for Story 1", owner_id=1),
-            2: Task(id=2, story_id=1, description="Task 2 for Story 1", owner_id=2),
-            3: Task(id=3, story_id=2, description="Task 1 for Story 2", owner_id=1),
-            4: Task(id=4, story_id=2, description="Task 2 for Story 2", owner_id=2),
-        }
-    )
-
-
-# 自动初始化
-init_db()
+            await session.execute(
+                product_attribute.insert(),
+                [
+                    {"variant_id": 1, "value_id": 1},  # iPhone 15 Black
+                    {"variant_id": 1, "value_id": 9},  # 128GB
+                    {"variant_id": 2, "value_id": 2},  # iPhone 15 White
+                    {"variant_id": 2, "value_id": 10},  # 256GB
+                    {"variant_id": 3, "value_id": 11},  # MBP 512GB
+                    {"variant_id": 4, "value_id": 12},  # MBP 1TB
+                    {"variant_id": 5, "value_id": 3},  # AJ1 Red
+                    {"variant_id": 5, "value_id": 14},  # 高帮
+                    {"variant_id": 6, "value_id": 1},  # AJ1 Black
+                    {"variant_id": 6, "value_id": 14},  # 高帮
+                ],
+            )
+            # Orders
+            session.add_all(
+                [
+                    OrderOrm(id=1, user_id=1, status="completed", total_amount=7298.0),
+                    OrderOrm(id=2, user_id=1, status="shipped", total_amount=12999.0),
+                    OrderOrm(id=3, user_id=2, status="pending", total_amount=2598.0),
+                    OrderOrm(id=4, user_id=2, status="paid", total_amount=4799.0),
+                    OrderOrm(id=5, user_id=3, status="pending", total_amount=899.0),
+                    OrderOrm(id=6, user_id=3, status="refunded", total_amount=1299.0),
+                ]
+            )
+            # Order Items
+            session.add_all(
+                [
+                    OrderItemOrm(id=1, order_id=1, variant_id=1, quantity=1, unit_price=5999.0),
+                    OrderItemOrm(id=2, order_id=1, variant_id=5, quantity=1, unit_price=1299.0),
+                    OrderItemOrm(id=3, order_id=2, variant_id=3, quantity=1, unit_price=12999.0),
+                    OrderItemOrm(id=4, order_id=3, variant_id=5, quantity=2, unit_price=1299.0),
+                    OrderItemOrm(id=5, order_id=4, variant_id=7, quantity=1, unit_price=4799.0),
+                    OrderItemOrm(id=6, order_id=5, variant_id=8, quantity=1, unit_price=899.0),
+                    OrderItemOrm(id=7, order_id=6, variant_id=6, quantity=1, unit_price=1299.0),
+                    OrderItemOrm(id=8, order_id=1, variant_id=2, quantity=1, unit_price=6499.0),
+                    OrderItemOrm(id=9, order_id=2, variant_id=4, quantity=1, unit_price=18999.0),
+                    OrderItemOrm(id=10, order_id=3, variant_id=6, quantity=1, unit_price=1299.0),
+                    OrderItemOrm(id=11, order_id=4, variant_id=1, quantity=1, unit_price=5999.0),
+                    OrderItemOrm(id=12, order_id=6, variant_id=8, quantity=1, unit_price=899.0),
+                ]
+            )
+            # Payments
+            session.add_all(
+                [
+                    PaymentOrm(id=1, order_id=1, method="wechat", amount=7298.0, status="success"),
+                    PaymentOrm(id=2, order_id=2, method="alipay", amount=12999.0, status="success"),
+                    PaymentOrm(id=3, order_id=4, method="wechat", amount=4799.0, status="success"),
+                    PaymentOrm(id=4, order_id=6, method="alipay", amount=1299.0, status="refunded"),
+                ]
+            )
+            # Refunds
+            session.add_all(
+                [
+                    RefundOrm(id=1, order_id=6, amount=1299.0, reason="不想要了", status="approved"),
+                    RefundOrm(id=2, order_id=2, amount=18999.0, reason="质量问题", status="pending"),
+                ]
+            )
+            # Warehouses
+            session.add_all(
+                [
+                    WarehouseOrm(id=1, name="华南仓", location="深圳"),
+                    WarehouseOrm(id=2, name="华东仓", location="上海"),
+                ]
+            )
+            # Inventory
+            session.add_all(
+                [
+                    InventoryOrm(id=1, warehouse_id=1, variant_id=1, quantity=60),
+                    InventoryOrm(id=2, warehouse_id=2, variant_id=1, quantity=40),
+                    InventoryOrm(id=3, warehouse_id=1, variant_id=2, quantity=30),
+                    InventoryOrm(id=4, warehouse_id=2, variant_id=2, quantity=20),
+                    InventoryOrm(id=5, warehouse_id=1, variant_id=3, quantity=20),
+                    InventoryOrm(id=6, warehouse_id=2, variant_id=3, quantity=10),
+                    InventoryOrm(id=7, warehouse_id=1, variant_id=5, quantity=50),
+                    InventoryOrm(id=8, warehouse_id=2, variant_id=5, quantity=30),
+                ]
+            )
+            # Reviews
+            session.add_all(
+                [
+                    ReviewOrm(id=1, product_id=1, user_id=1, rating=5, content="很好用"),
+                    ReviewOrm(id=2, product_id=1, user_id=2, rating=4, content="不错"),
+                    ReviewOrm(id=3, product_id=2, user_id=1, rating=5, content="性能强劲"),
+                    ReviewOrm(id=4, product_id=3, user_id=2, rating=4, content="好看"),
+                ]
+            )
+            # Coupons
+            session.add_all(
+                [
+                    CouponOrm(id=1, code="NEW100", discount=100.0, min_amount=500.0),
+                    CouponOrm(id=2, code="VIP500", discount=500.0, min_amount=3000.0),
+                    CouponOrm(id=3, code="SALE200", discount=200.0, min_amount=1000.0),
+                ]
+            )
+            # Coupon Usages
+            session.add_all(
+                [
+                    CouponUsageOrm(id=1, coupon_id=1, user_id=1, order_id=1),
+                    CouponUsageOrm(id=2, coupon_id=2, user_id=1, order_id=2),
+                    CouponUsageOrm(id=3, coupon_id=3, user_id=2, order_id=3),
+                    CouponUsageOrm(id=4, coupon_id=1, user_id=3, order_id=5),
+                ]
+            )
+            # Shipments
+            session.add_all(
+                [
+                    ShipmentOrm(
+                        id=1, warehouse_id=1, store_id=1, status="delivered",
+                        tracking_no="SF1234567890",
+                    ),
+                    ShipmentOrm(
+                        id=2, warehouse_id=2, store_id=1, status="shipped",
+                        tracking_no="SF0987654321",
+                    ),
+                    ShipmentOrm(
+                        id=3, warehouse_id=1, store_id=2, status="pending",
+                        tracking_no=None,
+                    ),
+                ]
+            )
+            # Shipment Items
+            session.add_all(
+                [
+                    ShipmentItemOrm(id=1, shipment_id=1, order_item_id=1, quantity=1),
+                    ShipmentItemOrm(id=2, shipment_id=1, order_item_id=2, quantity=1),
+                    ShipmentItemOrm(id=3, shipment_id=2, order_item_id=3, quantity=1),
+                    ShipmentItemOrm(id=4, shipment_id=2, order_item_id=9, quantity=1),
+                    ShipmentItemOrm(id=5, shipment_id=3, order_item_id=4, quantity=1),
+                    ShipmentItemOrm(id=6, shipment_id=3, order_item_id=10, quantity=1),
+                ]
+            )

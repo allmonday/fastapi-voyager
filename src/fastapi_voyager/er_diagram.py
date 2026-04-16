@@ -68,7 +68,7 @@ class DiagramRenderer(Renderer):
         logger.info(f'show_module: {self.show_module}')
 
     def render_link(self, link: Link) -> str:
-        """Override to increase link length by 40% for ER diagrams."""
+        """Override link rendering for ER diagrams."""
         source = self._handle_schema_anchor(link.source)
         target = self._handle_schema_anchor(link.target)
 
@@ -77,8 +77,7 @@ class DiagramRenderer(Renderer):
             attrs = {'style': link.style}
             if link.label:
                 attrs['label'] = link.label
-            # Increase minlen by 40% (3 * 1.4 = 4.2, round to 4)
-            attrs['minlen'] = 4
+            attrs['minlen'] = 3
         else:
             attrs = self.style.get_link_attributes(link.type)
             if link.label:

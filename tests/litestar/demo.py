@@ -15,11 +15,8 @@ from pydantic_resolve import (
     config_global_resolver,
 )
 
-from tests.service.schema.base_entity import BaseEntity
 from tests.service.schema.extra import A
-from tests.service.schema.schema import Member, Sprint, Story, Task
-
-diagram = BaseEntity.get_diagram()
+from tests.service.schema.schema import Brand, Product, ProductVariant, User, diagram, init_db
 
 # 创建 AutoLoad 工厂（v4: 从 diagram 实例创建）
 AutoLoad = diagram.create_auto_load()
@@ -140,10 +137,12 @@ class GraphQLController(Controller):
 # Page Models
 # =====================================
 
-class PageMember(Member):
-    fullname: str = ''
-    def post_fullname(self):
-        return self.first_name + ' ' + self.last_name
+class PageUser(User):
+    display_name: str = ''
+
+    def post_display_name(self):
+        return self.username + ' (' + self.email + ')'
+
     sh: 'Something'  # forward reference
 
 
@@ -152,64 +151,68 @@ class Something:
     id: int
 
 
-class TaskA(Task):
-    task_type: str = 'A'
+class VariantA(ProductVariant):
+    variant_type: str = 'A'
 
 
-class TaskB(Task):
-    task_type: str = 'B'
+class VariantB(ProductVariant):
+    variant_type: str = 'B'
 
 
-type TaskUnion = TaskA | TaskB
+type VariantUnion = VariantA | VariantB
 
 
-class PageTask(Task):
-    owner: Annotated[PageMember | None, AutoLoad()] = None
+class PageVariant(ProductVariant):
+    product: Annotated[Product | None, AutoLoad()] = None
 
 
-class MiddleStory(DefineSubset):
-    __subset__ = (Story, ('id', 'sprint_id', 'title'))
+class MiddleProduct(DefineSubset):
+    __subset__ = (Product, ('id', 'name', 'price', 'category_id'))
 
 
-class PageStory(DefineSubset):
-    __subset__ = (Story, ('id', 'sprint_id'))
+class PageProduct(DefineSubset):
+    __subset__ = (Product, ('id', 'name'))
 
-    title: Annotated[str, ExposeAs('story_title')] = Field(exclude=True)
-    def post_title(self):
-        return self.title + ' (processed)'
+    price: Annotated[float, ExposeAs('product_price')] = Field(exclude=True)
 
-    desc: Annotated[str, ExposeAs('story_desc')] = ''
+    def post_price_label(self):
+        return f'¥{self.price}'
+
+    desc: Annotated[str, ExposeAs('product_desc')] = ''
+
     def resolve_desc(self):
         return self.desc
 
     def post_desc(self):
-        return self.title + ' (processed........................)'
+        return self.name + ' (processed........................)'
 
-    tasks: Annotated[list[PageTask], AutoLoad(), SendTo("SomeCollector")] = []
+    variants: Annotated[list[PageVariant], AutoLoad(), SendTo("SomeCollector")] = []
 
     coll: list[str] = []
+
     def post_coll(self, c=Collector(alias="top_collector")):
         return c.values()
 
 
-class PageSprint(Sprint):
-    stories: list[PageStory]
+class PageBrand(Brand):
+    products: list[PageProduct]
 
 
 class PageOverall(BaseModel):
-    sprints: list[PageSprint]
+    brands: list[PageBrand]
 
 
 class PageOverallWrap(PageOverall):
     content: str
 
-    all_tasks: list[PageTask] = []
-    def post_all_tasks(self, collector=Collector(alias="SomeCollector")):
+    all_variants: list[PageVariant] = []
+
+    def post_all_variants(self, collector=Collector(alias="SomeCollector")):
         return collector.values()
 
 
-class PageStories(BaseModel):
-    stories: list[PageStory]
+class PageProducts(BaseModel):
+    products: list[PageProduct]
 
 
 T = TypeVar('T')
@@ -220,27 +223,27 @@ class DataModel(BaseModel, Generic[T]):
     id: int
 
 
-type DataModelPageStory = DataModel[PageStory]
+type DataModelPageProduct = DataModel[PageProduct]
 
 
 class DemoController(Controller):
     path = "/demo"
 
-    @get("/sprints", tags=['for-restapi', 'group_a'], sync_to_thread=False)
-    def get_sprints(self) -> list[Sprint]:
+    @get("/products", tags=['for-restapi', 'group_a'], sync_to_thread=False)
+    def get_products(self) -> list[Product]:
         return []
 
     @get("/page_overall", tags=['for-ui-page'])
     async def get_page_info(self) -> PageOverallWrap:
-        page_overall = PageOverallWrap(content="Page Overall Content", sprints=[])
+        page_overall = PageOverallWrap(content="Page Overall Content", brands=[])
         return await Resolver().resolve(page_overall)
 
     @get("/page_info/", tags=['for-ui-page'], sync_to_thread=False)
-    def get_page_stories(self) -> PageStories:
+    def get_page_stories(self) -> PageProducts:
         return {}
 
     @get("/page_test_1/", tags=['for-ui-page'], sync_to_thread=False)
-    def get_page_test_1(self) -> DataModelPageStory:
+    def get_page_test_1(self) -> DataModelPageProduct:
         return {}
 
     @get("/page_test_2/", tags=['for-ui-page'], sync_to_thread=False)

@@ -10,7 +10,7 @@ import pytest
 
 # Expected routes - same across all frameworks after standardization
 EXPECTED_ROUTES = [
-    "get_sprints",
+    "get_products",
     "get_page_info",
     "get_page_stories",
     "get_page_test_1",
