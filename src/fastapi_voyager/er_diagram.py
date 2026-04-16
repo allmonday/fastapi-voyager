@@ -142,7 +142,12 @@ class VoyagerErDiagram:
     def analysis_entity(self, entity: Entity):
         schema = entity.kls
         update_forward_refs(schema)
-        self.add_to_node_set(schema, fk_set=self.fk_set.get(full_class_name(schema)))
+        self.add_to_node_set(
+            schema,
+            fk_set=self.fk_set.get(full_class_name(schema)),
+            entity_queries=entity.queries,
+            entity_mutations=entity.mutations,
+        )
 
         for relationship in entity.relationships:
             annos = get_core_types(relationship.target)
@@ -173,7 +178,13 @@ class VoyagerErDiagram:
                     loader_fullname=loader_fullname
                     )
 
-    def add_to_node_set(self, schema, fk_set: set[str] | None = None) -> str:
+    def add_to_node_set(
+        self,
+        schema,
+        fk_set: set[str] | None = None,
+        entity_queries: list | None = None,
+        entity_mutations: list | None = None,
+    ) -> str:
         """
         1. calc full_path, add to node_set
         2. if duplicated, do nothing, else insert
@@ -182,8 +193,12 @@ class VoyagerErDiagram:
         full_name = full_class_name(schema)
 
         if full_name not in self.node_set:
-            # Extract queries and mutations
-            queries, mutations = get_queries_and_mutations(schema)
+            # Extract queries and mutations: prefer Entity-level configs, fallback to class decorators
+            queries, mutations = get_queries_and_mutations(
+                schema,
+                entity_queries=entity_queries,
+                entity_mutations=entity_mutations,
+            )
 
             # skip meta info for normal queries
             self.node_set[full_name] = SchemaNode(
@@ -260,17 +275,60 @@ def get_fields(schema: type[BaseModel], fk_set: set[str] | None = None) -> list[
     return fields
 
 
-def get_queries_and_mutations(schema: type[BaseModel]) -> tuple[list[MethodInfo], list[MethodInfo]]:
-    """Extract @query and @mutation methods from an entity."""
-    query_dicts, mutation_dicts = extract_query_mutation_methods(schema)
+def get_queries_and_mutations(
+    schema: type[BaseModel],
+    entity_queries: list | None = None,
+    entity_mutations: list | None = None,
+) -> tuple[list[MethodInfo], list[MethodInfo]]:
+    """Extract @query and @mutation methods from an entity.
 
-    queries = [
-        MethodInfo(name=q['name'], return_type=q['return_type'])
-        for q in query_dicts
-    ]
-    mutations = [
-        MethodInfo(name=m['name'], return_type=m['return_type'])
-        for m in mutation_dicts
-    ]
+    Prefers Entity-level QueryConfig/MutationConfig when available,
+    falls back to @query/@mutation decorators on the class.
+    """
+    queries: list[MethodInfo] = []
+    mutations: list[MethodInfo] = []
+
+    if entity_queries:
+        for qc in entity_queries:
+            method = qc.method
+            name = qc.name or method.__name__
+            return_type = _get_return_type_str(method)
+            queries.append(MethodInfo(name=name, return_type=return_type))
+    elif entity_mutations is not None:
+        # No queries configured at entity level, skip decorator extraction
+        pass
+    else:
+        # Fallback: extract from class decorators
+        query_dicts, _ = extract_query_mutation_methods(schema)
+        queries = [MethodInfo(name=q['name'], return_type=q['return_type']) for q in query_dicts]
+
+    if entity_mutations:
+        for mc in entity_mutations:
+            method = mc.method
+            name = mc.name or method.__name__
+            return_type = _get_return_type_str(method)
+            mutations.append(MethodInfo(name=name, return_type=return_type))
+    elif entity_queries is not None:
+        # No mutations configured at entity level, skip decorator extraction
+        pass
+    else:
+        # Fallback: extract from class decorators
+        _, mutation_dicts = extract_query_mutation_methods(schema)
+        mutations = [MethodInfo(name=m['name'], return_type=m['return_type']) for m in mutation_dicts]
 
     return queries, mutations
+
+
+def _get_return_type_str(method) -> str:
+    """Extract return type annotation string from a method."""
+    import inspect
+    sig = inspect.signature(method)
+    if sig.return_annotation != inspect.Parameter.empty:
+        ann = sig.return_annotation
+        if isinstance(ann, str):
+            return ann
+        if hasattr(ann, '__origin__'):
+            import typing
+            return str(ann).replace('typing.', '')
+        return getattr(ann, '__name__', str(ann))
+    return ''

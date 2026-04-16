@@ -6,7 +6,7 @@
 from typing import List, Optional
 
 from pydantic import BaseModel
-from pydantic_resolve import ErDiagram, mutation, query
+from pydantic_resolve import ErDiagram, MutationConfig, QueryConfig
 from pydantic_resolve.integration.mapping import Mapping
 from pydantic_resolve.integration.sqlalchemy import build_relationship
 from sqlalchemy import select
@@ -103,310 +103,319 @@ _entities = build_relationship(
     session_factory=lambda: async_session(),
 )
 
-diagram = ErDiagram(entities=[]).add_relationship(_entities)
-
 
 # =====================================
-# Query & Mutation Methods on DTOs
+# Query & Mutation Functions
 # =====================================
 
 
-class User(User):  # type: ignore[no-redef]
-    @query
-    async def get_all(cls, limit: int = 10, offset: int = 0) -> List["User"]:
-        """获取所有用户（分页）"""
-        async with async_session() as session:
-            stmt = select(UserOrm).offset(offset).limit(limit)
-            rows = (await session.scalars(stmt)).all()
-            return [User.model_validate(r) for r in rows]
-
-    @query
-    async def get_by_id(cls, id: int) -> Optional["User"]:
-        """根据 ID 获取用户"""
-        async with async_session() as session:
-            row = await session.get(UserOrm, id)
-            return User.model_validate(row) if row else None
-
-    @mutation
-    async def create_user(cls, username: str, email: str, phone: str = "") -> "User":
-        """创建新用户"""
-        async with async_session() as session:
-            async with session.begin():
-                orm = UserOrm(username=username, email=email, phone=phone or None)
-                session.add(orm)
-                await session.flush()
-                return User.model_validate(orm)
+# --- User ---
+async def user_get_all(limit: int = 10, offset: int = 0) -> List[User]:
+    """获取所有用户（分页）"""
+    async with async_session() as session:
+        stmt = select(UserOrm).offset(offset).limit(limit)
+        rows = (await session.scalars(stmt)).all()
+        return [User.model_validate(r) for r in rows]
 
 
-class Product(Product):  # type: ignore[no-redef]
-    @query
-    async def get_all(
-        cls, limit: int = 10, offset: int = 0, category_id: Optional[int] = None
-    ) -> List["Product"]:
-        """获取所有商品（分页，可按分类筛选）"""
-        async with async_session() as session:
-            stmt = select(ProductOrm)
-            if category_id:
-                stmt = stmt.where(ProductOrm.category_id == category_id)
-            stmt = stmt.offset(offset).limit(limit)
-            rows = (await session.scalars(stmt)).all()
-            return [Product.model_validate(r) for r in rows]
-
-    @query
-    async def get_by_id(cls, id: int) -> Optional["Product"]:
-        """根据 ID 获取商品"""
-        async with async_session() as session:
-            row = await session.get(ProductOrm, id)
-            return Product.model_validate(row) if row else None
-
-    @mutation
-    async def create_product(
-        cls,
-        name: str,
-        price: float,
-        description: str = "",
-        brand_id: Optional[int] = None,
-        category_id: Optional[int] = None,
-        store_id: Optional[int] = None,
-    ) -> "Product":
-        """创建新商品"""
-        async with async_session() as session:
-            async with session.begin():
-                orm = ProductOrm(
-                    name=name,
-                    price=price,
-                    description=description or None,
-                    brand_id=brand_id,
-                    category_id=category_id,
-                    store_id=store_id,
-                )
-                session.add(orm)
-                await session.flush()
-                return Product.model_validate(orm)
+async def user_get_by_id(id: int) -> Optional[User]:
+    """根据 ID 获取用户"""
+    async with async_session() as session:
+        row = await session.get(UserOrm, id)
+        return User.model_validate(row) if row else None
 
 
-class Order(Order):  # type: ignore[no-redef]
-    @query
-    async def get_all(
-        cls, limit: int = 10, offset: int = 0, user_id: Optional[int] = None
-    ) -> List["Order"]:
-        """获取所有订单（分页，可按用户筛选）"""
-        async with async_session() as session:
-            stmt = select(OrderOrm)
-            if user_id:
-                stmt = stmt.where(OrderOrm.user_id == user_id)
-            stmt = stmt.offset(offset).limit(limit)
-            rows = (await session.scalars(stmt)).all()
-            return [Order.model_validate(r) for r in rows]
-
-    @query
-    async def get_by_id(cls, id: int) -> Optional["Order"]:
-        """根据 ID 获取订单"""
-        async with async_session() as session:
-            row = await session.get(OrderOrm, id)
-            return Order.model_validate(row) if row else None
-
-    @mutation
-    async def create_order(cls, user_id: int, total_amount: float = 0) -> "Order":
-        """创建新订单"""
-        async with async_session() as session:
-            async with session.begin():
-                orm = OrderOrm(user_id=user_id, total_amount=total_amount)
-                session.add(orm)
-                await session.flush()
-                return Order.model_validate(orm)
-
-    @mutation
-    async def update_order_status(cls, id: int, status: str) -> Optional["Order"]:
-        """更新订单状态"""
-        async with async_session() as session:
-            async with session.begin():
-                row = await session.get(OrderOrm, id)
-                if row:
-                    row.status = status
-                    await session.flush()
-                    return Order.model_validate(row)
-        return None
+async def user_create(username: str, email: str, phone: str = "") -> User:
+    """创建新用户"""
+    async with async_session() as session:
+        async with session.begin():
+            orm = UserOrm(username=username, email=email, phone=phone or None)
+            session.add(orm)
+            await session.flush()
+            return User.model_validate(orm)
 
 
-class Category(Category):  # type: ignore[no-redef]
-    @query
-    async def get_all(cls) -> List["Category"]:
-        """获取所有分类"""
-        async with async_session() as session:
-            stmt = select(CategoryOrm)
-            rows = (await session.scalars(stmt)).all()
-            return [Category.model_validate(r) for r in rows]
-
-    @mutation
-    async def create_category(
-        cls, name: str, parent_id: Optional[int] = None
-    ) -> "Category":
-        """创建分类"""
-        async with async_session() as session:
-            async with session.begin():
-                orm = CategoryOrm(name=name, parent_id=parent_id)
-                session.add(orm)
-                await session.flush()
-                return Category.model_validate(orm)
+# --- Product ---
+async def product_get_all(
+    limit: int = 10, offset: int = 0, category_id: Optional[int] = None
+) -> List[Product]:
+    """获取所有商品（分页，可按分类筛选）"""
+    async with async_session() as session:
+        stmt = select(ProductOrm)
+        if category_id:
+            stmt = stmt.where(ProductOrm.category_id == category_id)
+        stmt = stmt.offset(offset).limit(limit)
+        rows = (await session.scalars(stmt)).all()
+        return [Product.model_validate(r) for r in rows]
 
 
-class Brand(Brand):  # type: ignore[no-redef]
-    @query
-    async def get_all(cls) -> List["Brand"]:
-        """获取所有品牌"""
-        async with async_session() as session:
-            stmt = select(BrandOrm)
-            rows = (await session.scalars(stmt)).all()
-            return [Brand.model_validate(r) for r in rows]
-
-    @mutation
-    async def create_brand(cls, name: str, logo: str = "") -> "Brand":
-        """创建品牌"""
-        async with async_session() as session:
-            async with session.begin():
-                orm = BrandOrm(name=name, logo=logo or None)
-                session.add(orm)
-                await session.flush()
-                return Brand.model_validate(orm)
+async def product_get_by_id(id: int) -> Optional[Product]:
+    """根据 ID 获取商品"""
+    async with async_session() as session:
+        row = await session.get(ProductOrm, id)
+        return Product.model_validate(row) if row else None
 
 
-class Tag(Tag):  # type: ignore[no-redef]
-    @query
-    async def get_all(cls) -> List["Tag"]:
-        """获取所有标签"""
-        async with async_session() as session:
-            stmt = select(TagOrm)
-            rows = (await session.scalars(stmt)).all()
-            return [Tag.model_validate(r) for r in rows]
-
-    @mutation
-    async def create_tag(cls, name: str) -> "Tag":
-        """创建标签"""
-        async with async_session() as session:
-            async with session.begin():
-                orm = TagOrm(name=name)
-                session.add(orm)
-                await session.flush()
-                return Tag.model_validate(orm)
-
-
-class Coupon(Coupon):  # type: ignore[no-redef]
-    @query
-    async def get_all(cls) -> List["Coupon"]:
-        """获取所有优惠券"""
-        async with async_session() as session:
-            stmt = select(CouponOrm)
-            rows = (await session.scalars(stmt)).all()
-            return [Coupon.model_validate(r) for r in rows]
-
-    @mutation
-    async def create_coupon(
-        cls, code: str, discount: float, min_amount: float = 0
-    ) -> "Coupon":
-        """创建优惠券"""
-        async with async_session() as session:
-            async with session.begin():
-                orm = CouponOrm(code=code, discount=discount, min_amount=min_amount)
-                session.add(orm)
-                await session.flush()
-                return Coupon.model_validate(orm)
-
-
-class Store(Store):  # type: ignore[no-redef]
-    @query
-    async def get_all(cls) -> List["Store"]:
-        """获取所有店铺"""
-        async with async_session() as session:
-            stmt = select(StoreOrm)
-            rows = (await session.scalars(stmt)).all()
-            return [Store.model_validate(r) for r in rows]
-
-    @mutation
-    async def create_store(cls, name: str, description: str = "") -> "Store":
-        """创建店铺"""
-        async with async_session() as session:
-            async with session.begin():
-                orm = StoreOrm(name=name, description=description or None)
-                session.add(orm)
-                await session.flush()
-                return Store.model_validate(orm)
-
-
-class Warehouse(Warehouse):  # type: ignore[no-redef]
-    @query
-    async def get_all(cls) -> List["Warehouse"]:
-        """获取所有仓库"""
-        async with async_session() as session:
-            stmt = select(WarehouseOrm)
-            rows = (await session.scalars(stmt)).all()
-            return [Warehouse.model_validate(r) for r in rows]
-
-
-class ProductVariant(ProductVariant):  # type: ignore[no-redef]
-    @query
-    async def get_by_product(cls, product_id: int) -> List["ProductVariant"]:
-        """根据商品 ID 获取规格列表"""
-        async with async_session() as session:
-            stmt = select(ProductVariantOrm).where(
-                ProductVariantOrm.product_id == product_id
+async def product_create(
+    name: str,
+    price: float,
+    description: str = "",
+    brand_id: Optional[int] = None,
+    category_id: Optional[int] = None,
+    store_id: Optional[int] = None,
+) -> Product:
+    """创建新商品"""
+    async with async_session() as session:
+        async with session.begin():
+            orm = ProductOrm(
+                name=name,
+                price=price,
+                description=description or None,
+                brand_id=brand_id,
+                category_id=category_id,
+                store_id=store_id,
             )
-            rows = (await session.scalars(stmt)).all()
-            return [ProductVariant.model_validate(r) for r in rows]
+            session.add(orm)
+            await session.flush()
+            return Product.model_validate(orm)
 
 
-class OrderItem(OrderItem):  # type: ignore[no-redef]
-    @query
-    async def get_by_order(cls, order_id: int) -> List["OrderItem"]:
-        """根据订单 ID 获取明细"""
-        async with async_session() as session:
-            stmt = select(OrderItemOrm).where(OrderItemOrm.order_id == order_id)
-            rows = (await session.scalars(stmt)).all()
-            return [OrderItem.model_validate(r) for r in rows]
+# --- Order ---
+async def order_get_all(
+    limit: int = 10, offset: int = 0, user_id: Optional[int] = None
+) -> List[Order]:
+    """获取所有订单（分页，可按用户筛选）"""
+    async with async_session() as session:
+        stmt = select(OrderOrm)
+        if user_id:
+            stmt = stmt.where(OrderOrm.user_id == user_id)
+        stmt = stmt.offset(offset).limit(limit)
+        rows = (await session.scalars(stmt)).all()
+        return [Order.model_validate(r) for r in rows]
 
 
-class UserAddress(UserAddress):  # type: ignore[no-redef]
+async def order_get_by_id(id: int) -> Optional[Order]:
+    """根据 ID 获取订单"""
+    async with async_session() as session:
+        row = await session.get(OrderOrm, id)
+        return Order.model_validate(row) if row else None
+
+
+async def order_create(user_id: int, total_amount: float = 0) -> Order:
+    """创建新订单"""
+    async with async_session() as session:
+        async with session.begin():
+            orm = OrderOrm(user_id=user_id, total_amount=total_amount)
+            session.add(orm)
+            await session.flush()
+            return Order.model_validate(orm)
+
+
+async def order_update_status(id: int, status: str) -> Optional[Order]:
+    """更新订单状态"""
+    async with async_session() as session:
+        async with session.begin():
+            row = await session.get(OrderOrm, id)
+            if row:
+                row.status = status
+                await session.flush()
+                return Order.model_validate(row)
+    return None
+
+
+# --- Category ---
+async def category_get_all() -> List[Category]:
+    """获取所有分类"""
+    async with async_session() as session:
+        stmt = select(CategoryOrm)
+        rows = (await session.scalars(stmt)).all()
+        return [Category.model_validate(r) for r in rows]
+
+
+async def category_create(name: str, parent_id: Optional[int] = None) -> Category:
+    """创建分类"""
+    async with async_session() as session:
+        async with session.begin():
+            orm = CategoryOrm(name=name, parent_id=parent_id)
+            session.add(orm)
+            await session.flush()
+            return Category.model_validate(orm)
+
+
+# --- Brand ---
+async def brand_get_all() -> List[Brand]:
+    """获取所有品牌"""
+    async with async_session() as session:
+        stmt = select(BrandOrm)
+        rows = (await session.scalars(stmt)).all()
+        return [Brand.model_validate(r) for r in rows]
+
+
+async def brand_create(name: str, logo: str = "") -> Brand:
+    """创建品牌"""
+    async with async_session() as session:
+        async with session.begin():
+            orm = BrandOrm(name=name, logo=logo or None)
+            session.add(orm)
+            await session.flush()
+            return Brand.model_validate(orm)
+
+
+# --- Tag ---
+async def tag_get_all() -> List[Tag]:
+    """获取所有标签"""
+    async with async_session() as session:
+        stmt = select(TagOrm)
+        rows = (await session.scalars(stmt)).all()
+        return [Tag.model_validate(r) for r in rows]
+
+
+async def tag_create(name: str) -> Tag:
+    """创建标签"""
+    async with async_session() as session:
+        async with session.begin():
+            orm = TagOrm(name=name)
+            session.add(orm)
+            await session.flush()
+            return Tag.model_validate(orm)
+
+
+# --- Coupon ---
+async def coupon_get_all() -> List[Coupon]:
+    """获取所有优惠券"""
+    async with async_session() as session:
+        stmt = select(CouponOrm)
+        rows = (await session.scalars(stmt)).all()
+        return [Coupon.model_validate(r) for r in rows]
+
+
+async def coupon_create(code: str, discount: float, min_amount: float = 0) -> Coupon:
+    """创建优惠券"""
+    async with async_session() as session:
+        async with session.begin():
+            orm = CouponOrm(code=code, discount=discount, min_amount=min_amount)
+            session.add(orm)
+            await session.flush()
+            return Coupon.model_validate(orm)
+
+
+# --- Store ---
+async def store_get_all() -> List[Store]:
+    """获取所有店铺"""
+    async with async_session() as session:
+        stmt = select(StoreOrm)
+        rows = (await session.scalars(stmt)).all()
+        return [Store.model_validate(r) for r in rows]
+
+
+async def store_create(name: str, description: str = "") -> Store:
+    """创建店铺"""
+    async with async_session() as session:
+        async with session.begin():
+            orm = StoreOrm(name=name, description=description or None)
+            session.add(orm)
+            await session.flush()
+            return Store.model_validate(orm)
+
+
+# --- Warehouse ---
+async def warehouse_get_all() -> List[Warehouse]:
+    """获取所有仓库"""
+    async with async_session() as session:
+        stmt = select(WarehouseOrm)
+        rows = (await session.scalars(stmt)).all()
+        return [Warehouse.model_validate(r) for r in rows]
+
+
+# --- ProductVariant ---
+async def product_variant_get_by_product(product_id: int) -> List[ProductVariant]:
+    """根据商品 ID 获取规格列表"""
+    async with async_session() as session:
+        stmt = select(ProductVariantOrm).where(
+            ProductVariantOrm.product_id == product_id
+        )
+        rows = (await session.scalars(stmt)).all()
+        return [ProductVariant.model_validate(r) for r in rows]
+
+
+# --- OrderItem ---
+async def order_item_get_by_order(order_id: int) -> List[OrderItem]:
+    """根据订单 ID 获取明细"""
+    async with async_session() as session:
+        stmt = select(OrderItemOrm).where(OrderItemOrm.order_id == order_id)
+        rows = (await session.scalars(stmt)).all()
+        return [OrderItem.model_validate(r) for r in rows]
+
+
+# --- Stub queries (pass-only, for ER diagram visualization) ---
+
+
+async def _stub_get_all(cls) -> list:
     pass
 
 
-class ProductImage(ProductImage):  # type: ignore[no-redef]
+async def _stub_get_by_id(cls, id: int):
     pass
 
 
-class Review(Review):  # type: ignore[no-redef]
-    pass
+# =====================================
+# Build ErDiagram with QueryConfig
+# =====================================
 
+_entity_queries: dict[type, list] = {
+    User: [
+        QueryConfig(method=user_get_all),
+        QueryConfig(method=user_get_by_id),
+    ],
+    Product: [
+        QueryConfig(method=product_get_all),
+        QueryConfig(method=product_get_by_id),
+    ],
+    Order: [
+        QueryConfig(method=order_get_all),
+        QueryConfig(method=order_get_by_id),
+    ],
+    Category: [QueryConfig(method=category_get_all)],
+    Brand: [QueryConfig(method=brand_get_all)],
+    Tag: [QueryConfig(method=tag_get_all)],
+    Coupon: [QueryConfig(method=coupon_get_all)],
+    Store: [QueryConfig(method=store_get_all)],
+    Warehouse: [QueryConfig(method=warehouse_get_all)],
+    ProductVariant: [QueryConfig(method=product_variant_get_by_product)],
+    OrderItem: [QueryConfig(method=order_item_get_by_order)],
+    UserAddress: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    ProductImage: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    Review: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    Payment: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    Refund: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    Inventory: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    Shipment: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    ShipmentItem: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    CouponUsage: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    Attribute: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+    AttributeValue: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
+}
 
-class Payment(Payment):  # type: ignore[no-redef]
-    pass
+_entity_mutations: dict[type, list] = {
+    User: [MutationConfig(method=user_create)],
+    Product: [MutationConfig(method=product_create)],
+    Order: [MutationConfig(method=order_create), MutationConfig(method=order_update_status)],
+    Category: [MutationConfig(method=category_create)],
+    Brand: [MutationConfig(method=brand_create)],
+    Tag: [MutationConfig(method=tag_create)],
+    Coupon: [MutationConfig(method=coupon_create)],
+    Store: [MutationConfig(method=store_create)],
+}
 
+# Attach QueryConfig/MutationConfig to entities
+for entity in _entities:
+    kls = entity.kls
+    if kls in _entity_queries:
+        entity.queries = _entity_queries[kls]
+    if kls in _entity_mutations:
+        entity.mutations = _entity_mutations[kls]
 
-class Refund(Refund):  # type: ignore[no-redef]
-    pass
-
-
-class Inventory(Inventory):  # type: ignore[no-redef]
-    pass
-
-
-class Shipment(Shipment):  # type: ignore[no-redef]
-    pass
-
-
-class ShipmentItem(ShipmentItem):  # type: ignore[no-redef]
-    pass
-
-
-class CouponUsage(CouponUsage):  # type: ignore[no-redef]
-    pass
-
-
-class Attribute(Attribute):  # type: ignore[no-redef]
-    pass
-
-
-class AttributeValue(AttributeValue):  # type: ignore[no-redef]
-    pass
+diagram = ErDiagram(entities=[]).add_relationship(_entities)
 
 
 # =====================================
