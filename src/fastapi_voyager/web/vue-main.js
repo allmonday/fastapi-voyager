@@ -50,7 +50,7 @@ const app = createApp({
         },
         onSchemaClick: (id) => {
           store.actions.resetDetailPanels()
-          if (store.state.graph.schemaKeys.has(id)) {
+          if (store.state.mode === "er-diagram" || store.state.graph.schemaKeys.has(id)) {
             store.state.schemaDetail.schemaCodeName = id
             store.state.rightDrawer.drawer = true
           }
@@ -134,6 +134,7 @@ const app = createApp({
       try {
         const payload = store.actions.buildVoyagerPayload()
         initGraphUI()
+        graphUI.setHighlightMode("deep")
         const res = await fetch("dot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -151,6 +152,7 @@ const app = createApp({
 
     async function renderErDiagram(resetZoom = true) {
       initGraphUI()
+      graphUI.setHighlightMode("shallow")
       erDiagramLoading.value = true
       const payload = store.actions.buildErDiagramPayload()
       try {
@@ -165,6 +167,8 @@ const app = createApp({
         const data = await res.json()
         erDiagramCache.value = data.dot
         store.state.erDiagramLinks = data.links || []
+        const schemasArr = Array.isArray(data.schemas) ? data.schemas : []
+        store.state.erDiagramSchemas = Object.fromEntries(schemasArr.map((s) => [s.id, s]))
         await graphUI.render(data.dot, resetZoom)
       } catch (err) {
         console.error(err)

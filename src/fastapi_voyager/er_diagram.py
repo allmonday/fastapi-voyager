@@ -162,8 +162,6 @@ class VoyagerErDiagram:
                 label = cardinality
                 if relationship.name:
                     label = f'{relationship.name}\n{label}'
-                if loader_name:
-                    label = f'{label}\n({loader_name})'
                 self.add_to_link_set(
                     source=source_name,
                     source_origin=full_class_name(schema),

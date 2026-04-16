@@ -55,6 +55,8 @@ const state = reactive({
 
   // ER diagram edge metadata
   erDiagramLinks: [],
+  // ER diagram schema metadata (id -> {id, name, module, fields})
+  erDiagramSchemas: {},
 
   // edge detail sidebar state
   edgeDetail: {

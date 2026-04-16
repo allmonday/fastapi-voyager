@@ -235,7 +235,7 @@ class VoyagerContext:
     def get_er_diagram_data(self, payload: dict) -> dict:
         """Get ER diagram dot graph and link metadata."""
         if not self.er_diagram:
-            return {"dot": "", "links": []}
+            return {"dot": "", "links": [], "schemas": []}
         diagram = VoyagerErDiagram(
             self.er_diagram,
             show_fields=payload.get("show_fields", "object"),
@@ -252,7 +252,26 @@ class VoyagerContext:
             }
             for link in diagram.links
         ]
-        return {"dot": dot, "links": links_meta}
+        schemas_meta = [
+            {
+                "id": node.id,
+                "name": node.name,
+                "module": node.module,
+                "fields": [
+                    {
+                        "name": f.name,
+                        "type_name": f.type_name,
+                        "from_base": f.from_base,
+                        "is_object": f.is_object,
+                        "is_exclude": f.is_exclude,
+                        "desc": f.desc,
+                    }
+                    for f in node.fields
+                ],
+            }
+            for node in diagram.node_set.values()
+        ]
+        return {"dot": dot, "links": links_meta, "schemas": schemas_meta}
 
     def get_index_html(self) -> str:
         """Get the index HTML content."""

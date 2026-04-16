@@ -18,6 +18,7 @@ export class GraphUI {
     this.gv = null
     this.currentSelection = []
     this.magnifyingGlass = null
+    this.highlightMode = options.highlightMode || "deep"
 
     // Magnifying glass magnification setting (radius is percentage of viewBox width)
     this._magnification = options.magnifyingGlassMagnification || 3.0
@@ -50,6 +51,29 @@ export class GraphUI {
     if (this.gv) {
       this.gv.highlight(highlightedNodes, true)
       this.gv.bringToFront(highlightedNodes)
+    }
+  }
+
+  _highlightEdgeOnly(edgeEl, sourceNodeName, targetNodeName) {
+    const nodes = this.gv.nodesByName()
+    let $set = $()
+    $set = $set.add(edgeEl)
+    if (nodes[sourceNodeName]) {
+      $set = $set.add(nodes[sourceNodeName])
+    }
+    if (nodes[targetNodeName]) {
+      $set = $set.add(nodes[targetNodeName])
+    }
+    if (this.gv) {
+      this.gv.highlight($set, true)
+      this.gv.bringToFront($set)
+    }
+    // Highlight node banners
+    if (nodes[sourceNodeName]) {
+      this.highlightSchemaBanner(nodes[sourceNodeName])
+    }
+    if (nodes[targetNodeName]) {
+      this.highlightSchemaBanner(nodes[targetNodeName])
     }
   }
 
@@ -134,6 +158,35 @@ export class GraphUI {
     }
   }
 
+  _highlightNodeShallow(node) {
+    const nodeName = $(node).attr("data-name")
+    const nodesByName = this.gv.nodesByName()
+    let $set = $().add(node)
+
+    // Find directly connected edges and their neighbor nodes (no recursion)
+    for (const edgeName in this.gv._edgesByName) {
+      const parts = edgeName.split("->")
+      const srcNode = parts[0].split(":")[0]
+      const tgtNode = parts[1] ? parts[1].split(":")[0] : null
+
+      if (srcNode === nodeName || tgtNode === nodeName) {
+        this.gv._edgesByName[edgeName].forEach((edge) => {
+          $set = $set.add(edge)
+        })
+        if (srcNode === nodeName && tgtNode && nodesByName[tgtNode]) {
+          $set = $set.add(nodesByName[tgtNode])
+        }
+        if (tgtNode === nodeName && nodesByName[srcNode]) {
+          $set = $set.add(nodesByName[srcNode])
+        }
+      }
+    }
+
+    this.gv.highlight($set, true)
+    this.gv.bringToFront($set)
+    this.highlightSchemaBanner(node)
+  }
+
   _applyNodeHighlight(node) {
     const set = $()
     set.push(node)
@@ -144,6 +197,10 @@ export class GraphUI {
     this._highlight()
 
     return obj
+  }
+
+  setHighlightMode(mode) {
+    this.highlightMode = mode
   }
 
   _triggerCallback(callbackName, ...args) {
@@ -207,43 +264,53 @@ export class GraphUI {
         nodes.on("dblclick.graphui", function (event) {
           event.stopPropagation()
 
-          self._applyNodeHighlight(this)
-
-          try {
-            self.highlightSchemaBanner(this)
-          } catch (e) {
-            console.log(e)
+          if (self.highlightMode === "shallow") {
+            self.clearSchemaBanners()
+            self._highlightNodeShallow(this)
+          } else {
+            self._applyNodeHighlight(this)
+            try {
+              self.highlightSchemaBanner(this)
+            } catch (e) {
+              console.log(e)
+            }
           }
 
           self._triggerCallback("onSchemaClick", event.currentTarget.dataset.name)
         })
 
-        edges.on("dblclick.graphui", function (event) {
+        edges.on("click.graphui dblclick.graphui", function (event) {
           event.stopPropagation()
           const [upStreamNodeRaw, downStreamNodeRaw] = event.currentTarget.dataset.name.split("->")
           // Strip port info (e.g. "ClassA:f.owner_id" -> "ClassA")
           const upStreamNode = upStreamNodeRaw.split(":")[0]
           const downStreamNode = downStreamNodeRaw.split(":")[0]
-          const nodes = self.gv.nodesByName()
 
-          const up = $()
-          const down = $()
-          const edge = $()
-
-          if (nodes[upStreamNode]) up.push(nodes[upStreamNode])
-          if (nodes[downStreamNode]) down.push(nodes[downStreamNode])
-          edge.push(this)
-
-          self.currentSelection = [
-            { set: up, direction: "upstream" },
-            { set: down, direction: "downstream" },
-            { set: edge, direction: "single" },
-          ]
-
-          try {
-            self._highlightEdgeNodes()
-          } catch (e) {
-            console.warn("[edge-click] highlight error:", e)
+          if (self.highlightMode === "shallow") {
+            self.clearSchemaBanners()
+            try {
+              self._highlightEdgeOnly(this, upStreamNode, downStreamNode)
+            } catch (e) {
+              console.warn("[edge-click] highlight error:", e)
+            }
+          } else {
+            const nodes = self.gv.nodesByName()
+            const up = $()
+            const down = $()
+            const edge = $()
+            if (nodes[upStreamNode]) up.push(nodes[upStreamNode])
+            if (nodes[downStreamNode]) down.push(nodes[downStreamNode])
+            edge.push(this)
+            self.currentSelection = [
+              { set: up, direction: "upstream" },
+              { set: down, direction: "downstream" },
+              { set: edge, direction: "single" },
+            ]
+            try {
+              self._highlightEdgeNodes()
+            } catch (e) {
+              console.warn("[edge-click] highlight error:", e)
+            }
           }
 
           self._triggerCallback("onEdgeClick", event.currentTarget.dataset.name)
@@ -252,6 +319,9 @@ export class GraphUI {
         nodes.on("click.graphui", function (event) {
           if (event.shiftKey) {
             self._triggerCallback("onSchemaShiftClick", event.currentTarget.dataset.name)
+          } else if (self.highlightMode === "shallow") {
+            self.clearSchemaBanners()
+            self._highlightNodeShallow(this)
           } else {
             self._applyNodeHighlight(this)
           }

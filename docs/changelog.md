@@ -231,6 +231,10 @@
 - 0.21.0
   - [x] add dataloader info in side bar
 
+## 0.22
+- 0.22.0
+  - [x] optimize er diagram ineraction and highlight
+
 ## unrelease
 - x.x.x
     - [ ] 2.show relationship list when double click entity in er diagram
