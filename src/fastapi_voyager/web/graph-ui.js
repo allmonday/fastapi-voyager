@@ -23,6 +23,9 @@ export class GraphUI {
     // Magnifying glass magnification setting (radius is percentage of viewBox width)
     this._magnification = options.magnifyingGlassMagnification || 3.0
 
+    // Highlight state snapshot for restoring after re-render
+    this._lastHighlight = null // { type: 'node', name } or { type: 'edge', source, target }
+
     this._init()
   }
 
@@ -138,6 +141,7 @@ export class GraphUI {
     if (this.gv) {
       this.gv.highlight()
     }
+    this._lastHighlight = null
 
     const allPolygons = document.querySelectorAll("polygon[data-original-stroke]")
     allPolygons.forEach((polygon) => {
@@ -185,6 +189,7 @@ export class GraphUI {
     this.gv.highlight($set, true)
     this.gv.bringToFront($set)
     this.highlightSchemaBanner(node)
+    this._lastHighlight = { type: "node", name: nodeName }
   }
 
   _applyNodeHighlight(node) {
@@ -196,11 +201,59 @@ export class GraphUI {
     this.currentSelection = [obj]
     this._highlight()
 
+    this._lastHighlight = { type: "node", name: $(node).attr("data-name") }
+
     return obj
   }
 
   setHighlightMode(mode) {
     this.highlightMode = mode
+  }
+
+  _restoreHighlight() {
+    if (!this._lastHighlight || !this.gv) return
+
+    if (this._lastHighlight.type === "node") {
+      const nodes = this.gv.nodesByName()
+      const node = nodes[this._lastHighlight.name]
+      if (node) {
+        if (this.highlightMode === "shallow") {
+          this._highlightNodeShallow(node)
+        } else {
+          this._applyNodeHighlight(node)
+          try {
+            this.highlightSchemaBanner(node)
+          } catch (e) {
+            console.warn("[restore-highlight] banner error:", e)
+          }
+        }
+      }
+    } else if (this._lastHighlight.type === "edge") {
+      const { source, target } = this._lastHighlight
+      const edgeName = Object.keys(this.gv._edgesByName).find((name) => {
+        const [s, t] = name.split("->")
+        return s.split(":")[0] === source && t.split(":")[0] === target
+      })
+      if (edgeName && this.gv._edgesByName[edgeName]?.[0]) {
+        if (this.highlightMode === "shallow") {
+          this._highlightEdgeOnly(this.gv._edgesByName[edgeName][0], source, target)
+        } else {
+          const nodes = this.gv.nodesByName()
+          const up = $()
+          const down = $()
+          const edge = $()
+          if (nodes[source]) up.push(nodes[source])
+          if (nodes[target]) down.push(nodes[target])
+          edge.push(this.gv._edgesByName[edgeName][0])
+          this.currentSelection = [
+            { set: up, direction: "upstream" },
+            { set: down, direction: "downstream" },
+            { set: edge, direction: "single" },
+          ]
+          this._highlightEdgeNodes()
+        }
+      }
+    }
   }
 
   _triggerCallback(callbackName, ...args) {
@@ -293,6 +346,7 @@ export class GraphUI {
             } catch (e) {
               console.warn("[edge-click] highlight error:", e)
             }
+            self._lastHighlight = { type: "edge", source: upStreamNode, target: downStreamNode }
           } else {
             const nodes = self.gv.nodesByName()
             const up = $()
@@ -311,6 +365,7 @@ export class GraphUI {
             } catch (e) {
               console.warn("[edge-click] highlight error:", e)
             }
+            self._lastHighlight = { type: "edge", source: upStreamNode, target: downStreamNode }
           }
 
           self._triggerCallback("onEdgeClick", event.currentTarget.dataset.name)
@@ -379,6 +434,7 @@ export class GraphUI {
           .renderDot(dotSrc)
           .on("end", () => {
             $(this.selector).data("graphviz.svg").setup()
+            this._restoreHighlight()
             if (resetZoom) this.graphviz.resetZoom()
 
             // Initialize magnifying glass after render
