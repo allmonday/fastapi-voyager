@@ -40,7 +40,7 @@ export class GraphUI {
       highlightedNodes = highlightedNodes.add(nodes)
     }
     if (this.gv) {
-      this.gv.highlight(highlightedNodes, true)
+      this.gv.highlight(highlightedNodes)
       this.gv.bringToFront(highlightedNodes)
     }
   }
@@ -52,7 +52,7 @@ export class GraphUI {
     highlightedNodes = highlightedNodes.add(this._getAffectedNodes(down.set, down.direction))
     highlightedNodes = highlightedNodes.add(edge.set)
     if (this.gv) {
-      this.gv.highlight(highlightedNodes, true)
+      this.gv.highlight(highlightedNodes)
       this.gv.bringToFront(highlightedNodes)
     }
   }
@@ -68,7 +68,7 @@ export class GraphUI {
       $set = $set.add(nodes[targetNodeName])
     }
     if (this.gv) {
-      this.gv.highlight($set, true)
+      this.gv.highlight($set)
       this.gv.bringToFront($set)
     }
     // Highlight node banners
@@ -186,7 +186,7 @@ export class GraphUI {
       }
     }
 
-    this.gv.highlight($set, true)
+    this.gv.highlight($set)
     this.gv.bringToFront($set)
     this.highlightSchemaBanner(node)
     this._lastHighlight = { type: "node", name: nodeName }

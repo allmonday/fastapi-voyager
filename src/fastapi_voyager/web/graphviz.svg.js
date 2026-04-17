@@ -30,39 +30,6 @@
     shrink: "0.125pt",
     edgeHitPadding: 12,
     pointerCursor: true,
-    tooltips: {
-      init: function ($graph) {
-        var $a = $(this)
-        $a.tooltip({
-          container: $graph,
-          placement: "left",
-          animation: false,
-          viewport: null,
-        }).on("hide.bs.tooltip", function () {
-          // keep them visible even if you acidentally mouse over
-          if ($a.attr("data-tooltip-keepvisible")) {
-            return false
-          }
-        })
-      },
-      show: function () {
-        var $a = $(this)
-        $a.attr("data-tooltip-keepvisible", true)
-        $a.tooltip("show")
-      },
-      hide: function () {
-        var $a = $(this)
-        $a.removeAttr("data-tooltip-keepvisible")
-        $a.tooltip("hide")
-      },
-      update: function () {
-        var $this = $(this)
-        if ($this.attr("data-tooltip-keepvisible")) {
-          $this.tooltip("show")
-          return
-        }
-      },
-    },
     zoom: true,
     highlight: {
       selected: function (col, bg) {
@@ -263,9 +230,6 @@
         var $a = $(this)
         $a.attr("title", $a.attr("xlink:title"))
         $a.removeAttr("xlink:title")
-        if (options.tooltips) {
-          options.tooltips.init.call(this, that.$element)
-        }
       })
   }
 
@@ -307,16 +271,10 @@
   }
 
   GraphvizSvg.prototype.scaleView = function (percentage) {
-    var that = this
     var $svg = this.$svg
     $svg.attr("width", percentage + "%")
     $svg.attr("height", percentage + "%")
     this.zoom.percentage = percentage
-    // now callback to update tooltip position
-    var $everything = this.$nodes.add(this.$edges)
-    $everything.children("a[title]").each(function () {
-      that.options.tooltips.update.call(this)
-    })
   }
 
   GraphvizSvg.prototype.scaleNode = function ($node) {
@@ -612,22 +570,6 @@
     return $retval
   }
 
-  GraphvizSvg.prototype.tooltip = function ($elements, show) {
-    var that = this
-    var options = this.options
-    $elements.each(function () {
-      $(this)
-        .find("a[title]")
-        .each(function () {
-          if (show) {
-            options.tooltips.show.call(this)
-          } else {
-            options.tooltips.hide.call(this)
-          }
-        })
-    })
-  }
-
   GraphvizSvg.prototype.bringToFront = function ($elements) {
     $elements.detach().appendTo(this.$graph)
   }
@@ -640,7 +582,7 @@
     }
   }
 
-  GraphvizSvg.prototype.highlight = function ($nodesEdges, tooltips) {
+  GraphvizSvg.prototype.highlight = function ($nodesEdges) {
     var that = this
     var options = this.options
     var $everything = this.$nodes.add(this.$edges).add(this.$clusters)
@@ -648,19 +590,14 @@
       // create set of all other elements and dim them
       $everything.not($nodesEdges).each(function () {
         that.colorElement($(this), options.highlight.unselected)
-        that.tooltip($(this))
       })
       $nodesEdges.each(function () {
         that.colorElement($(this), options.highlight.selected)
       })
-      if (tooltips) {
-        this.tooltip($nodesEdges, true)
-      }
     } else {
       $everything.each(function () {
         that.restoreElement($(this))
       })
-      this.tooltip($everything)
     }
   }
 
