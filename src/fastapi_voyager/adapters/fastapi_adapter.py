@@ -54,6 +54,7 @@ class SchemaSearchPayload(BaseModel):
 class ErDiagramPayload(BaseModel):
     show_fields: str = "object"
     show_module: bool = True
+    edge_minlen: int = 3
 
 
 class SourcePayload(BaseModel):

@@ -577,6 +577,25 @@
                       title="Adjust magnifying glass zoom level (2x - 5x)"
                     />
                   </div>
+                  <!-- Edge length slider (ER diagram mode) -->
+                  <div class="q-mt-sm q-ml-sm" v-if="store.state.mode === 'er-diagram'">
+                    <div class="text-caption q-mb-xs" style="color: #666">
+                      Edge Length: {{ store.state.filter.edgeMinlen }}
+                    </div>
+                    <q-slider
+                      v-model="store.state.filter.edgeMinlen"
+                      :min="3"
+                      :max="10"
+                      :step="1"
+                      label
+                      :marker-labels="{ 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10' }"
+                      @update:model-value="(val) => updateEdgeMinlen(val)"
+                      color="primary"
+                      dense
+                      style="max-width: 200px"
+                      title="Adjust ER diagram edge length (3 - 8)"
+                    />
+                  </div>
                 </div>
 
                 <!-- Collapse toggle button for tag navigator - at bottom-left of right panel -->

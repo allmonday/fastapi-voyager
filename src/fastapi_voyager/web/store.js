@@ -117,6 +117,7 @@ const state = reactive({
     brief: false,
     showModule: false,
     magnification: 3.0, // Magnifying glass zoom level (2-5)
+    edgeMinlen: 3, // ER diagram edge minimum length (3-8)
   },
 })
 
@@ -497,6 +498,22 @@ const actions = {
   },
 
   /**
+   * Update ER diagram edge minimum length
+   * @param {number} val - New edge length value (3-8)
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  updateEdgeMinlen(val, onGenerate) {
+    const validatedValue = Math.max(3, Math.min(10, val))
+    state.filter.edgeMinlen = validatedValue
+    try {
+      localStorage.setItem("edge_minlen", JSON.stringify(validatedValue))
+    } catch (e) {
+      console.warn("Failed to save edge_minlen to localStorage", e)
+    }
+    onGenerate()
+  },
+
+  /**
    * Render based on initial page policy
    * @param {Function} onGenerate - Callback to regenerate graph
    */
@@ -544,6 +561,7 @@ const actions = {
     return {
       show_fields: state.filter.showFields,
       show_module: state.filter.showModule,
+      edge_minlen: state.filter.edgeMinlen,
     }
   },
 

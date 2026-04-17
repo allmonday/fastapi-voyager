@@ -236,11 +236,13 @@ class VoyagerContext:
         """Get ER diagram dot graph and link metadata."""
         if not self.er_diagram:
             return {"dot": "", "links": [], "schemas": []}
+        edge_minlen = max(3, min(10, payload.get("edge_minlen", 3)))
         diagram = VoyagerErDiagram(
             self.er_diagram,
             show_fields=payload.get("show_fields", "object"),
             show_module=payload.get("show_module", True),
             theme_color=self._get_theme_color(),
+            edge_minlen=edge_minlen,
         )
         dot = diagram.render_dot()
         links_meta = [

@@ -35,6 +35,7 @@ const app = createApp({
     store.state.filter.brief = loadToggleState("brief_mode", false)
     store.state.filter.showModule = loadToggleState("show_module_cluster", false)
     store.state.filter.magnification = loadToggleState("magnification", 3.0)
+    store.state.filter.edgeMinlen = loadToggleState("edge_minlen", 3)
 
     function initGraphUI() {
       if (graphUI) {
@@ -372,6 +373,7 @@ const app = createApp({
           graphUI.magnifyingGlass.magnification = val
         }
       },
+      updateEdgeMinlen: (val) => store.actions.updateEdgeMinlen(val, onGenerate),
     }
   },
 })

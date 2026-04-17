@@ -56,7 +56,8 @@ class DiagramRenderer(Renderer):
         *,
         show_fields: FieldType = 'single',
         show_module: bool = True,
-        theme_color: str | None = None
+        theme_color: str | None = None,
+        edge_minlen: int = 3,
     ) -> None:
         # Initialize parent Renderer with shared config
         super().__init__(
@@ -65,6 +66,7 @@ class DiagramRenderer(Renderer):
             config=RenderConfig(),  # Use unified style configuration
             theme_color=theme_color,
         )
+        self.edge_minlen = edge_minlen
         logger.info(f'show_module: {self.show_module}')
 
     def render_link(self, link: Link) -> str:
@@ -77,7 +79,7 @@ class DiagramRenderer(Renderer):
             attrs = {'style': link.style}
             if link.label:
                 attrs['label'] = link.label
-            attrs['minlen'] = 3
+            attrs['minlen'] = self.edge_minlen
         else:
             attrs = self.style.get_link_attributes(link.type)
             if link.label:
@@ -121,7 +123,8 @@ class VoyagerErDiagram:
                  er_diagram: ErDiagram,
                  show_fields: FieldType = 'single',
                  show_module: bool = False,
-                 theme_color: str | None = None):
+                 theme_color: str | None = None,
+                 edge_minlen: int = 3):
 
         self.er_diagram = er_diagram
         self.nodes: list[SchemaNode] = []
@@ -135,6 +138,7 @@ class VoyagerErDiagram:
         self.show_field = show_fields
         self.show_module = show_module
         self.theme_color = theme_color
+        self.edge_minlen = edge_minlen
     
     def generate_node_head(self, link_name: str):
         return f'{link_name}::{PK}'
@@ -255,7 +259,8 @@ class VoyagerErDiagram:
         renderer = DiagramRenderer(
             show_fields=self.show_field,
             show_module=self.show_module,
-            theme_color=self.theme_color
+            theme_color=self.theme_color,
+            edge_minlen=self.edge_minlen,
         )
         return renderer.render_dot(list(self.node_set.values()), self.links)
 
