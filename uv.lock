@@ -282,7 +282,7 @@ requires-dist = [
     { name = "litestar", marker = "extra == 'litestar'", specifier = ">=2.19.0" },
     { name = "pydantic", marker = "extra == 'all'", specifier = ">=2.0" },
     { name = "pydantic", marker = "extra == 'litestar'", specifier = ">=2.0" },
-    { name = "pydantic-resolve", specifier = ">=5.0.0" },
+    { name = "pydantic-resolve", specifier = ">=5.1.0" },
     { name = "pytest", marker = "extra == 'all'" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'all'" },
@@ -949,15 +949,16 @@ wheels = [
 
 [[package]]
 name = "pydantic-resolve"
-version = "5.0.0"
+version = "5.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiodataloader" },
     { name = "graphql-core" },
+    { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d9/53/518ba30cbec2a926313b04769088c5121a7140e7e00a13dcc07751da113c/pydantic_resolve-5.0.0.tar.gz", hash = "sha256:032522b052a1abd0232a1af7aff0a1fcb37246663d257e5294c76d0a8968f1f7", size = 1423935, upload-time = "2026-04-08T01:44:34.277Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6c/a9/dff7b03f385a22bf747c5c1b326e6e5aabbba87f1deaf3763ab02ef8c50e/pydantic_resolve-5.1.0.tar.gz", hash = "sha256:b7012b6edee6723343f39ede165ea7e419d17e635c5392e0b77d8e3e71aefb88", size = 1454409, upload-time = "2026-04-13T14:44:04.432Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/c6/de4d116cadc817ef11de6d685b860cce6cb6d29622cf6ee2f4f906c506a3/pydantic_resolve-5.0.0-py3-none-any.whl", hash = "sha256:f729e087a8957d7185fdcb7ed9e55a2dc9c123284993b2cb149b74be1cc7118d", size = 125301, upload-time = "2026-04-08T01:44:32.863Z" },
+    { url = "https://files.pythonhosted.org/packages/d0/9d/7354246f62fe2059737c600d9243defea108af774848efd8a736b3703b1c/pydantic_resolve-5.1.0-py3-none-any.whl", hash = "sha256:a93a2ee780191f63007b3ff242be2c3c2a181c918ca983eaa80b3d50de74154e", size = 126330, upload-time = "2026-04-13T14:44:05.686Z" },
 ]
 
 [[package]]

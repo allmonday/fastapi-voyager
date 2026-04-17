@@ -347,17 +347,6 @@ async def order_item_get_by_order(order_id: int) -> List[OrderItem]:
         return [OrderItem.model_validate(r) for r in rows]
 
 
-# --- Stub queries (pass-only, for ER diagram visualization) ---
-
-
-async def _stub_get_all(cls) -> list:
-    pass
-
-
-async def _stub_get_by_id(cls, id: int):
-    pass
-
-
 # =====================================
 # Build ErDiagram with QueryConfig
 # =====================================
@@ -383,17 +372,6 @@ _entity_queries: dict[type, list] = {
     Warehouse: [QueryConfig(method=warehouse_get_all)],
     ProductVariant: [QueryConfig(method=product_variant_get_by_product)],
     OrderItem: [QueryConfig(method=order_item_get_by_order)],
-    UserAddress: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    ProductImage: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    Review: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    Payment: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    Refund: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    Inventory: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    Shipment: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    ShipmentItem: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    CouponUsage: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    Attribute: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
-    AttributeValue: [QueryConfig(method=_stub_get_all), QueryConfig(method=_stub_get_by_id)],
 }
 
 _entity_mutations: dict[type, list] = {

@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Annotated, Generic, Optional, TypeVar
 
@@ -36,7 +37,13 @@ config_global_resolver(diagram)
 graphql_handler = GraphQLHandler(diagram, enable_from_attribute_in_type_adapter=True)
 schema_builder = SchemaBuilder(diagram)
 
-app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization")
+@asynccontextmanager
+async def lifespan(app):
+    await init_db()
+    yield
+
+
+app = FastAPI(title="Demo API", description="A demo FastAPI application for router visualization", lifespan=lifespan)
 
 
 @app.get("/products", tags=['for-restapi', 'group_a'], response_model=list[Product])
