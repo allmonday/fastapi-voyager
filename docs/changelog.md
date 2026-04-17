@@ -235,6 +235,15 @@
 - 0.22.0
   - [x] optimize er diagram ineraction and highlight
 
+## 0.23
+- 0.23.0
+  - [x] refactor query and mutation methods to standalone functions and integrate with ER diagram
+  - [x] enhance ER diagram data structure and update highlight modes in GraphUI
+  - [x] add edge length configuration for ER diagram (Small/Middle/Large)
+  - [x] preserve highlight state of nodes and edges after re-render
+  - [x] preserve zoom level after re-render (e.g. adjusting edge length)
+  - [x] add toggle to show/hide query and mutation methods in ER diagram
+
 ## unrelease
 - x.x.x
     - [ ] 2.show relationship list when double click entity in er diagram
