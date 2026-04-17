@@ -511,7 +511,7 @@ const actions = {
     } catch (e) {
       console.warn("Failed to save edge_minlen to localStorage", e)
     }
-    onGenerate(false)
+    onGenerate(true)
   },
 
   /**

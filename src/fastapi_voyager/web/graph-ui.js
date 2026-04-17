@@ -332,7 +332,7 @@ export class GraphUI {
           self._triggerCallback("onSchemaClick", event.currentTarget.dataset.name)
         })
 
-        edges.on("click.graphui dblclick.graphui", function (event) {
+        edges.on("click.graphui", function (event) {
           event.stopPropagation()
           const [upStreamNodeRaw, downStreamNodeRaw] = event.currentTarget.dataset.name.split("->")
           // Strip port info (e.g. "ClassA:f.owner_id" -> "ClassA")
@@ -367,7 +367,10 @@ export class GraphUI {
             }
             self._lastHighlight = { type: "edge", source: upStreamNode, target: downStreamNode }
           }
+        })
 
+        edges.on("dblclick.graphui", function (event) {
+          event.stopPropagation()
           self._triggerCallback("onEdgeClick", event.currentTarget.dataset.name)
         })
 
@@ -446,8 +449,9 @@ export class GraphUI {
             if (resetZoom) {
               this.graphviz.resetZoom()
             } else if (savedTransform) {
-              const svgEl = d3.select(`${this.selector} svg`)
-              svgEl.call(d3.zoom().transform, savedTransform)
+              this.graphviz
+                .zoomSelection()
+                .call(this.graphviz.zoomBehavior().transform, savedTransform)
             }
 
             // Initialize magnifying glass after render
