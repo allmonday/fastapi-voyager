@@ -244,6 +244,12 @@
   - [x] preserve zoom level after re-render (e.g. adjusting edge length)
   - [x] add toggle to show/hide query and mutation methods in ER diagram
 
+## 0.24
+- 0.24.0
+  - [x] simplify highlight method by removing tooltip handling in GraphUI and GraphvizSvg
+  - [x] update edge click handling in GraphUI and modify onGenerate action in store
+  - [x] upgrade deps and init db
+
 ## unrelease
 - x.x.x
     - [ ] 2.show relationship list when double click entity in er diagram
