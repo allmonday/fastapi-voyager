@@ -546,6 +546,16 @@
                       title="show module cluster"
                     />
                   </div>
+                  <!-- Show methods toggle (ER diagram mode) -->
+                  <div class="q-mt-sm" v-if="store.state.mode === 'er-diagram'">
+                    <q-toggle
+                      v-model="store.state.filter.showMethods"
+                      @update:model-value="(val) => toggleShowMethods(val)"
+                      label="Show Methods"
+                      dense
+                      title="Show query and mutation methods"
+                    />
+                  </div>
                   <div
                     class="q-mt-sm"
                     v-if="store.state.mode == 'voyager' && store.state.config.enable_pydantic_resolve_meta"
@@ -577,23 +587,20 @@
                       title="Adjust magnifying glass zoom level (2x - 5x)"
                     />
                   </div>
-                  <!-- Edge length slider (ER diagram mode) -->
-                  <div class="q-mt-sm q-ml-sm" v-if="store.state.mode === 'er-diagram'">
-                    <div class="text-caption q-mb-xs" style="color: #666">
-                      Edge Length: {{ store.state.filter.edgeMinlen }}
-                    </div>
-                    <q-slider
+                  <!-- Edge length toggle (ER diagram mode) -->
+                  <div class="q-mt-sm" v-if="store.state.mode === 'er-diagram'">
+                    <div class="text-caption q-mb-xs" style="color: #666">Edge Length</div>
+                    <q-btn-toggle
                       v-model="store.state.filter.edgeMinlen"
-                      :min="3"
-                      :max="10"
-                      :step="1"
-                      label
-                      :marker-labels="{ 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10' }"
+                      toggle-color="primary"
+                      :options="[
+                        {label: 'Small', value: 3},
+                        {label: 'Middle', value: 7},
+                        {label: 'Large', value: 10},
+                      ]"
+                      push
                       @update:model-value="(val) => updateEdgeMinlen(val)"
-                      color="primary"
-                      dense
-                      style="max-width: 200px"
-                      title="Adjust ER diagram edge length (3 - 8)"
+                      title="Adjust ER diagram edge length"
                     />
                   </div>
                 </div>

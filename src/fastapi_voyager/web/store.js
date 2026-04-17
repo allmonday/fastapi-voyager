@@ -117,7 +117,8 @@ const state = reactive({
     brief: false,
     showModule: false,
     magnification: 3.0, // Magnifying glass zoom level (2-5)
-    edgeMinlen: 3, // ER diagram edge minimum length (3-8)
+    edgeMinlen: 3, // ER diagram edge minimum length (3-10)
+    showMethods: true, // ER diagram show query/mutation methods
   },
 })
 
@@ -510,7 +511,22 @@ const actions = {
     } catch (e) {
       console.warn("Failed to save edge_minlen to localStorage", e)
     }
-    onGenerate()
+    onGenerate(false)
+  },
+
+  /**
+   * Toggle show query/mutation methods in ER diagram
+   * @param {boolean} val - New value
+   * @param {Function} onGenerate - Callback to regenerate graph
+   */
+  toggleShowMethods(val, onGenerate) {
+    state.filter.showMethods = val
+    try {
+      localStorage.setItem("show_methods", JSON.stringify(val))
+    } catch (e) {
+      console.warn("Failed to save show_methods to localStorage", e)
+    }
+    onGenerate(false)
   },
 
   /**
@@ -562,6 +578,7 @@ const actions = {
       show_fields: state.filter.showFields,
       show_module: state.filter.showModule,
       edge_minlen: state.filter.edgeMinlen,
+      show_methods: state.filter.showMethods,
     }
   },
 

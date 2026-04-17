@@ -243,6 +243,7 @@ class VoyagerContext:
             show_module=payload.get("show_module", True),
             theme_color=self._get_theme_color(),
             edge_minlen=edge_minlen,
+            show_methods=payload.get("show_methods", True),
         )
         dot = diagram.render_dot()
         links_meta = [

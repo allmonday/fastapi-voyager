@@ -66,12 +66,14 @@ class Renderer:
         show_pydantic_resolve_meta: bool = False,
         config: RenderConfig | None = None,
         theme_color: str | None = None,
+        show_methods: bool = True,
     ) -> None:
         self.show_fields = show_fields if show_fields in ('single', 'object', 'all') else 'single'
         self.module_color = module_color or {}
         self.schema = schema
         self.show_module = show_module
         self.show_pydantic_resolve_meta = show_pydantic_resolve_meta
+        self.show_methods = show_methods
 
         # Use provided config or create default
         self.config = config or RenderConfig()
@@ -263,7 +265,7 @@ class Renderer:
             rows.append(self._render_schema_field(field))
 
         # Add methods if present (in all show_fields modes)
-        if node.queries or node.mutations:
+        if self.show_methods and (node.queries or node.mutations):
             # Render queries
             for method in node.queries:
                 rows.append(self._render_schema_method(method, type='query'))

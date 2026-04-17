@@ -36,6 +36,7 @@ const app = createApp({
     store.state.filter.showModule = loadToggleState("show_module_cluster", false)
     store.state.filter.magnification = loadToggleState("magnification", 3.0)
     store.state.filter.edgeMinlen = loadToggleState("edge_minlen", 3)
+    store.state.filter.showMethods = loadToggleState("show_methods", true)
 
     function initGraphUI() {
       if (graphUI) {
@@ -374,6 +375,7 @@ const app = createApp({
         }
       },
       updateEdgeMinlen: (val) => store.actions.updateEdgeMinlen(val, onGenerate),
+      toggleShowMethods: (val) => store.actions.toggleShowMethods(val, onGenerate),
     }
   },
 })

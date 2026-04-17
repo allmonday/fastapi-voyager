@@ -420,6 +420,14 @@ export class GraphUI {
 
   async render(dotSrc, resetZoom = true) {
     const height = this.options.height || "100%"
+    // Save current zoom transform before re-render
+    let savedTransform = null
+    if (!resetZoom) {
+      const svgEl = document.querySelector(`${this.selector} svg`)
+      if (svgEl) {
+        savedTransform = d3.zoomTransform(svgEl)
+      }
+    }
     return new Promise((resolve, reject) => {
       try {
         this.graphviz
@@ -435,7 +443,12 @@ export class GraphUI {
           .on("end", () => {
             $(this.selector).data("graphviz.svg").setup()
             this._restoreHighlight()
-            if (resetZoom) this.graphviz.resetZoom()
+            if (resetZoom) {
+              this.graphviz.resetZoom()
+            } else if (savedTransform) {
+              const svgEl = d3.select(`${this.selector} svg`)
+              svgEl.call(d3.zoom().transform, savedTransform)
+            }
 
             // Initialize magnifying glass after render
             this._initMagnifyingGlass()

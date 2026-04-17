@@ -58,6 +58,7 @@ class DiagramRenderer(Renderer):
         show_module: bool = True,
         theme_color: str | None = None,
         edge_minlen: int = 3,
+        show_methods: bool = True,
     ) -> None:
         # Initialize parent Renderer with shared config
         super().__init__(
@@ -65,6 +66,7 @@ class DiagramRenderer(Renderer):
             show_module=show_module,
             config=RenderConfig(),  # Use unified style configuration
             theme_color=theme_color,
+            show_methods=show_methods,
         )
         self.edge_minlen = edge_minlen
         logger.info(f'show_module: {self.show_module}')
@@ -124,7 +126,8 @@ class VoyagerErDiagram:
                  show_fields: FieldType = 'single',
                  show_module: bool = False,
                  theme_color: str | None = None,
-                 edge_minlen: int = 3):
+                 edge_minlen: int = 3,
+                 show_methods: bool = True):
 
         self.er_diagram = er_diagram
         self.nodes: list[SchemaNode] = []
@@ -139,6 +142,7 @@ class VoyagerErDiagram:
         self.show_module = show_module
         self.theme_color = theme_color
         self.edge_minlen = edge_minlen
+        self.show_methods = show_methods
     
     def generate_node_head(self, link_name: str):
         return f'{link_name}::{PK}'
@@ -261,6 +265,7 @@ class VoyagerErDiagram:
             show_module=self.show_module,
             theme_color=self.theme_color,
             edge_minlen=self.edge_minlen,
+            show_methods=self.show_methods,
         )
         return renderer.render_dot(list(self.node_set.values()), self.links)
 
