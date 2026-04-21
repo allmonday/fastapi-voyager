@@ -229,42 +229,38 @@ ER diagram is a feature from pydantic-resolve which provides a solid expression 
 from pydantic_resolve import ErDiagram, Entity, Relationship
 
 diagram = ErDiagram(
-    configs=[
+    entities=[
         Entity(
             kls=Team,
             relationships=[
-                Relationship(field='id', target_kls=list[Sprint], loader=sprint_loader.team_to_sprint_loader),
-                Relationship(field='id', target_kls=list[User], loader=user_loader.team_to_user_loader)
+                Relationship(fk='id', name='sprints', target=list[Sprint], loader=sprint_loader.team_to_sprint_loader),
+                Relationship(fk='id', name='users', target=list[User], loader=user_loader.team_to_user_loader)
             ]
         ),
         Entity(
             kls=Sprint,
             relationships=[
-                Relationship(field='id', target_kls=list[Story], loader=story_loader.sprint_to_story_loader)
+                Relationship(fk='id', name='stories', target=list[Story], loader=story_loader.sprint_to_story_loader)
             ]
         ),
         Entity(
             kls=Story,
             relationships=[
-                Relationship(field='id', target_kls=list[Task], loader=task_loader.story_to_task_loader),
-                Relationship(field='owner_id', target_kls=User, loader=user_loader.user_batch_loader)
+                Relationship(fk='id', name='tasks', target=list[Task], loader=task_loader.story_to_task_loader),
+                Relationship(fk='owner_id', name='owner', target=User, loader=user_loader.user_batch_loader)
             ]
         ),
         Entity(
             kls=Task,
             relationships=[
-                Relationship(field='owner_id', target_kls=User, loader=user_loader.user_batch_loader)
+                Relationship(fk='owner_id', name='owner', target=User, loader=user_loader.user_batch_loader)
             ]
         )
     ]
 )
 
 # Display in voyager
-app.mount('/voyager',
-          create_voyager(
-            app,
-            er_diagram=diagram
-          ))
+app.mount('/voyager', create_voyager(app, er_diagram=diagram))
 ```
 
 <img width="1276" height="613" alt="ER diagram visualization" src="https://github.com/user-attachments/assets/ea0091bb-ee11-4f71-8be3-7129d956c910" />
@@ -326,9 +322,9 @@ voyager --help
 
 ## About pydantic-resolve
 
-pydantic-resolve is a lightweight tool designed to build complex, nested data in a simple, declarative way. In v2, it introduced an important feature: **ER Diagram**, and fastapi-voyager has supported this feature, allowing for a clearer understanding of business relationships.
+pydantic-resolve is a lightweight tool designed to build complex, nested data in a simple, declarative way. It provides `resolve_*` for loading associated data and `post_*` for computing derived fields, with automatic batch loading to eliminate N+1 queries.
 
-The ~~`@ensure_subset` decorator~~ `DefineSubset` metaclass helps safely pick fields from the 'source class' while **indicating the reference** from the current class to the base class.
+When relationship definitions start repeating across multiple models, use ER Diagram with `base_entity()` and `__relationships__` to centralize relationship declarations. `DefineSubset` helps safely pick fields from entity classes while preserving ER diagram references.
 
 Developers can use fastapi-voyager without needing to know anything about pydantic-resolve, but I still highly recommend everyone to give it a try.
 
