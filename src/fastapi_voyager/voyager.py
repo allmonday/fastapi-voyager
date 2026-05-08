@@ -19,6 +19,7 @@ from fastapi_voyager.type_helper import (
     is_base_entity_subclass,
     is_inheritance_of_pydantic_base,
     is_non_pydantic_type,
+    safe_issubclass,
     update_forward_refs,
 )
 
@@ -165,7 +166,7 @@ class Voyager:
 
                 # add response_models and create links from route -> response_model
                 for schema in get_core_types(route_info.response_model):
-                    if schema and issubclass(schema, BaseModel):
+                    if schema and safe_issubclass(schema, BaseModel):
                         is_primitive_response = False
                         target_name = full_class_name(schema)
                         self.links.append(
