@@ -249,6 +249,10 @@
   - [x] simplify highlight method by removing tooltip handling in GraphUI and GraphvizSvg
   - [x] update edge click handling in GraphUI and modify onGenerate action in store
   - [x] upgrade deps and init db
+- 0.24.1
+  - [x] fix: use `safe_issubclass` to prevent `TypeError: issubclass() arg 1 must be a class` on Python 3.13
+    - Python 3.13 raises TypeError when `issubclass()` receives a `types.GenericAlias` (e.g. `dict[X, set[Y]]`), while Python 3.12 silently returns False
+    - Typical trigger: route with PEP 695 type alias as response_model (e.g. `type ResourceActionDict = dict[K, set[V]]`)
 
 ## unrelease
 - x.x.x
