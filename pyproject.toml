@@ -46,6 +46,10 @@ path = "src/fastapi_voyager/version.py"
 
 [tool.hatch.build.targets.sdist]
 force-include."src/fastapi_voyager/web/dist" = "src/fastapi_voyager/web/dist"
+artifacts = ["src/fastapi_voyager/web/dist/"]
+
+[tool.hatch.build.targets.wheel]
+artifacts = ["src/fastapi_voyager/web/dist/"]
 
 [tool.uv]
 # You can pin resolution or indexes here later.

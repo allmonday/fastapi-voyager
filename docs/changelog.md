@@ -275,6 +275,10 @@
   - [x] defer Google Analytics script to post-load to avoid blocking page render
   - [x] remove PWA manifest and Service Worker registration (not needed for dev-tool usage)
 
+## 0.27
+- 0.27.0
+  - [x] fix: include `web/dist/` in wheel via hatch artifacts config (was missing from PyPI wheel)
+
 ## unrelease
 - x.x.x
     - [ ] 2.show relationship list when double click entity in er diagram
