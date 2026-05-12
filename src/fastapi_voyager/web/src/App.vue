@@ -5,7 +5,7 @@
         <!-- Header / Toolbar -->
         <header
           style="
-            border-bottom: 2px solid var(--q-primary);
+            border-bottom: 2px solid var(--primary-color);
             background: #fff;
             color: #424242;
             flex-shrink: 0;
@@ -20,11 +20,11 @@
                 font-weight: bold;
                 display: flex;
                 align-items: baseline;
-                color: var(--q-primary);
+                color: var(--primary-color);
                 flex-shrink: 0;
               "
             >
-              <i class="material-icons" style="margin-right: 8px; font-size: 20px">satellite_alt</i>
+              <n-icon size="20" style="margin-right: 8px"><RocketOutline /></n-icon>
               <span>{{ store.state.framework_name }} Voyager</span>
               <span
                 v-if="store.state.version"
@@ -40,7 +40,9 @@
                 title="clear tag, route selection"
                 style="margin-left: 80px"
               >
-                <template #icon><i class="material-icons">open_in_full</i></template>
+                <template #icon
+                  ><n-icon><ExpandOutline /></n-icon
+                ></template>
               </n-button>
             </div>
             <div style="font-size: 16px; flex-shrink: 0">
@@ -108,7 +110,9 @@
                     circle
                     style="margin-right: 50px; margin-left: 20px"
                   >
-                    <template #icon><i class="material-icons">help_outline</i></template>
+                    <template #icon
+                      ><n-icon><HelpCircleOutline /></n-icon
+                    ></template>
                   </n-button>
                 </template>
                 <div style="text-align: left; line-height: 1.4; font-size: 14px">
@@ -180,11 +184,14 @@
                 >
                   <template #header>
                     <div style="white-space: nowrap; width: 100%">
-                      <i
-                        class="material-icons"
-                        style="vertical-align: top; margin-right: 8px; font-size: 20px"
-                        >{{ store.state.leftPanel.tag === tag.name ? "folder" : "folder_open" }}</i
-                      >
+                      <n-icon size="20" style="vertical-align: top; margin-right: 8px"
+                        ><component
+                          :is="
+                            store.state.leftPanel.tag === tag.name
+                              ? FolderOutline
+                              : FolderOpenOutline
+                          "
+                      /></n-icon>
                       <span
                         >{{ tag.name }}
                         <n-tag
@@ -200,12 +207,12 @@
                         style="margin-left: 8px"
                         :href="store.state.swagger.url + '#/' + tag.name"
                       >
-                        <i
-                          class="material-icons"
-                          style="color: var(--q-primary); font-size: 18px"
+                        <n-icon
+                          size="18"
+                          style="color: var(--primary-color)"
                           title="open in swagger"
-                          >link</i
-                        >
+                          ><LinkOutline
+                        /></n-icon>
                       </a>
                     </div>
                   </template>
@@ -229,15 +236,13 @@
                             : 'transparent',
                         color:
                           store.state.leftPanel.routeId === route.id
-                            ? 'var(--q-primary)'
+                            ? 'var(--primary-color)'
                             : 'inherit',
                         fontWeight: store.state.leftPanel.routeId === route.id ? 'bold' : 'normal',
                       }"
                       @click="selectRoute(route.id)"
                     >
-                      <i class="material-icons" style="margin-right: 8px; font-size: 18px"
-                        >data_object</i
-                      >
+                      <n-icon size="18" style="margin-right: 8px"><CodeWorkingOutline /></n-icon>
                       <span style="flex: 1">{{ route.name }}</span>
                       <a
                         v-if="store.state.leftPanel.routeId === route.id && store.state.swagger.url"
@@ -246,12 +251,12 @@
                         :href="store.state.swagger.url + '#/' + tag.name + '/' + route.unique_id"
                         @click.stop
                       >
-                        <i
-                          class="material-icons"
-                          style="color: var(--q-primary); font-size: 18px"
+                        <n-icon
+                          size="18"
+                          style="color: var(--primary-color)"
                           title="open in swagger"
-                          >link</i
-                        >
+                          ><LinkOutline
+                        /></n-icon>
                       </a>
                     </div>
                     <div
@@ -402,9 +407,12 @@
                 store.state.leftPanel.collapsed ? 'Expand tag navigator' : 'Collapse tag navigator'
               "
             >
-              <i class="material-icons" style="font-size: 18px">{{
-                store.state.leftPanel.collapsed ? "chevron_right" : "chevron_left"
-              }}</i>
+              <n-icon size="18"
+                ><component
+                  :is="
+                    store.state.leftPanel.collapsed ? ChevronForwardOutline : ChevronBackOutline
+                  "
+              /></n-icon>
             </div>
           </div>
         </div>
@@ -490,7 +498,19 @@ import {
   NModal,
   NCard,
   NDivider,
+  NIcon,
 } from "naive-ui"
+import {
+  RocketOutline,
+  ExpandOutline,
+  HelpCircleOutline,
+  FolderOutline,
+  FolderOpenOutline,
+  LinkOutline,
+  CodeWorkingOutline,
+  ChevronForwardOutline,
+  ChevronBackOutline,
+} from "@vicons/ionicons5"
 import { GraphUI } from "./graph-ui.js"
 import { store } from "./store.js"
 import SchemaCodeDisplay from "./component/SchemaCodeDisplay.vue"

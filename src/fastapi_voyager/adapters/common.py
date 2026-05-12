@@ -34,13 +34,17 @@ def build_ga_snippet(ga_id: str | None) -> str:
     if not ga_id:
         return ""
 
-    return f"""    <script async src="https://www.googletagmanager.com/gtag/js?id={ga_id}"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){{dataLayer.push(arguments);}}
-      gtag('js', new Date());
-
-      gtag('config', '{ga_id}');
+    return f"""    <script>
+      window.addEventListener('load', function() {{
+        var s = document.createElement('script');
+        s.src = 'https://www.googletagmanager.com/gtag/js?id={ga_id}';
+        s.async = true;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){{dataLayer.push(arguments);}}
+        gtag('js', new Date());
+        gtag('config', '{ga_id}');
+      }});
     </script>
 """
 

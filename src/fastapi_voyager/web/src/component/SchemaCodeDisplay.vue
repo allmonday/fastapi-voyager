@@ -1,7 +1,7 @@
 <template>
   <div class="frv-code-display" style="position: relative; height: 100%; background: #fff">
     <div v-show="loading" style="position: absolute; top: 0; left: 0; right: 0; z-index: 10">
-      <n-progress processing :height="2" color="var(--q-primary)" />
+      <n-progress processing :height="2" color="var(--primary-color)" />
     </div>
     <div style="margin-left: 24px; margin-top: 12px">
       <p style="font-size: 16px">{{ schemaName }}</p>

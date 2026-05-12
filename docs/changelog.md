@@ -267,6 +267,14 @@
   - [x] switch toggle style to label + switch separated layout
   - [x] remove edge :e/:w port anchors in DOT template
 
+## 0.26
+- 0.26.0
+  - [x] replace Material Icons with @vicons/ionicons5 (Naive UI native icon solution)
+  - [x] remove Google Fonts (Roboto + Material Icons) dependency, eliminate external font loading
+  - [x] rename CSS variable `--q-primary` to `--primary-color` (remove Quasar legacy naming)
+  - [x] defer Google Analytics script to post-load to avoid blocking page render
+  - [x] remove PWA manifest and Service Worker registration (not needed for dev-tool usage)
+
 ## unrelease
 - x.x.x
     - [ ] 2.show relationship list when double click entity in er diagram

@@ -17,7 +17,9 @@
       @click="close"
       aria-label="Close"
     >
-      <template #icon><i class="material-icons" style="font-size: 18px">close</i></template>
+      <template #icon
+        ><n-icon size="18"><CloseOutline /></n-icon
+      ></template>
     </n-button>
     <div v-if="link" style="margin-left: 16px; margin-top: 12px; padding-top: 4px">
       <a :href="link" target="_blank" rel="noopener" style="font-size: 12px; color: #3b82f6"
@@ -38,7 +40,8 @@
 
 <script setup>
 import { ref, watch, onMounted } from "vue"
-import { NButton } from "naive-ui"
+import { NButton, NIcon } from "naive-ui"
+import { CloseOutline } from "@vicons/ionicons5"
 
 const props = defineProps({
   routeId: { type: String, required: true },

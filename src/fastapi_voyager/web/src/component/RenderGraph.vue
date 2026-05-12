@@ -14,7 +14,9 @@
         background: rgba(255, 255, 255, 0.85);
       "
     >
-      <template #icon><i class="material-icons" style="font-size: 18px">close</i></template>
+      <template #icon
+        ><n-icon size="18"><CloseOutline /></n-icon
+      ></template>
     </n-button>
     <n-button
       size="small"
@@ -31,7 +33,9 @@
         background: rgba(255, 255, 255, 0.85);
       "
     >
-      <template #icon><i class="material-icons" style="font-size: 18px">refresh</i></template>
+      <template #icon
+        ><n-icon size="18"><RefreshOutline /></n-icon
+      ></template>
     </n-button>
     <div
       :id="containerId"
@@ -42,7 +46,8 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from "vue"
-import { NButton, createDiscreteApi } from "naive-ui"
+import { NButton, NIcon, createDiscreteApi } from "naive-ui"
+import { CloseOutline, RefreshOutline } from "@vicons/ionicons5"
 import { GraphUI } from "../graph-ui.js"
 
 const { notification } = createDiscreteApi(["notification"])

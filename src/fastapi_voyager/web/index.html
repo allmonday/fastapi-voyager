@@ -30,12 +30,6 @@
       href="<!-- STATIC_PATH -->/icon/favicon-16x16.png"
     />
     <link rel="icon" href="<!-- STATIC_PATH -->/icon/favicon.ico" sizes="any" />
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
-      rel="stylesheet"
-      type="text/css"
-    />
     <!-- highlight.js CSS -->
     <link
       rel="stylesheet"
@@ -44,7 +38,7 @@
   </head>
   <style>
     :root {
-      --q-primary: <!-- THEME_COLOR -->;
+      --primary-color: <!-- THEME_COLOR -->;
     }
     html,
     body {
@@ -105,7 +99,7 @@
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: var(--q-primary);
+      background: var(--primary-color);
       color: white;
       cursor: pointer;
       display: flex;
@@ -135,7 +129,7 @@
         Helvetica,
         Arial,
         sans-serif;
-      color: var(--q-primary);
+      color: var(--primary-color);
     }
     .loading-text {
       font-size: 14px;
@@ -144,7 +138,7 @@
       width: 20px;
       height: 20px;
       border: 2px solid rgba(0, 148, 133, 0.2);
-      border-top-color: var(--q-primary);
+      border-top-color: var(--primary-color);
       border-radius: 50%;
       animation: frv-spin 0.8s linear infinite;
     }
@@ -217,17 +211,6 @@
     <!-- Vite entry -->
     <script type="module" src="/src/main.js"></script>
 
-    <!-- Service Worker -->
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("./sw.js")
-            .then((reg) => console.log("[Voyager] SW registered:", reg.scope))
-            .catch((err) => console.log("[Voyager] SW registration failed:", err))
-        })
-      }
-    </script>
     <!-- GA_SNIPPET -->
   </body>
 </html>

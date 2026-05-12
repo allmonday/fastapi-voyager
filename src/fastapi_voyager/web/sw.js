@@ -18,7 +18,6 @@ const CDN_ASSETS = [
   "https://cdnjs.cloudflare.com/ajax/libs/d3-graphviz/5.6.0/d3-graphviz.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js",
-  "https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons",
   "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css",
 ]
 
