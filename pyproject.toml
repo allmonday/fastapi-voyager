@@ -44,9 +44,8 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 path = "src/fastapi_voyager/version.py"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/fastapi_voyager"]
-force-include."src/fastapi_voyager/web/dist" = "fastapi_voyager/web/dist"
+[tool.hatch.build.targets.sdist]
+force-include."src/fastapi_voyager/web/dist" = "src/fastapi_voyager/web/dist"
 
 [tool.uv]
 # You can pin resolution or indexes here later.
