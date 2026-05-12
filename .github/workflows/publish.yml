@@ -65,6 +65,14 @@ jobs:
           echo "Release notes content:"
           head -20 release_notes.md
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build frontend
+        run: cd src/fastapi_voyager/web && npm install && npm run build
+
       - name: Build the package
         run: uv build
 

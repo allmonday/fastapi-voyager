@@ -278,13 +278,18 @@ class VoyagerContext:
 
     def get_index_html(self) -> str:
         """Get the index HTML content."""
-        index_file = WEB_DIR / "index.html"
+        # Prefer built (dist) version, fall back to source index.html
+        index_file = WEB_DIR / "dist" / "index.html"
+        if not index_file.exists():
+            index_file = WEB_DIR / "index.html"
         if index_file.exists():
             content = index_file.read_text(encoding="utf-8")
             content = content.replace(GA_PLACEHOLDER, build_ga_snippet(self.ga_id))
             content = content.replace(VERSION_PLACEHOLDER, f"?v={__version__}")
             # Replace static files path placeholder with actual path (without leading slash)
             content = content.replace(STATIC_PATH_PLACEHOLDER, STATIC_FILES_PATH.lstrip("/"))
+            # Fix Vite absolute asset paths to be relative (for sub-app mounting)
+            content = content.replace(f"{STATIC_FILES_PATH}/dist/", f"{STATIC_FILES_PATH.lstrip('/')}/dist/")
             # Replace theme color placeholder with framework-specific color
             content = content.replace(THEME_COLOR_PLACEHOLDER, self._get_theme_color())
             return content

@@ -254,6 +254,19 @@
     - Python 3.13 raises TypeError when `issubclass()` receives a `types.GenericAlias` (e.g. `dict[X, set[Y]]`), while Python 3.12 silently returns False
     - Typical trigger: route with PEP 695 type alias as response_model (e.g. `type ResourceActionDict = dict[K, set[V]]`)
 
+## 0.25
+- 0.25.0
+  - [x] migrate frontend from Vue 3 + Quasar (CDN, ~692KB) to Vue 3 + Naive UI (Vite build, tree-shaken ~120KB)
+  - [x] add Vite build pipeline with dev server + HMR and API proxy
+  - [x] add CI Node.js build step in publish workflow
+  - [x] fix NCollapse tag expansion with v-model and accordion mode
+  - [x] fix NSelect schema/field display (remove render-tag, fix filterable conflict)
+  - [x] fix route item icon vertical alignment (flex layout)
+  - [x] fix drawer close button display (use built-in closable prop)
+  - [x] remove SchemaCodeDisplay outer border
+  - [x] switch toggle style to label + switch separated layout
+  - [x] remove edge :e/:w port anchors in DOT template
+
 ## unrelease
 - x.x.x
     - [ ] 2.show relationship list when double click entity in er diagram

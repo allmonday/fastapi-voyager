@@ -207,3 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 *.dot
+
+
+node_modules/
+src/fastapi_voyager/web/node_modules/

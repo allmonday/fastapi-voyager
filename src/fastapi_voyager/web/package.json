@@ -1,0 +1,17 @@
+{
+  "name": "fastapi-voyager-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vue": "^3.5",
+    "naive-ui": "^2.40"
+  },
+  "devDependencies": {
+    "vite": "^6",
+    "@vitejs/plugin-vue": "^5"
+  }
+}

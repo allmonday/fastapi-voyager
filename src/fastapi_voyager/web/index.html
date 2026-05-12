@@ -1,3 +1,4 @@
+<!doctype html>
 <html>
   <head>
     <title>FastAPI Voyager</title>
@@ -10,7 +11,6 @@
       rel="stylesheet"
       href="<!-- STATIC_PATH -->/graphviz.svg.css<!-- VERSION_PLACEHOLDER -->"
     />
-    <link rel="stylesheet" href="<!-- STATIC_PATH -->/quasar.min.css<!-- VERSION_PLACEHOLDER -->" />
     <!-- App Icons / Favicons -->
     <link
       rel="apple-touch-icon"
@@ -36,8 +36,12 @@
       rel="stylesheet"
       type="text/css"
     />
+    <!-- highlight.js CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+    />
   </head>
-
   <style>
     :root {
       --q-primary: <!-- THEME_COLOR -->;
@@ -51,26 +55,12 @@
       display: flex;
       flex-direction: column;
     }
-    /* Quasar select menu max-height for scroll */
-    .select-popup {
-      max-height: 400px;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
     #graph {
       flex: 1 1 auto;
       overflow: auto;
     }
-    .tag-bg {
-      /* background-color: #287e75; */
-      /* border-bottom: 2px solid #009485;
-      border-left: 2px solid #009485;
-      border-top: 0; */
-    }
-
     .inherit-flow {
-      /* stroke-width:2; */
-      stroke-dasharray: 8 6; /* dash pattern */
+      stroke-dasharray: 8 6;
       stroke-linecap: round;
       animation: dash 2s linear infinite;
       animation-direction: reverse;
@@ -80,11 +70,9 @@
         stroke-dashoffset: -14;
       }
     }
-
     .adjust-fit {
       height: calc(100vh - 54px);
     }
-
     .github-corner:hover .octo-arm {
       animation: octocat-wave 560ms ease-in-out;
     }
@@ -110,8 +98,6 @@
         animation: octocat-wave 560ms ease-in-out;
       }
     }
-
-    /* Tag Navigator Collapse Button */
     .tag-navigator-collapse-btn-right {
       position: absolute;
       bottom: 8px;
@@ -132,8 +118,6 @@
       filter: brightness(0.9);
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
     }
-
-    /* App boot loading overlay & gating */
     #app-loading-overlay {
       position: fixed;
       inset: 0;
@@ -169,8 +153,7 @@
         transform: rotate(360deg);
       }
     }
-    /* While JS not ready: hide app, show overlay */
-    body.app-loading #q-app {
+    body.app-loading #app {
       visibility: hidden;
     }
     body.app-loading #app-loading-overlay {
@@ -179,470 +162,15 @@
   </style>
   <body class="app-loading">
     <script>
-      // Framework theme color for JS components
       window.FRAMEWORK_THEME_COLOR = "<!-- THEME_COLOR -->"
     </script>
-    <!-- App boot loading overlay: shown until JS initializes -->
     <div id="app-loading-overlay" aria-busy="true" aria-live="polite">
       <div class="spinner" aria-hidden="true"></div>
       <div class="loading-text">Loading…</div>
     </div>
-    <div id="q-app">
-      <q-layout view="hHh lpR fff">
-        <q-header bordered class="bg-primary text-white">
-          <q-toolbar
-            class="row text-grey-9 bg-white"
-            style="width: 100%; border-bottom: 2px solid var(--q-primary)"
-          >
-            <div
-              class="col-auto text-primary"
-              style="font-size: 18px; font-weight: bold; display: flex; align-items: baseline"
-            >
-              <q-icon class="q-mr-sm" name="satellite_alt"></q-icon>
-              <span> {{ store.state.framework_name }} Voyager </span>
-              <span
-                v-if="store.state.version"
-                style="font-size: 12px; margin-left: 8px; font-weight: normal"
-                >{{ store.state.version }}</span
-              >
-            </div>
-            <div class="col-auto">
-              <q-btn
-                style="margin-left: 80px"
-                outline
-                @click="onReset"
-                title="clear tag, route selection"
-                icon="open_in_full"
-                color="primary"
-                flat
-                class="q-mx-md"
-              />
-            </div>
-            <div class="col-auto" style="font-size: 16px">
-              <q-option-group
-                v-model="store.state.filter.showFields"
-                :options="store.state.fieldOptions"
-                @update:model-value="(val) => toggleShowField(val)"
-                color="primary"
-                type="radio"
-                inline
-                dense
-              />
-            </div>
-            <div class="col-auto q-ml-auto"></div>
-            <div class="col-auto row items-center q-gutter-sm">
-              <q-select
-                v-show="!store.state.search.invisible"
-                dense
-                outlined
-                use-input
-                fill-input
-                hide-selected
-                input-debounce="200"
-                v-model="store.state.search.schemaName"
-                :options="store.state.search.schemaOptions"
-                option-label="label"
-                option-value="value"
-                emit-value
-                map-options
-                style="min-width: 320px"
-                clearable
-                label="Select schema"
-                @update:model-value="onSearchSchemaChange"
-                @filter="filterSearchSchemas"
-                @clear="resetSearch"
-              >
-                <template v-slot:option="scope">
-                  <q-item v-bind="scope.itemProps">
-                    <q-item-section>
-                      <q-item-label>{{ scope.opt.label }}</q-item-label>
-                      <q-item-label caption>{{ scope.opt.desc }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
+    <div id="app"></div>
 
-              <q-select
-                v-show="!store.state.search.invisible"
-                dense
-                outlined
-                v-model="store.state.search.fieldName"
-                :disable="!store.state.search.schemaName || store.state.search.fieldOptions.length===0"
-                :options="store.state.search.fieldOptions"
-                @update:model-value="onSearch"
-                style="min-width: 180px"
-                clearable
-                label="Select field (optional)"
-              ></q-select>
-            </div>
-            <div class="col-auto" v-if="store.state.config.has_er_diagram">
-              <q-btn-toggle
-                class="q-ml-lg"
-                v-model="store.state.mode"
-                push
-                toggle-color="primary"
-                :options="[
-                  {label: 'Voyager', value: 'voyager'},
-                  {label: 'ER diagram', value: 'er-diagram'},
-                ]"
-              />
-            </div>
-            <div class="col-auto">
-              <q-btn
-                dense
-                round
-                flat
-                icon="help_outline"
-                aria-label="Help"
-                style="margin-right: 50px; margin-left: 20px"
-              >
-                <q-tooltip
-                  anchor="bottom middle"
-                  self="top middle"
-                  :offset="[0,8]"
-                  style="background-color: #f5f5f5; color: black; border: 1px solid #666"
-                >
-                  <div
-                    class="column items-start text-left"
-                    style="line-height: 1.4; font-size: 14px"
-                  >
-                    <ul>
-                      <li>scroll to zoom in/out</li>
-                      <li>double click node to view details.</li>
-                      <li>shift + click to search the schema and highlight related nodes.</li>
-                      <li>hold <strong>Space</strong> to activate magnifying glass.</li>
-                    </ul>
-                  </div>
-                </q-tooltip>
-              </q-btn>
-              <a
-                href="https://github.com/allmonday/fastapi-voyager"
-                target="_blank"
-                class="github-corner"
-                aria-label="View source on GitHub"
-                ><svg
-                  width="52"
-                  height="52"
-                  viewBox="0 0 250 250"
-                  style="
-                    fill: <!-- THEME_COLOR -->;
-                    color: #fff;
-                    position: absolute;
-                    top: 0;
-                    border: 0;
-                    right: 0;
-                  "
-                  aria-hidden="true"
-                >
-                  <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z" />
-                  <path
-                    d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
-                    fill="currentColor"
-                    style="transform-origin: 130px 106px"
-                    class="octo-arm"
-                  />
-                  <path
-                    d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
-                    fill="currentColor"
-                    class="octo-body"
-                  /></svg
-              ></a>
-            </div>
-          </q-toolbar>
-        </q-header>
-
-        <q-drawer
-          v-model="store.state.rightDrawer.drawer"
-          :width="store.state.rightDrawer.width"
-          side="right"
-          style="border-left: 1px solid #888"
-          bordered
-          overlay
-        >
-          <div
-            @mousedown="startDragDrawer"
-            style="
-              position: absolute;
-              left: -3px;
-              top: 0;
-              width: 6px;
-              height: 100%;
-              cursor: col-resize;
-              background: transparent;
-              z-index: 10;
-            "
-            title="drag to resize"
-          ></div>
-
-          <div style="z-index: 11; position: absolute; left: -17px; top: 9px">
-            <q-btn
-              @click="store.state.rightDrawer.drawer = !store.state.rightDrawer.drawer"
-              round
-              unelevated
-              color="primary"
-              dense
-              icon="chevron_right"
-            />
-          </div>
-          <schema-code-display
-            v-if="store.state.schemaDetail.schemaCodeName"
-            :schema-name="store.state.schemaDetail.schemaCodeName"
-            :schemas="store.state.mode === 'er-diagram' ? store.state.erDiagramSchemas : store.state.graph.schemaMap"
-          ></schema-code-display
-          ><loader-code-display
-            v-else-if="store.state.edgeDetail.loaderFullname"
-            :loader-fullname="store.state.edgeDetail.loaderFullname"
-            :source-entity="store.state.edgeDetail.sourceEntity"
-            :target-entity="store.state.edgeDetail.targetEntity"
-            :label="store.state.edgeDetail.label"
-          ></loader-code-display>
-        </q-drawer>
-
-        <q-page-container>
-          <q-splitter
-            v-model="store.state.leftPanel.width"
-            unit="px"
-            :limits="store.state.mode === 'voyager' ? [0, 800] : [0, 0]"
-            class="adjust-fit"
-          >
-            <template #before>
-              <div
-                id="tag-navigator"
-                class="column no-wrap"
-                :style="{
-                borderRight: '1px solid #e0e0e0',
-                backgroundColor: '#fff',
-                minHeight: 0,
-                height: '100%'
-              }"
-                v-show="store.state.mode === 'voyager'"
-              >
-                <q-scroll-area class="fit">
-                  <q-list dense separator>
-                    <q-expansion-item
-                      v-for="tag in store.state.leftPanel.tags"
-                      :key="tag.name"
-                      expand-separator
-                      :model-value="store.state.leftPanel._tag === tag.name || store.state.search.mode"
-                      @update:model-value="(val) => toggleTag(tag.name, val)"
-                      :header-class="store.state.leftPanel.tag === tag.name ? 'text-primary text-bold tag-bg' : 'tag-bg'"
-                      content-class="q-pa-none"
-                    >
-                      <template #header>
-                        <div class="" style="white-space: nowrap; width: 100%">
-                          <q-icon
-                            style="vertical-align: top"
-                            class="q-mr-sm"
-                            :name="store.state.leftPanel.tag == tag.name ? 'folder' : 'folder_open'"
-                          ></q-icon>
-                          <span
-                            >{{ tag.name }}
-                            <q-chip style="position: relative; top: -1px" class="q-ml-md" dense
-                              >{{ tag.routes.length }}</q-chip
-                            ></span
-                          >
-                          <a
-                            v-if="store.state.leftPanel._tag == tag.name"
-                            target="_blank"
-                            class="q-ml-sm"
-                            v-if="store.state.swagger.url"
-                            :href="store.state.swagger.url + '#/' + tag.name"
-                          >
-                            <q-icon
-                              color="primary"
-                              size=""
-                              name="link"
-                              title="open in swagger"
-                            ></q-icon>
-                          </a>
-                        </div>
-                      </template>
-                      <q-list separator style="overflow: auto; max-height: 60vh">
-                        <q-item
-                          v-for="route in (store.state.filter.hidePrimitiveRoute ? tag.routes.filter(r => !r.is_primitive) :tag.routes || [])"
-                          :key="route.id"
-                          clickable
-                          v-ripple
-                          :active="store.state.leftPanel.routeId === route.id"
-                          active-class=""
-                          @click="selectRoute(route.id)"
-                        >
-                          <q-item-section>
-                            <span class="q-ml-lg" style="white-space: nowrap">
-                              <q-icon class="q-mr-sm" name="data_object"></q-icon>
-                              {{ route.name }}
-                              <a
-                                v-if="store.state.leftPanel.routeId == route.id"
-                                target="_blank"
-                                class="q-ml-md"
-                                v-if="store.state.swagger.url"
-                                :href="store.state.swagger.url + '#/' + tag.name + '/' + route.unique_id"
-                              >
-                                <q-icon
-                                  color="primary"
-                                  size=""
-                                  name="link"
-                                  title="open in swagger"
-                                ></q-icon>
-                              </a>
-                            </span>
-                          </q-item-section>
-                        </q-item>
-                        <q-item v-if="!tag.routes || tag.routes.length === 0" dense>
-                          <q-item-section class="text-grey-6">No routes</q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-expansion-item>
-                  </q-list>
-                </q-scroll-area>
-              </div>
-            </template>
-
-            <template #after>
-              <div style="position: relative; width: 100%; height: 100%">
-                <div id="graph" class="adjust-fit"></div>
-                <div
-                  style="
-                    position: absolute;
-                    left: 8px;
-                    top: 8px;
-                    z-index: 10;
-                    background: rgba(255, 255, 255, 0.85);
-                    border-radius: 4px;
-                    padding: 2px 8px;
-                  "
-                >
-                  <div
-                    class="q-mt-sm"
-                    v-if="store.state.modeControl.briefModeEnabled && store.state.search.mode === false && store.state.mode === 'voyager'"
-                  >
-                    <q-toggle
-                      v-if="store.state.modeControl.briefModeEnabled"
-                      dense
-                      v-model="store.state.filter.brief"
-                      label="Brief Mode"
-                      @update:model-value="(val) => toggleBrief(val)"
-                      title="skip middle classes, config module_prefix to enable it"
-                    />
-                  </div>
-                  <div
-                    class="q-mt-sm"
-                    v-if="store.state.search.mode === false && store.state.mode === 'voyager'"
-                  >
-                    <q-toggle
-                      v-model="store.state.filter.hidePrimitiveRoute"
-                      @update:model-value="(val) => toggleHidePrimitiveRoute(val)"
-                      label="Hide Primitive"
-                      dense
-                      title="hide routes return primitive"
-                    />
-                  </div>
-                  <div class="q-mt-sm">
-                    <q-toggle
-                      v-model="store.state.filter.showModule"
-                      @update:model-value="(val) => toggleShowModule(val)"
-                      label="Show Module Cluster"
-                      dense
-                      title="show module cluster"
-                    />
-                  </div>
-                  <!-- Show methods toggle (ER diagram mode) -->
-                  <div class="q-mt-sm" v-if="store.state.mode === 'er-diagram'">
-                    <q-toggle
-                      v-model="store.state.filter.showMethods"
-                      @update:model-value="(val) => toggleShowMethods(val)"
-                      label="Show Methods"
-                      dense
-                      title="Show query and mutation methods"
-                    />
-                  </div>
-                  <div
-                    class="q-mt-sm"
-                    v-if="store.state.mode == 'voyager' && store.state.config.enable_pydantic_resolve_meta"
-                  >
-                    <q-toggle
-                      v-model="store.state.modeControl.pydanticResolveMetaEnabled"
-                      @update:model-value="(val) => togglePydanticResolveMeta(val)"
-                      label="Pydantic Resolve Meta"
-                      dense
-                      title="show fields with pydantic resolve/post/expose/collector info"
-                    />
-                  </div>
-                  <!-- Magnification slider -->
-                  <div class="q-mt-sm q-ml-sm" v-if="store.state.mode === 'voyager'">
-                    <div class="text-caption q-mb-xs" style="color: #666">
-                      Magnification: {{ store.state.filter.magnification.toFixed(1) }}x
-                    </div>
-                    <q-slider
-                      v-model="store.state.filter.magnification"
-                      :min="2"
-                      :max="5"
-                      :step="0.5"
-                      label
-                      :marker-labels="getMagnificationLabels()"
-                      @update:model-value="(val) => updateMagnification(val)"
-                      color="primary"
-                      dense
-                      style="max-width: 200px"
-                      title="Adjust magnifying glass zoom level (2x - 5x)"
-                    />
-                  </div>
-                  <!-- Edge length toggle (ER diagram mode) -->
-                  <div class="q-mt-sm" v-if="store.state.mode === 'er-diagram'">
-                    <div class="text-caption q-mb-xs" style="color: #666">Edge Length</div>
-                    <q-btn-toggle
-                      v-model="store.state.filter.edgeMinlen"
-                      toggle-color="primary"
-                      :options="[
-                        {label: 'Small', value: 3},
-                        {label: 'Middle', value: 7},
-                        {label: 'Large', value: 10},
-                      ]"
-                      push
-                      @update:model-value="(val) => updateEdgeMinlen(val)"
-                      title="Adjust ER diagram edge length"
-                    />
-                  </div>
-                </div>
-
-                <!-- Collapse toggle button for tag navigator - at bottom-left of right panel -->
-                <div
-                  v-show="store.state.mode === 'voyager'"
-                  class="tag-navigator-collapse-btn-right"
-                  @click="toggleTagNavigatorCollapse"
-                  :title="store.state.leftPanel.collapsed ? 'Expand tag navigator' : 'Collapse tag navigator'"
-                >
-                  <q-icon
-                    :name="store.state.leftPanel.collapsed ? 'chevron_right' : 'chevron_left'"
-                    size="18px"
-                  />
-                </div>
-              </div>
-            </template>
-          </q-splitter>
-        </q-page-container>
-      </q-layout>
-
-      <!-- Schema Field Filter Dialog -->
-      <q-dialog v-model="store.state.searchDialog.show" :persistent="true" :maximized="true">
-        <schema-field-filter
-          :schemas="store.state.graph.schemaMap"
-          :schema-name="store.state.searchDialog.schema"
-          @close="store.state.searchDialog.show = false"
-        />
-      </q-dialog>
-
-      <q-dialog v-model="store.state.routeDetail.show" seamless position="bottom">
-        <q-card style="width: 1100px; max-width: 1100px; max-height: 40vh">
-          <route-code-display
-            :route-id="store.state.routeDetail.routeCodeId"
-            @close="store.state.routeDetail.show = false"
-          />
-        </q-card>
-      </q-dialog>
-    </div>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <script src="<!-- STATIC_PATH -->/quasar.min.js<!-- VERSION_PLACEHOLDER -->"></script>
+    <!-- CDN libraries (not bundled) -->
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"
       integrity="sha512-egJ/Y+22P9NQ9aIyVCh0VCOsfydyn8eNmqBy+y2CnJG+fpRIxXMS6jbWP8tVKp0jp+NO5n8WtMUAnNnGoJKi4w=="
@@ -664,12 +192,8 @@
     ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mousewheel/3.1.13/jquery.mousewheel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
-    <script src="<!-- STATIC_PATH -->/graphviz.svg.js<!-- VERSION_PLACEHOLDER -->"></script>
-    <!-- highlight.js minimal ES module load (python only) -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
-    />
+
+    <!-- highlight.js (async module) -->
     <script type="module">
       window.addEventListener("DOMContentLoaded", async () => {
         if (!window.hljs) {
@@ -686,16 +210,17 @@
         }
       })
     </script>
-    <script
-      type="module"
-      src="<!-- STATIC_PATH -->/vue-main.js<!-- VERSION_PLACEHOLDER -->"
-    ></script>
 
-    <!-- Service Worker Registration -->
+    <!-- Graphviz SVG renderer (local) -->
+    <script src="<!-- STATIC_PATH -->/graphviz.svg.js<!-- VERSION_PLACEHOLDER -->"></script>
+
+    <!-- Vite entry -->
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- Service Worker -->
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          // Use relative path to work with any mount point (e.g., /voyager/sw.js)
           navigator.serviceWorker
             .register("./sw.js")
             .then((reg) => console.log("[Voyager] SW registered:", reg.scope))

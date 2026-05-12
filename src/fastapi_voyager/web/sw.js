@@ -12,7 +12,6 @@ const STATIC_PATH = "<!-- STATIC_PATH -->"
 
 // CDN resources to cache (cache-first strategy)
 const CDN_ASSETS = [
-  "https://unpkg.com/vue@3/dist/vue.global.prod.js",
   "https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js",
   "https://unpkg.com/@hpcc-js/wasm@2.20.0/dist/graphviz.umd.js",
